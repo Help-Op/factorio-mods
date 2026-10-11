@@ -28,7 +28,7 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 ## Project layout
 
 - `data.lua` requires `prototypes/planet/nauvis-territory.lua`, which sets `data.raw.planet.nauvis.map_gen_settings.territory_settings`.
-- `control.lua` (approved 2026-10-11) only wires events and debug commands. Logic lives in `scripts/` (`territories.lua`: registry + state, `overlay.lua`: map colours). See phase A in `vision-plan.md`.
+- `control.lua` (approved 2026-10-11) only wires events and debug commands. Logic lives in `scripts/` (`territories.lua`: registry + state, `overlay.lua`: map colours, `challenge.lua`: challenge start/win/lose). See phases A and B in `vision-plan.md`.
 - Debug through VS Code with the Factorio Mod Debug extension (`.vscode/launch.json` launches straight into freeplay).
 - `../cheating-mod` is a separate helper mod for testing (start gear strong enough to kill demolishers).
 

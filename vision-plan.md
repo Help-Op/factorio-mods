@@ -153,7 +153,8 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 | V10 | Central spot and rally structure. | Need a rule for the centre (e.g. the chunk nearest the centroid of `get_chunks()`, snapped to buildable land) and a rally prototype (enemy-force entity, built over time). |
 | V11 | Measuring pollution absorbed by nests. | With auto attacks off, does the engine still count absorbed pollution anywhere we can read (e.g. `game.get_pollution_statistics(surface)` per entity)? Part of T1. |
 | V12 | Building enemy structures over time (rally, staging nest). | Options: place a "construction site" entity and swap it for the real one after a timer, or grow health over time. To test. |
-| V13 | Detecting guardian aggro: start (in range of the player) and end (aggro lost). | Likely solved: poll `get_ai_state()`. Start = `attacking`/`enraged_at_target` with a target that is a character (or near one). Lose = back to `patrolling`/`investigating`. Fallback: distance rule. See test T4. |
+| V14 | **Demolishers don't attack the player on sight**, only in revenge or when investigating buildings (T4). Rage lasts 30 s, then it keeps `attacking` player entities in reach. Resolved for the POC by the phase B rules. | `enraged_at_target` also has `last_damage_time` (writable) and `remaining_time`. The rule "the challenge starts when the guardian can attack the player" would mean: only after the player shoots it, or (to check) when it attacks a building near the player. And "lose = aggro lost" would mean: the challenge ends 30 s after the player stops hitting it, even while standing next to it. See open questions 3b and 5b. |
+| V13 | Detecting guardian aggro: start (in range of the player) and end (aggro lost). | **Start confirmed (T4):** chasing the player gives `enraged_at_target` with `target = character`. See V14 for what that means. Likely solved: poll `get_ai_state()`. Start = `attacking`/`enraged_at_target` with a target that is a character (or near one). Lose = back to `patrolling`/`investigating`. Fallback: distance rule. See test T4. |
 
 ## Tests to run later
 
@@ -161,17 +162,24 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 |---|------|-----------------|-------|
 | T1 | Turn off vanilla pollution attacks (V4). | `/c game.map_settings.unit_group.max_gathering_unit_groups = 0 game.map_settings.unit_group.max_unit_group_size = 0 game.player.print("Auto attacks off")` then pollute near a nest. | Do attacks stop? Do nests still absorb pollution and fill with idle units? Does evolution still rise? Can we read how much pollution nests absorbed (V11)? |
 | T2 | Lifelong slowdown sticker (V3). | To write. | Can a sticker last for the unit's whole life? Can strength vary per challenge (several sticker prototypes)? |
-| T3 | Trigger detection (V5). | To write. | Do damage events fire for demolisher segments? Does building inside a territory resolve to the right territory? |
-| T4 | Guardian aggro (V13). | Stand near a demolisher, then run away: `/c local p = game.player local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] and x.segments[1].position or {x = 1e9, y = 1e9} local d = (h.x - p.position.x)^2 + (h.y - p.position.y)^2 if not best or d < best then u, best = x, d end end if not u then p.print("No demolisher") return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end game.player.print(n .. " target=" .. (s.target and s.target.valid and s.target.name or "none"))` | Which state when it chases the player? What is the target (character or a building)? How long until it goes back to patrolling? |
+| T3 | Trigger detection (V5). | Use a throwaway save: these console handlers replace the scenario's own handlers for these events until you reload. Start: `/c local function terr(ent) local q = ent.position local t = ent.surface.get_territory_for_chunk{x = math.floor(q.x / 32), y = math.floor(q.y / 32)} return t and (#t.get_segmented_units() .. " guard(s)") or "none" end script.on_event(defines.events.on_segmented_unit_damaged, function(e) game.print("unit damaged: " .. e.segmented_unit.prototype.name .. " by " .. (e.cause and e.cause.valid and e.cause.name or "?") .. " for " .. math.floor(e.final_damage_amount)) end) script.on_event(defines.events.on_entity_damaged, function(e) if e.entity.type == "segment" or e.entity.type == "segmented-unit" then game.print("entity damaged: " .. e.entity.name .. " (" .. e.entity.type .. ")") end end) script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, function(e) game.print("built " .. e.entity.name .. ", territory: " .. terr(e.entity)) end) game.print("T3 handlers on")` Then: (1) shoot a demolisher's head, then its tail; (2) build something inside a territory and outside one; (3) let robots build inside a territory. Stop: `/c script.on_event(defines.events.on_segmented_unit_damaged, nil) script.on_event(defines.events.on_entity_damaged, nil) script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, nil) game.print("T3 handlers off")` | **Result (2026-10-11, 2.0.77):** (1) **Both fire.** `on_entity_damaged` for each hit segment (head is type `segmented-unit`, body and tail are type `segment`), and `on_segmented_unit_damaged` with `cause = character`. Many hits show 0 damage after rounding (`final_damage_amount` < 1, pistol vs. resistances). (2) Building inside a territory reports it; outside reports none. The first command only printed the guard count. **Retest with the id version (2026-10-11): works**, e.g. `built stone-furnace, territory: id 7, 1 guard(s)`. (3) **Robot building also fires** (`on_robot_built_entity`). **Still open:** does the demolisher react to the building? Id version of the build handler: `/c script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, function(e) local q = e.entity.position local t = e.entity.surface.get_territory_for_chunk{x = math.floor(q.x / 32), y = math.floor(q.y / 32)} game.print("built " .. e.entity.name .. ", territory: " .. (t and ("id " .. script.register_on_object_destroyed(t) .. ", " .. #t.get_segmented_units() .. " guard(s)") or "none")) end) game.print("T3 build handler on")` (same id as `/ht-territory`). |
+| T4 | Guardian aggro (V13). | Snapshot: `/c local p = game.player local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] and x.segments[1].position or {x = 1e9, y = 1e9} local d = (h.x - p.position.x)^2 + (h.y - p.position.y)^2 if not best or d < best then u, best = x, d end end if not u then p.print("No demolisher") return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end game.player.print(n .. " target=" .. (s.target and s.target.valid and s.target.name or "none"))` Tracker (prints every state change): `/c local last script.on_nth_tick(30, function() local p = game.players[1] local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] if h then local d = (h.position.x - p.position.x)^2 + (h.position.y - p.position.y)^2 if not best or d < best then u, best = x, d end end end if not u then return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end local line = n .. " target=" .. (s.target and s.target.valid and s.target.name or "none") if line ~= last then last = line p.print(string.format("[%.1fs] %s dist=%d", game.tick / 60, line, math.sqrt(best))) end end) game.print("T4 tracker on")` Stop: `/c script.on_nth_tick(30, nil) game.print("T4 tracker off")` | **Result (2026-10-11, 2.0.77):** the demolisher **never attacks the player on its own**, at any distance (it patrolled past at 39 tiles). Only after being shot: `patrolling` → `enraged_at_target` (`target = character`, 16 tiles) → `patrolling` again about 26 s later at 186 tiles. Matches the prototype: `enraged_duration = 30 * 60` (30 s after the **last damage**), `vision_distance = 64`, `ticks_per_scan` (it scans its territory for things to attack). **Still open:** does building in the territory make it `investigating` / `attacking` the building (T3 step 2)?
+**Second run (2026-10-11):** observed in game: the demolisher **seems to stay enraged while the player is nearby** and only calms down after the player runs away. The 30 s isn't proven either way. When the demolisher came straight for a newly built stone furnace, **the tracker printed nothing** (no state change seen). Possible reasons: it attacks while still `patrolling`, the state change was shorter than 0.5 s, or the tracker watched another demolisher (it shows the nearest one).
+**Tracker v2** (adds demolisher number and `remaining_time`, printed every 2 s while enraged): `/c local last script.on_nth_tick(30, function() local p = game.players[1] local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] if h then local d = (h.position.x - p.position.x)^2 + (h.position.y - p.position.y)^2 if not best or d < best then u, best = x, d end end end if not u then return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end local line = n .. " target=" .. (s.target and s.target.valid and s.target.name or "none") local rest = s.remaining_time and string.format(" left=%.0fs", s.remaining_time / 60) or "" if line ~= last or (s.remaining_time and game.tick % 120 == 0) then last = line p.print(string.format("[%.1fs] #%d %s%s dist=%d", game.tick / 60, u.unit_number, line, rest, math.sqrt(best))) end end) game.print("T4 tracker v2 on")`
+Tests: (a) shoot once, then stand still about 20 tiles away without shooting. Does `left=` count down to 0, or does it reset while you're near? (b) Build next to its patrol path with the tracker on. Does any line appear? Is the `#number` the demolisher that comes?
+**Tracker v2 results (2026-10-11, 2.0.77):**
+- (a) Shot from a spidertron: `enraged_at_target target=spidertron`, `left=` counts down 30 → 0 and does **not** reset while the player is near. After the countdown it switches to **`attacking target=spidertron`** and keeps fighting, so vanilla "aggro" lasts as long as a player entity is in reach. On foot and running away (first run), it went back to `patrolling`.
+- (b) Building in the territory: about 10 s after the furnace was placed, `investigating target=none` → about 10 s later `attacking target=stone-furnace` → `patrolling` after it was destroyed. The delay comes from `ticks_per_scan`.
+- Runtime API: `LuaSegmentedUnit.health` is writable (for healing on fail); `LuaEntityPrototype.vision_distance` and `enraged_duration` are readable. |
 
 ## Phases (draft, to refine)
 
 Each phase starts with a small engine test before building on it.
 
 - [x] **A. Territory state + overlay.** Done 2026-10-11 (headless + in game). Detailed steps below.
-- [ ] **B. Trigger detection.** Detect damage to the guardian and building inside a territory.
+- [x] **B. Trigger detection.** Done 2026-10-11 (headless + in game, incl. fix B7). Details below.
 - [ ] **C. Challenge mode.** Spawn waves around the player; scale by distance; cap counts; end conditions.
-- [ ] **D. Claim.** Guardian dies → territory becomes Claimed.
+- [x] **D. Claim.** Guardian dies → territory becomes Claimed, and a running challenge ends as won. Covered by A2 and B5.
 - [ ] **E. Vanilla attacks off.** Run T1 and apply the settings.
 - [ ] **F. Crusade budget.** Turn pollution + evolution into a crusade trigger.
 - [ ] **G. Target + migration + warning.** Pick target and staging nest (build one if missing), spawn the army at the nest (POC), colour the target.
@@ -222,6 +230,56 @@ Harness notes: headless needs a server-settings file with `auto_pause = false` (
   - `hostile` showed no colour. Expected: hostile has no script overlay, and the engine draws red only while the territory has a guardian. The test territory probably had no guardian (killed in A2), so forcing `hostile` changed only the label. In normal play `hostile` is only set when a guardian respawns, so the red comes back. To confirm: respawn the guardian and check that the red returns.
 - [x] **A5. Save/load in game.** **In game (2026-10-11, 2.0.77): works.** Colour and id kept.
 
+### Phase B in detail (approved and built 2026-10-11)
+
+Goal: detect when a challenge starts and ends, and set the territory state. No enemy spawning yet (that's phase C). A running challenge shows purple on the map, and the players taking part get chat messages.
+
+**Facts it builds on (T3, T4):**
+
+| Guardian AI state | Meaning |
+|-------------------|---------|
+| `patrolling` | Calm. |
+| `investigating` | Noticed something in its territory (e.g. a new building), going to look. |
+| `attacking` (+ `target`) | Fighting a target it found: a building, or a player entity after the rage ends. |
+| `enraged_at_target` (+ `target`, `remaining_time`) | Was shot; 30 s of rage from the last hit. |
+| `enraged_at_nothing` | Was shot but has no target. |
+
+**Rules:**
+
+| Item | Proposal |
+|------|----------|
+| How we detect | Every 30 ticks, check every guardian on Nauvis with `get_ai_state()` (a few hundred units; cheap). No event is needed for detection. Damage and build events are not used yet. |
+| "Engaged" | State is `enraged_at_target`, `enraged_at_nothing` or `attacking` (any target). `investigating` doesn't count yet: it's the warning sign. |
+| "Nearby" | A player character (or the vehicle they're in) within **R = 100 tiles** of the guardian's head. About 1.5× the small demolisher's `vision_distance` of 64. Tunable. |
+| Start | Guardian engaged + at least one player nearby → challenge starts for its territory. Players nearby join (one active challenge per player). |
+| Join | Another player who comes near an engaged guardian of a running challenge joins it. |
+| Win | Last guardian dies → state `claimed` (phase A already does this) → challenge ends as **won**. |
+| Lose | For **5 s in a row**, no guardian of the territory is engaged, **or** no participating player is alive within R. Then: challenge ends as **lost**, the territory goes back to `hostile`, guardians heal to full. |
+| Remote building | Guardian attacking a robot-built building with no player nearby → no challenge (POC decision 5a). |
+| Storage | `storage.challenges[territory_id] = {territory_id, players = {[index] = true}, started_tick, lose_since_tick}`; `storage.player_challenge[player_index] = territory_id`. |
+| Files | New `scripts/challenge.lua`. `control.lua` adds `on_nth_tick(30)`. `territories.on_segmented_unit_died` tells the challenge it was won. |
+| Debug | `/ht-challenges` lists running challenges with players and time. |
+
+**Steps:**
+
+**Approved (2026-10-11):** R = 100 tiles, 5 s grace, heal to full on a loss. `investigating` triggers nothing yet (the chat warning idea is postponed).
+
+**Headless test (2026-10-11, 2.0.77):** headless has no players, so the challenge record was created by hand.
+
+| Check | Result |
+|-------|--------|
+| Lose: no engaged guardian, no participant for 5 s | After 7 s: challenge gone, state `challenge` → `hostile`, guardian health 15000 → 30000 (full) |
+| Win: kill the only guardian during a challenge | Challenge gone, state `claimed` |
+| Errors in server log | None |
+
+- [x] **B1. Start.** Shoot a guardian. Check: chat says the challenge started, the territory turns purple, `/ht-challenges` lists it. **In game (2026-10-11, 2.0.77):** works.
+- [x] **B2. Start by building.** Build in a territory and stay near. Check: the challenge starts once the guardian goes `attacking`. Use robots far away: no challenge. **In game (2026-10-11, 2.0.77):** **issue.** The challenge starts, but the guardian is only `attacking` the building, not enraged at the player. Once the building is gone it goes back to `patrolling`, and the challenge is lost unless the player attacks it. See B7. **Retest with B7 (2026-10-11, 2.0.77): works.** Remote building: the spidertron (player 100+ tiles away) builds in a territory, the guardian gets enraged at it, and **no challenge starts**, as intended.
+- [x] **B3. Lose by leaving.** Start a challenge, then run away. Check: about 5 s after it calms down (or you're 100+ tiles away), the challenge is lost, the territory is red again, and the guardian is back at full health. **In game (2026-10-11, 2.0.77):** works.
+- [x] **B4. Lose by dying.** Check: lost, same as B3. **In game (2026-10-11, 2.0.77):** works. The "lost" message isn't instant but shows up eventually (5 s grace; the character is gone while dead). Acceptable.
+- [x] **B5. Win.** Kill the guardian during a challenge. Check: won, state `claimed`, no purple. **In game (2026-10-11, 2.0.77):** works.
+- [x] **B6. Save/load during a challenge.** Check: still running after load and ends correctly. **In game (2026-10-11, 2.0.77):** works.
+- [x] **B7. Keep the guardian engaged during a challenge** (fix for B2, approved and built 2026-10-11). On start, and on every check while a participant is within R: if the guardian isn't `enraged_at_target` at a participant, set `enraged_at_target` with `target` = the nearest participant's character (or their vehicle) and `last_damage_time = game.tick`, using `set_ai_state`. The guardian then hunts the player for as long as the challenge runs. Losing then effectively means: every participant is out of range or dead for 5 s. Check: build-triggered challenge, the guardian destroys the building, then comes for you; the challenge keeps running. **Built:** every check, each guardian of a running challenge with a participant within R is set to `enraged_at_target` at the nearest participant (vehicle if they're in one). It's only rewritten when it isn't already enraged at a participant, or when less than 15 s of rage is left, so the vanilla AI isn't touched every 0.5 s. **Headless (2026-10-11, 2.0.77):** `set_ai_state{type = enraged_at_target, target = character, attacked_me = true, last_damage_time = game.tick}` is accepted; read back as `enraged_at_target target=character left=30s`. **In game:** build in a territory, stay near, let the guardian destroy the building. Check: it then comes for you and the challenge keeps running; you lose only after leaving (100+ tiles) or dying. **In game (2026-10-11, 2.0.77): works.** After destroying the building, the guardian comes for the player and the challenge keeps running.
+
 ## Open questions
 
 ### Challenge mode (all POC, see fifth round)
@@ -230,8 +288,10 @@ Harness notes: headless needs a server-settings file with `auto_pause = false` (
 1b. ~~Weak enemies vs. slowdown?~~ Decided: both.
 2. ~~What spawns, where?~~ Decided: biters/spitters in a ring just off-screen.
 3. ~~How does it end?~~ Decided: win = guardian dead; lose = guardian loses aggro.
+3b. ~~Lose after 30 s?~~ **No (T4 v2, 2026-10-11):** after the rage it keeps `attacking` player entities in reach. "Aggro lost" = the guardian goes back to `patrolling`. Phase B uses that, with a short grace period.
 4. ~~Reset on fail?~~ Decided: yes, guardian heals and territory resets.
 5. ~~Trigger timing?~~ Decided: real start when guardian can attack the player.
+5b. ~~What starts the challenge?~~ **Decided (2026-10-11): (a) + (b).** The challenge starts when the guardian is **enraged** (from being shot) **or reacting to a building**, and a player is nearby. Walking through a territory stays safe. States and range: see the phase B proposal.
 5a. ~~Remote building?~~ Decided: plain vanilla for the POC; revisit later.
 6. ~~Concurrency?~~ Decided: one challenge per territory, one active challenge per player.
 

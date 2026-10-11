@@ -1,4 +1,5 @@
 local territories = require("scripts.territories")
+local challenge = require("scripts.challenge")
 
 script.on_init(territories.scan)
 script.on_configuration_changed(territories.scan)
@@ -7,8 +8,12 @@ script.on_event(defines.events.on_territory_created, territories.on_territory_cr
 script.on_event(defines.events.on_territory_destroyed, territories.on_territory_destroyed)
 script.on_event(defines.events.on_object_destroyed, territories.on_object_destroyed)
 script.on_event(defines.events.on_segmented_unit_created, territories.on_segmented_unit_created)
-script.on_event(defines.events.on_segmented_unit_died, territories.on_segmented_unit_died)
+script.on_event(defines.events.on_segmented_unit_died, function(event)
+  local claimed = territories.on_segmented_unit_died(event)
+  if claimed then challenge.on_won(claimed.id) end
+end)
 script.on_event(defines.events.on_chunk_charted, territories.on_chunk_charted)
+script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
 
 -- Debug interface (headless harness): /c remote.call("hostile-territory-debug", "set_state", id, "warning")
 remote.add_interface("hostile-territory-debug", {
@@ -58,4 +63,9 @@ commands.add_command("ht-set-state", "<state> Force the state of the territory y
   end
   territories.set_state(record, state)
   player.print(string.format("Territory %d: state=%s", record.id, state))
+end)
+
+commands.add_command("ht-challenges", "List running challenges.", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(challenge.describe()) end
 end)

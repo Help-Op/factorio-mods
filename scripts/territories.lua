@@ -111,11 +111,13 @@ function territories.on_segmented_unit_created(event)
   end
 end
 
+-- Returns the record if this death claimed the territory.
 function territories.on_segmented_unit_died(event)
   local unit = event.segmented_unit
   local record = territories.get(unit.territory)
   if record and guardian_count(record.territory, unit.unit_number) == 0 then
     territories.set_state(record, "claimed")
+    return record
   end
 end
 
