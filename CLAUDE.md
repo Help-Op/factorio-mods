@@ -7,7 +7,8 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 1. **Plan first, in a markdown file.** Before writing code for a new feature or test, write or extend a plan file in the repo root.
 2. **Interview before building.** Go through the plan with me: ask questions, raise open decisions, suggest options. Wait for my go-ahead before you implement.
 3. **Keep the plan file current.** Update it as we go: decisions, test results (with date and game version), checked-off steps, and new open questions. Anyone should be able to pick up in a new session from the plan alone.
-4. **One step at a time.** Do steps in order and verify each one before moving on. I often test in game myself and report back. Write my results into the plan.
+4. **Never commit.** I do all commits myself. You may stage changes (`git add`).
+5. **One step at a time.** Do steps in order and verify each one before moving on. I often test in game myself and report back. Write my results into the plan.
 
 ## Writing style
 
@@ -28,7 +29,7 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 ## Project layout
 
 - `data.lua` requires `prototypes/planet/nauvis-territory.lua`, which sets `data.raw.planet.nauvis.map_gen_settings.territory_settings`.
-- `control.lua` (approved 2026-10-11) only wires events and debug commands. Logic lives in `scripts/` (`territories.lua`: registry + state, `overlay.lua`: map colours, `challenge.lua`: challenge start/win/lose). See phases A and B in `vision-plan.md`.
+- `control.lua` (approved 2026-10-11) only wires events and debug commands. Logic lives in `scripts/` (`territories.lua`: registry + state, `overlay.lua`: map colours, `challenge.lua`: challenge start/win/lose, `waves.lua`: challenge enemies). `prototypes/entity/` holds the tiny biter and slowdown stickers. See phases A–C in `vision-plan.md`.
 - Debug through VS Code with the Factorio Mod Debug extension (`.vscode/launch.json` launches straight into freeplay).
 - `../cheating-mod` is a separate helper mod for testing (start gear strong enough to kill demolishers).
 

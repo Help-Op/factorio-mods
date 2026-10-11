@@ -6,6 +6,7 @@
 -- storage.player_challenge[player_index] = territory_id
 
 local territories = require("scripts.territories")
+local waves = require("scripts.waves")
 
 local challenge = {}
 
@@ -116,8 +117,9 @@ local function join(record, player)
   player.print(string.format("Challenge started: territory %d.", record.territory_id))
 end
 
-local function start(territory_record)
+local function start(territory_record, surface, origin)
   local record = {territory_id = territory_record.id, players = {}, started_tick = game.tick}
+  waves.init(record, surface, origin)
   storage.challenges[territory_record.id] = record
   territories.set_state(territory_record, "challenge")
   return record
@@ -139,6 +141,7 @@ local function lose(record)
     end
     territories.set_state(territory_record, "hostile")
   end
+  waves.clear(record)
   finish(record, string.format("Challenge lost: territory %d. The guardian recovers.", record.territory_id))
 end
 
@@ -146,6 +149,7 @@ function challenge.on_won(territory_id)
   init_storage()
   local record = storage.challenges[territory_id]
   if record then
+    waves.flee(record)
     finish(record, string.format("Challenge won: territory %d claimed.", territory_id))
   end
 end
@@ -179,7 +183,7 @@ function challenge.on_tick()
     if next(nearby) then
       local record = storage.challenges[id]
       if not record and territory_record.state == "hostile" then
-        record = start(territory_record)
+        record = start(territory_record, surface, heads[id][1])
       end
       if record then
         for _, player in pairs(nearby) do join(record, player) end
@@ -194,9 +198,20 @@ function challenge.on_tick()
     end
   end
 
+  -- Waves around participants near the guardian.
+  for id, record in pairs(storage.challenges) do
+    local targets = {}
+    for index, player in pairs(heads[id] and players_near(surface, heads[id]) or {}) do
+      if record.players[index] then targets[#targets + 1] = {player = player, entity = chase_target(player)} end
+    end
+    waves.update(record, surface, targets)
+  end
+  waves.update_fleeing()
+
   -- Lose.
   for id, record in pairs(storage.challenges) do
     if not storage.territories[id] then
+      waves.clear(record)
       finish(record, string.format("Challenge ended: territory %d is gone.", id))
     elseif engaged[id] and participant_near(record, surface, heads[id]) then
       record.lose_since_tick = nil
@@ -217,7 +232,7 @@ function challenge.describe()
       names[#names + 1] = player and player.name or tostring(index)
     end
     lines[#lines + 1] = string.format("Territory %d: %ds, players: %s%s", id, math.floor((game.tick - record.started_tick) / 60),
-      table.concat(names, ", "), record.lose_since_tick and " (losing)" or "")
+      table.concat(names, ", "), waves.describe(record) .. (record.lose_since_tick and " (losing)" or ""))
   end
   if #lines == 0 then return "No running challenges." end
   return table.concat(lines, "\n")

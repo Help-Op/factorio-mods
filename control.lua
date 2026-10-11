@@ -1,5 +1,6 @@
 local territories = require("scripts.territories")
 local challenge = require("scripts.challenge")
+local waves = require("scripts.waves")
 
 script.on_init(territories.scan)
 script.on_configuration_changed(territories.scan)
@@ -14,6 +15,7 @@ script.on_event(defines.events.on_segmented_unit_died, function(event)
 end)
 script.on_event(defines.events.on_chunk_charted, territories.on_chunk_charted)
 script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
+script.on_event(defines.events.on_ai_command_completed, waves.on_ai_command_completed)
 
 -- Debug interface (headless harness): /c remote.call("hostile-territory-debug", "set_state", id, "warning")
 remote.add_interface("hostile-territory-debug", {

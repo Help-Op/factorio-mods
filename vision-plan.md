@@ -161,7 +161,7 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 | # | Test | Command / steps | Check |
 |---|------|-----------------|-------|
 | T1 | Turn off vanilla pollution attacks (V4). | `/c game.map_settings.unit_group.max_gathering_unit_groups = 0 game.map_settings.unit_group.max_unit_group_size = 0 game.player.print("Auto attacks off")` then pollute near a nest. | Do attacks stop? Do nests still absorb pollution and fill with idle units? Does evolution still rise? Can we read how much pollution nests absorbed (V11)? |
-| T2 | Lifelong slowdown sticker (V3). | To write. | Can a sticker last for the unit's whole life? Can strength vary per challenge (several sticker prototypes)? |
+| T2 | Lifelong slowdown sticker (V3). | Done headless in C1. | **Passed (2026-10-11):** still attached after 23 min; 50 % sticker halves the distance moved. Strength per ring via 5 sticker prototypes. |
 | T3 | Trigger detection (V5). | Use a throwaway save: these console handlers replace the scenario's own handlers for these events until you reload. Start: `/c local function terr(ent) local q = ent.position local t = ent.surface.get_territory_for_chunk{x = math.floor(q.x / 32), y = math.floor(q.y / 32)} return t and (#t.get_segmented_units() .. " guard(s)") or "none" end script.on_event(defines.events.on_segmented_unit_damaged, function(e) game.print("unit damaged: " .. e.segmented_unit.prototype.name .. " by " .. (e.cause and e.cause.valid and e.cause.name or "?") .. " for " .. math.floor(e.final_damage_amount)) end) script.on_event(defines.events.on_entity_damaged, function(e) if e.entity.type == "segment" or e.entity.type == "segmented-unit" then game.print("entity damaged: " .. e.entity.name .. " (" .. e.entity.type .. ")") end end) script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, function(e) game.print("built " .. e.entity.name .. ", territory: " .. terr(e.entity)) end) game.print("T3 handlers on")` Then: (1) shoot a demolisher's head, then its tail; (2) build something inside a territory and outside one; (3) let robots build inside a territory. Stop: `/c script.on_event(defines.events.on_segmented_unit_damaged, nil) script.on_event(defines.events.on_entity_damaged, nil) script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, nil) game.print("T3 handlers off")` | **Result (2026-10-11, 2.0.77):** (1) **Both fire.** `on_entity_damaged` for each hit segment (head is type `segmented-unit`, body and tail are type `segment`), and `on_segmented_unit_damaged` with `cause = character`. Many hits show 0 damage after rounding (`final_damage_amount` < 1, pistol vs. resistances). (2) Building inside a territory reports it; outside reports none. The first command only printed the guard count. **Retest with the id version (2026-10-11): works**, e.g. `built stone-furnace, territory: id 7, 1 guard(s)`. (3) **Robot building also fires** (`on_robot_built_entity`). **Still open:** does the demolisher react to the building? Id version of the build handler: `/c script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, function(e) local q = e.entity.position local t = e.entity.surface.get_territory_for_chunk{x = math.floor(q.x / 32), y = math.floor(q.y / 32)} game.print("built " .. e.entity.name .. ", territory: " .. (t and ("id " .. script.register_on_object_destroyed(t) .. ", " .. #t.get_segmented_units() .. " guard(s)") or "none")) end) game.print("T3 build handler on")` (same id as `/ht-territory`). |
 | T4 | Guardian aggro (V13). | Snapshot: `/c local p = game.player local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] and x.segments[1].position or {x = 1e9, y = 1e9} local d = (h.x - p.position.x)^2 + (h.y - p.position.y)^2 if not best or d < best then u, best = x, d end end if not u then p.print("No demolisher") return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end game.player.print(n .. " target=" .. (s.target and s.target.valid and s.target.name or "none"))` Tracker (prints every state change): `/c local last script.on_nth_tick(30, function() local p = game.players[1] local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] if h then local d = (h.position.x - p.position.x)^2 + (h.position.y - p.position.y)^2 if not best or d < best then u, best = x, d end end end if not u then return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end local line = n .. " target=" .. (s.target and s.target.valid and s.target.name or "none") if line ~= last then last = line p.print(string.format("[%.1fs] %s dist=%d", game.tick / 60, line, math.sqrt(best))) end end) game.print("T4 tracker on")` Stop: `/c script.on_nth_tick(30, nil) game.print("T4 tracker off")` | **Result (2026-10-11, 2.0.77):** the demolisher **never attacks the player on its own**, at any distance (it patrolled past at 39 tiles). Only after being shot: `patrolling` → `enraged_at_target` (`target = character`, 16 tiles) → `patrolling` again about 26 s later at 186 tiles. Matches the prototype: `enraged_duration = 30 * 60` (30 s after the **last damage**), `vision_distance = 64`, `ticks_per_scan` (it scans its territory for things to attack). **Still open:** does building in the territory make it `investigating` / `attacking` the building (T3 step 2)?
 **Second run (2026-10-11):** observed in game: the demolisher **seems to stay enraged while the player is nearby** and only calms down after the player runs away. The 30 s isn't proven either way. When the demolisher came straight for a newly built stone furnace, **the tracker printed nothing** (no state change seen). Possible reasons: it attacks while still `patrolling`, the state change was shorter than 0.5 s, or the tracker watched another demolisher (it shows the nearest one).
@@ -178,13 +178,13 @@ Each phase starts with a small engine test before building on it.
 
 - [x] **A. Territory state + overlay.** Done 2026-10-11 (headless + in game). Detailed steps below.
 - [x] **B. Trigger detection.** Done 2026-10-11 (headless + in game, incl. fix B7). Details below.
-- [ ] **C. Challenge mode.** Spawn waves around the player; scale by distance; cap counts; end conditions.
+- [x] **C. Challenge mode.** Done 2026-10-11 (C1 headless, C2–C6 in game). Spawn rate and difficulty to tune in phase I. Details below.
 - [x] **D. Claim.** Guardian dies → territory becomes Claimed, and a running challenge ends as won. Covered by A2 and B5.
 - [ ] **E. Vanilla attacks off.** Run T1 and apply the settings.
 - [ ] **F. Crusade budget.** Turn pollution + evolution into a crusade trigger.
 - [ ] **G. Target + migration + warning.** Pick target and staging nest (build one if missing), spawn the army at the nest (POC), colour the target.
 - [ ] **H. Assault + rally + hold.** Move to the central spot, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian.
-- [ ] **I. Balancing.**
+- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4).
 - [ ] **J. Waypoint migration.** Replace spawned armies with biters walking through enemy-controlled territories (V8 a).
 
 `territory-recapture-plan.md` becomes the engine-test notes for phases A and H.
@@ -279,6 +279,64 @@ Goal: detect when a challenge starts and ends, and set the territory state. No e
 - [x] **B5. Win.** Kill the guardian during a challenge. Check: won, state `claimed`, no purple. **In game (2026-10-11, 2.0.77):** works.
 - [x] **B6. Save/load during a challenge.** Check: still running after load and ends correctly. **In game (2026-10-11, 2.0.77):** works.
 - [x] **B7. Keep the guardian engaged during a challenge** (fix for B2, approved and built 2026-10-11). On start, and on every check while a participant is within R: if the guardian isn't `enraged_at_target` at a participant, set `enraged_at_target` with `target` = the nearest participant's character (or their vehicle) and `last_damage_time = game.tick`, using `set_ai_state`. The guardian then hunts the player for as long as the challenge runs. Losing then effectively means: every participant is out of range or dead for 5 s. Check: build-triggered challenge, the guardian destroys the building, then comes for you; the challenge keeps running. **Built:** every check, each guardian of a running challenge with a participant within R is set to `enraged_at_target` at the nearest participant (vehicle if they're in one). It's only rewritten when it isn't already enraged at a participant, or when less than 15 s of rage is left, so the vanilla AI isn't touched every 0.5 s. **Headless (2026-10-11, 2.0.77):** `set_ai_state{type = enraged_at_target, target = character, attacked_me = true, last_damage_time = game.tick}` is accepted; read back as `enraged_at_target target=character left=30s`. **In game:** build in a territory, stay near, let the guardian destroy the building. Check: it then comes for you and the challenge keeps running; you lose only after leaving (100+ tiles) or dying. **In game (2026-10-11, 2.0.77): works.** After destroying the building, the guardian comes for the player and the challenge keeps running.
+
+### Phase C in detail (approved and built 2026-10-11)
+
+Goal: a running challenge spawns waves of biters and spitters around the participants, Vampire Survivors style. Easy close to spawn, harder further out. Everything here is a POC that will evolve.
+
+**Facts it builds on:**
+
+| Fact | Source |
+|------|--------|
+| `StickerPrototype.duration_in_ticks` is a `uint32` (up to about 2 years of game time), so a slowdown sticker can last the unit's whole life. `target_movement_modifier < 1` slows the unit. Vanilla `slowdown-sticker` (base `entities.lua:8020`) can be copied for the graphics. | `prototype-api.json`, 2.0.77 |
+| Units are commanded via `entity.commandable.set_command{...}` in 2.0. `LuaEntity.stickers` lists attached stickers. | `runtime-api.json`, 2.0.77 |
+| `small-biter`: 15 HP, `movement_speed = 0.2`. `small-spitter`: 10 HP. `medium-biter`: 75 HP. | base `enemies.lua` |
+| Evolution: `game.forces.enemy.get_evolution_factor(surface)`. | `runtime-api.json`, 2.0.77 |
+
+**New prototypes (data stage):**
+
+| Prototype | What |
+|-----------|------|
+| `ht-tiny-biter` | Copy of `small-biter`: 6 HP, half damage, smaller (scale 0.7), lighter tint. The weak tier below the small biter. |
+| `ht-challenge-slow-50` … `-10` | 5 stickers that slow by 50 / 40 / 30 / 20 / 10 %, `duration_in_ticks = 4e9`. No graphics. |
+
+**Difficulty by ring** (distance from spawn to the guardian's head when the challenge starts; ring = `floor(distance / 500)`):
+
+| Ring | Distance | Units | Slowdown | Wave size | Interval | Max alive |
+|------|----------|-------|----------|-----------|----------|-----------|
+| 0 | < 500 | tiny biter | 50 % | 3 | 10 s | 15 |
+| 1 | 500–1000 | tiny + small biter | 40 % | 5 | 8 s | 25 |
+| 2 | 1000–1500 | small biter + small spitter | 30 % | 8 | 8 s | 40 |
+| 3+ | 1500+ | small + medium biter, small spitter | 20 % | 12 | 6 s | 60 |
+
+- **Evolution:** each spawned unit gets upgraded one tier (tiny → small → medium biter, small → medium spitter) with chance = evolution factor.
+- Max alive is per challenge. It's the main UPS guard (V2).
+
+**Spawning and behaviour:**
+
+| Item | Proposal |
+|------|----------|
+| Where | For each wave, pick a random participant near the guardian. Spawn each unit at a random angle **40–50 tiles** from them (just off-screen at normal zoom), via `find_non_colliding_position`. Skip a unit if no spot is found (water, cliffs). |
+| Who they chase | `set_command{type = attack, target = participant's character or vehicle, distraction = by_enemy}`. They may get distracted by buildings and turrets on the way. |
+| Slowdown | Sticker for the ring is attached right after spawning. |
+| Tracking | `record.spawned[unit_number] = entity` in the challenge record; dead or invalid ones are dropped every check. |
+| End: lost | All spawned units are removed (`destroy()`, no loot, no corpses). |
+| End: won | **They flee** to the nearest other guarded territory (nearest guardian head), `go_to_location` with no distraction. Removed when they arrive (`on_ai_command_completed`) or after 60 s. No other guarded territory → removed at once. |
+| Files | New `scripts/waves.lua` (spawn, track, clean up), called from `challenge.lua`. New `prototypes/entity/challenge-units.lua` and `prototypes/entity/challenge-stickers.lua`, required from `data.lua`. |
+| Debug | `/ht-challenges` also shows ring, alive units and next wave in s. |
+
+**Steps:**
+
+**Approved (2026-10-11):** ring table as proposed; leftovers **flee to a nearby territory** on a win; slowdown invisible; spawn distance 40–50 tiles (POC).
+
+**Built:** `prototypes/entity/challenge-units.lua`, `prototypes/entity/challenge-stickers.lua`, `locale/en/locale.cfg`, `scripts/waves.lua`; wired into `challenge.lua` and `control.lua`. The ring is set at challenge start from the guardian head's distance to the player force spawn position. Challenges saved before phase C get no waves (no ring).
+
+- [x] **C1. Prototypes + sticker test (T2).** **Headless (2026-10-11, 2.0.77):** data stage loads; `ht-tiny-biter` has 6 HP. Two small biters given the same `go_to_location`: in 128 ticks the plain one moved 22.9 tiles, the one with `ht-challenge-slow-50` moved 10.7 (≈ 50 %). After **23 minutes** of game time the sticker is still attached. T2 passes. In game: check the tiny biter looks right. Add tiny biter + stickers. Headless: spawn a biter, attach `ht-challenge-slow-50`, check after 5 minutes of game time that the sticker is still there. In game: check it visibly walks slower.
+- [x] **C2. Waves.** Spawn waves during a challenge (ring table, caps). In game: start a challenge near spawn (ring 0), see tiny biters come from all sides. **In game (2026-10-11, 2.0.77):** works. Mechanics fine; **spawn rate needs tuning** (phase I).
+- [x] **C3. Clean-up.** Lose and win a challenge. Check: all spawned units disappear. **In game (2026-10-11, 2.0.77):** works (lost: removed; won: flee and vanish).
+- [x] **C4. Rings.** Try a challenge in ring 1 and ring 2 (`/ht-challenges` shows the ring). Check: unit mix and wave size change. Give feedback on feel. **In game (2026-10-11, 2.0.77):** works, maybe too well: the player lost in ring 1–2 with the cheat kit. Cheat kit made stronger; difficulty tuning goes to phase I.
+- [x] **C5. Evolution.** `/c game.forces.enemy.set_evolution_factor(0.5, "nauvis")`, then start a challenge. Check: more upgraded units. **In game (2026-10-11, 2.0.77):** works.
+- [x] **C6. Save/load during waves.** Check: waves continue, clean-up still works. **In game (2026-10-11, 2.0.77):** works.
 
 ## Open questions
 
