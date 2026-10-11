@@ -19,6 +19,7 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 
 | File | Topic | Status |
 |------|-------|--------|
+| [vision-plan.md](vision-plan.md) | Overall vision: challenges, crusades, territory states | Draft, refining |
 | [plan.md](plan.md) | Nauvis territories via map gen | Main plan. Steps 1–6 done, 7–8 open |
 | [territory-recapture-plan.md](territory-recapture-plan.md) | Enemies recapturing cleared territories | Active, still exploring |
 | [nauvis-territories-plan.md](nauvis-territories-plan.md) | Old approach | Superseded by `plan.md` |
@@ -27,7 +28,7 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 ## Project layout
 
 - `data.lua` requires `prototypes/planet/nauvis-territory.lua`, which sets `data.raw.planet.nauvis.map_gen_settings.territory_settings`.
-- There's no `control.lua` right now, by design. Recapture will need runtime code again, so check this with me before adding it.
+- `control.lua` (approved 2026-10-11) only wires events and debug commands. Logic lives in `scripts/` (`territories.lua`: registry + state, `overlay.lua`: map colours). See phase A in `vision-plan.md`.
 - Debug through VS Code with the Factorio Mod Debug extension (`.vscode/launch.json` launches straight into freeplay).
 - `../cheating-mod` is a separate helper mod for testing (start gear strong enough to kill demolishers).
 
@@ -36,4 +37,5 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 - Use the 2.x API: `storage`, not `global`. `rendering.draw_*` returns a `LuaRenderObject`, which you remove with `.destroy()`.
 - Territory units must be `segmented-unit` prototypes (demolishers), not biters.
 - Check the API against the installed game files (`Factorio/data/`) and the 2.0 docs. Don't trust memory.
-- Headless test harness (described in `plan.md` step 5): `--create` with map-gen settings, then `--start-server` with RCON, then generate chunks and count territories and demolishers.
+- Headless test harness (described in `plan.md` step 5): `--create` with map-gen settings, then `--start-server` with RCON, then generate chunks and count territories and demolishers. Use `/c __Hostile-territory__ ...` to read the mod's `storage`. The server needs `auto_pause = false`. Headless never charts chunks, so map overlays must be tested in game.
+- The parameter lists in `doc-html/runtime-api.json` aren't in call order. Sort them by `order` before trusting them.
