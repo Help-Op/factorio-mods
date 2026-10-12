@@ -27,6 +27,7 @@ script.on_event(defines.events.on_chunk_charted, function(event)
 end)
 script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
 script.on_nth_tick(crusade.CHECK_INTERVAL, crusade.on_tick)
+script.on_nth_tick(crusade.MIGRATION_INTERVAL, crusade.on_migration_tick)
 script.on_event(defines.events.on_ai_command_completed, waves.on_ai_command_completed)
 script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
 
@@ -37,6 +38,7 @@ remote.add_interface("hostile-territory-debug", {
     if record and territories.states[state] then territories.set_state(record, state) end
   end,
   crusade = function() return crusade.describe() end,
+  crusade_cancel = function() return crusade.finish("Crusade cancelled (debug).") end,
 })
 
 -- Debug commands -------------------------------------------------------------
@@ -94,4 +96,14 @@ end)
 commands.add_command("ht-crusade", "Show the crusade budget, the next target and its cost.", function(command)
   local player = game.get_player(command.player_index)
   if player then player.print(crusade.describe()) end
+end)
+
+commands.add_command("ht-crusade-cancel", "End the active crusade: army removed, target back to claimed.", function(command)
+  local player = game.get_player(command.player_index)
+  if not player then return end
+  if not player.admin then
+    player.print("Admins only.")
+    return
+  end
+  if not crusade.finish("Crusade cancelled by " .. player.name .. ".") then player.print("No active crusade.") end
 end)

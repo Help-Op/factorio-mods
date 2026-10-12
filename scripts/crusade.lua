@@ -5,13 +5,22 @@
 -- Evolution from time and spawner kills also feeds storage.crusade_budget (EVOLUTION_POINTS per 1.0 evolution).
 -- The pollution part is left out: it is already counted through cancelled attacks (attacks.lua).
 -- storage.crusade_evolution_seen = time + spawner-kill evolution at the last check.
--- Trigger (every check): no cooldown, a target exists, budget >= cost and a staging nest exists
--- → spend the cost, mark the staging nest, announce it. No staging nest → no crusade, budget kept.
--- storage.crusade = {target_id, distance, cost, tick, staging_id, nest, nest_position, tag}.
--- Until phase G exists, a new crusade simply replaces the old one once the cooldown is over.
+-- Trigger (every check): no crusade active, no cooldown, a target exists, budget >= cost and a staging nest exists
+-- → plan the army, spend what it costs (the rest stays in the budget), mark the staging nest, target → warning.
+-- No staging nest → no crusade, budget kept.
+-- Migration (every MIGRATION_INTERVAL): spawn the army at the nest in batches over MIGRATION_TIME.
+-- storage.crusade = {phase, target_id, distance, cost, spent, tick, staging_id, nest, nest_position, tag,
+--   queue = {unit names}, next_unit, batch_size, spawned, group}.
+-- phase: "migration" → "crusade" (critical mass: whole army spawned, target → crusade) → "ended".
+-- A crusade from before phase G has no phase and counts as ended.
+-- Ends (G-8, checked every migration tick): target no longer warning/crusade → cancelled; staging territory
+-- claimed or gone (its guardian died) → cancelled; every spawned unit dead
+-- → cancelled (migration) or defeated (crusade). Leftover units are removed, the target goes back to claimed.
+-- Until phase H, a crusade waits at the nest; /ht-crusade-cancel ends it.
 
 local territories = require("scripts.territories")
 local staging = require("scripts.staging")
+local army = require("scripts.army")
 
 local crusade = {}
 
@@ -24,6 +33,13 @@ local EVOLUTION_POINTS = 10000
 
 crusade.CHECK_INTERVAL = 60 * 60
 local COOLDOWN = 15 * 60 * 60
+crusade.MIGRATION_INTERVAL = 10 * 60
+local MIGRATION_TIME = 2 * 60 * 60
+
+local function active()
+  local state = storage.crusade
+  return state and state.phase and state.phase ~= "ended" and state or nil
+end
 
 local function distance_from_spawn(record, surface)
   local c = territories.centre(record)
@@ -80,22 +96,28 @@ local function add_evolution_budget()
 end
 
 local function try_trigger()
-  if game.tick < (storage.crusade_cooldown_until or 0) then return end
+  if active() or game.tick < (storage.crusade_cooldown_until or 0) then return end
   local target, distance = crusade.pick_target()
   if not target then return end
-  local cost = crusade.cost(distance, game.forces.enemy.get_evolution_factor(crusade.surface_name))
+  local evolution = game.forces.enemy.get_evolution_factor(crusade.surface_name)
+  local cost = crusade.cost(distance, evolution)
   if (storage.crusade_budget or 0) < cost then return end
   local surface = game.surfaces[crusade.surface_name]
   local staging_record, nest = staging.pick(target, surface)
   if not staging_record then return end
+  local queue, spent = army.plan(nest.name, evolution, cost)
+  if #queue == 0 then return end
   if storage.crusade then staging.unmark(storage.crusade) end
-  storage.crusade_budget = storage.crusade_budget - cost
-  storage.crusade = {target_id = target.id, distance = distance, cost = cost, tick = game.tick,
-    staging_id = staging_record.id, nest = nest, nest_position = nest.position}
+  storage.crusade_budget = storage.crusade_budget - spent
+  storage.crusade = {phase = "migration", target_id = target.id, distance = distance, cost = cost, spent = spent,
+    tick = game.tick, staging_id = staging_record.id, nest = nest, nest_position = nest.position,
+    queue = queue, next_unit = 1, spawned = 0,
+    batch_size = math.ceil(#queue * crusade.MIGRATION_INTERVAL / MIGRATION_TIME)}
   staging.mark(storage.crusade, surface)
+  territories.set_state(target, "warning")
   storage.crusade_cooldown_until = game.tick + COOLDOWN
-  game.forces.player.print(string.format("Crusade ready: the enemy targets territory %d (%d tiles from spawn) and gathers in territory %d. Cost %d, budget left %d.",
-    target.id, math.floor(distance), staging_record.id, cost, storage.crusade_budget))
+  game.forces.player.print(string.format("Crusade warning: %d enemies gather in territory %d to attack territory %d (%d tiles from spawn). Cost %d of %d, budget left %d.",
+    #queue, staging_record.id, target.id, math.floor(distance), spent, cost, storage.crusade_budget))
 end
 
 function crusade.on_tick()
@@ -104,8 +126,61 @@ function crusade.on_tick()
   try_trigger()
 end
 
+local TARGET_STATES = {warning = true, crusade = true}
+local STAGING_STATES = {hostile = true, challenge = true}
+
+-- Ends the active crusade: removes leftover units and the map tag, target back to claimed.
+function crusade.finish(message)
+  local state = active()
+  if not state then return false end
+  if state.group and state.group.valid then
+    for _, unit in pairs(state.group.members) do unit.destroy() end
+    if state.group.valid then state.group.destroy() end
+  end
+  staging.unmark(state)
+  local target = storage.territories and storage.territories[state.target_id]
+  if target and TARGET_STATES[target.state] then territories.set_state(target, "claimed") end
+  state.phase = "ended"
+  state.ended_tick = game.tick
+  game.forces.player.print(message)
+  return true
+end
+
+function crusade.on_migration_tick()
+  local state = active()
+  if not state then return end
+  local target = storage.territories and storage.territories[state.target_id]
+  if not (target and TARGET_STATES[target.state]) then
+    crusade.finish(string.format("Crusade on territory %d cancelled: the target changed.", state.target_id))
+    return
+  end
+  local staging_record = storage.territories[state.staging_id]
+  if not (staging_record and STAGING_STATES[staging_record.state]) then
+    crusade.finish(string.format("Crusade on territory %d cancelled: staging territory %d was taken.",
+      state.target_id, state.staging_id))
+    return
+  end
+  if state.spawned > 0 and army.alive(state) == 0 then
+    if state.phase == "migration" then
+      crusade.finish(string.format("Crusade on territory %d cancelled: the gathering army was wiped out.", state.target_id))
+    else
+      crusade.finish(string.format("Crusade on territory %d defeated: the army was wiped out.", state.target_id))
+    end
+    return
+  end
+  if state.phase ~= "migration" then return end
+  army.spawn_batch(state, game.surfaces[crusade.surface_name], state.batch_size)
+  if state.next_unit > #state.queue then
+    state.phase = "crusade"
+    territories.set_state(target, "crusade")
+    game.forces.player.print(string.format("Crusade on territory %d: %d enemies are ready in territory %d.",
+      state.target_id, army.alive(state), state.staging_id))
+  end
+end
+
 function crusade.on_chunk_charted(event)
-  if storage.crusade then staging.on_chunk_charted(storage.crusade, event) end
+  local state = active()
+  if state then staging.on_chunk_charted(state, event) end
 end
 
 function crusade.describe()
@@ -130,10 +205,19 @@ function crusade.describe()
   if cooldown > 0 then lines[#lines + 1] = string.format("Cooldown: %ds left.", math.ceil(cooldown / 60)) end
   local last = storage.crusade
   if last then
-    lines[#lines + 1] = string.format("Last crusade: territory %d, cost %d, %ds ago. Staging territory %s, nest at %d,%d (%s), map tag %s.",
-      last.target_id, last.cost, math.floor((game.tick - last.tick) / 60), tostring(last.staging_id),
+    lines[#lines + 1] = string.format("Crusade (%s): territory %d, cost %d (spent %d), %ds ago. Staging territory %s, nest at %d,%d (%s), map tag %s.",
+      tostring(last.phase or "ended"), last.target_id, last.cost, last.spent or last.cost, math.floor((game.tick - last.tick) / 60), tostring(last.staging_id),
       last.nest_position and last.nest_position.x or 0, last.nest_position and last.nest_position.y or 0,
       last.nest and last.nest.valid and "alive" or "gone", last.tag and last.tag.valid and "yes" or "pending")
+    if last.queue then
+      local mix = {}
+      for _, name in pairs(last.queue) do mix[name] = (mix[name] or 0) + 1 end
+      local parts = {}
+      for name, n in pairs(mix) do parts[#parts + 1] = n .. " " .. name end
+      table.sort(parts)
+      lines[#lines + 1] = string.format("Army: %d of %d spawned, %d alive (%s).",
+        last.spawned or 0, #last.queue, army.alive(last), table.concat(parts, ", "))
+    end
   end
   return table.concat(lines, "\n")
 end

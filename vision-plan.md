@@ -182,9 +182,9 @@ Each phase starts with a small engine test before building on it.
 - [x] **D. Claim.** Guardian dies → territory becomes Claimed, and a running challenge ends as won. Covered by A2 and B5.
 - [x] **E. Vanilla attacks off.** Done 2026-10-12 (option B, headless + in game E3). E1 skipped. Details below.
 - [x] **F. Crusade budget.** Done 2026-10-12 (F1–F2 headless, F3 headless + in game). Details below.
-- [ ] **G. Target + migration + warning.** Pick target and staging nest (must already exist), spawn the army at the nest (POC), colour the target. Approved 2026-10-12, G0–G1 done, G2 next. Details below.
+- [x] **G. Target + migration + warning.** Pick target and staging nest (must already exist), spawn the army at the nest (POC), colour the target. Done 2026-10-12 (G0–G3 headless, G4 in game incl. two fixes). Details below.
 - [ ] **H. Assault + rally + hold.** Move to the central spot, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian.
-- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4), crusade cost and budget speed (F).
+- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4), crusade cost and budget speed (F), army cap and the early-kill cancel rule (G).
 - [ ] **J. Waypoint migration.** Replace spawned armies with biters walking through enemy-controlled territories (V8 a).
 
 `territory-recapture-plan.md` becomes the engine-test notes for phases A and H.
@@ -472,7 +472,7 @@ Goal: turn the budget into a crusade trigger. When the budget covers the cost of
 **Open (2026-10-12):**
 - F-d. The evolution budget uses the **raw** time + kill counters (linear, never slows down). Fine as it is, or should it follow the real evolution (slows down near 1, so almost nothing late game)? Proposal: keep the raw counters (simpler, steady late-game pressure) and tune `EVOLUTION_POINTS` in phase I. At default settings, evolution adds very little.
 
-### Phase G in detail (approved 2026-10-12)
+### Phase G in detail (approved and built 2026-10-12)
 
 Goal: turn an announced crusade (phase F) into a gathered army. Pick a staging territory and nest next to the target, colour the target (warning), spawn the army at the nest over time, and switch the target to `crusade` at critical mass. Moving the army and holding the territory are phase H.
 
@@ -525,9 +525,44 @@ Goal: turn an announced crusade (phase F) into a gathered army. Pick a staging t
     | No hostile territory left | "Next staging: none", **no crusade**, budget kept (5007) ✓ |
 
   - Map tag looks: check in G4.
-- [ ] **G2. Warning + migration.** Target → `warning`, army spawns in batches into the group, budget refunds over the cap. Headless.
-- [ ] **G3. Critical mass + cancel.** → `crusade` state, chat messages, cancel rules, `/ht-crusade-cancel`. Headless.
-- [ ] **G4. In game.** See the yellow-orange then bright-orange target, the army at the nest, the chat messages. Kill the army during migration → cancelled.
+- [x] **G2. Warning + migration.** Target → `warning`, army spawns in batches into the group, budget refunds over the cap. Headless.
+  - **Built:** `scripts/army.lua` (`plan`: weighted vanilla mix within the cost and the 200 cap; `spawn_batch`; `alive`). In `crusade.lua`: the trigger plans the army and spends only what it costs (rest stays in the budget), target → `warning`, chat "Crusade warning: …". `on_migration_tick` every 10 s spawns `ceil(units / 12)` units (2 min total), then phase `gathered`. **One crusade at a time is now enforced** (G-9 part): no trigger while a crusade has a phase other than `ended`. `/ht-crusade` shows phase, army progress and mix.
+  - **Headless (2026-10-12, 2.0.77, seed 12345, fresh map, target 14, staging 48):**
+
+    | Test | Result |
+    |------|--------|
+    | Evolution 0, budget 5000 (cost 1136) | 200 small biters (cap), spent 800, budget → 4200 ✓. Target `warning` ✓ |
+    | Migration | 34 / 102 / 170 spawned at 20 / 60 / 100 s (17 per 10 s), then `gathered` with 200 ✓ |
+    | Army waits | After ~19 game min: 200 alive, max 19 tiles from the nest ✓ |
+    | One at a time | Territory 11 claimed, cooldown over: no new crusade while 14 is `gathered` ✓ |
+    | Evolution 0.5, budget 5000 (cost 3405) | 163 medium + 36 small (18% small, as weights predict), spent 3404 ✓. Old map tag removed, new one placed ✓ |
+- [x] **G3. Critical mass + cancel.** → `crusade` state, chat messages, cancel rules, `/ht-crusade-cancel`. Headless.
+  - **Built:** phases `migration` → `crusade` → `ended`. Critical mass (all units spawned) → target `crusade`, chat "Crusade on territory X: N enemies are ready…". `crusade.finish(message)`: removes leftover units and the map tag, target → `claimed` (only if still `warning`/`crusade`). Checked every 10 s: target no longer `warning`/`crusade` → cancelled; every spawned unit dead → **cancelled** (migration) or **defeated** (crusade). `/ht-crusade-cancel` (admin) and remote `crusade_cancel`.
+  - **Rule as built:** "army wiped out during migration" = all units spawned **so far** are dead. Killing the first batches early therefore cancels the crusade. **Kept for now (2026-10-12)**; revisit in phase I.
+  - **Headless (2026-10-12, 2.0.77, seed 12345, fresh map, target 14):**
+
+    | Case | Result |
+    |------|--------|
+    | 1. Critical mass | Phase `crusade`, target `crusade`, 200 alive, tag ✓ |
+    | 2. Kill the gathered army | Phase `ended` (defeated), target `claimed`, tag removed ✓ |
+    | 3. Kill the first 102 during migration | Cancelled, target `claimed`, tag removed ✓ |
+    | 4. Target set to `hostile` during migration | Cancelled, army removed, target stays `hostile` ✓ |
+    | 5. `crusade_cancel` during migration | Ended, 119 units removed, target `claimed`, tag removed ✓. Second call: "no active crusade" ✓ |
+- [x] **G4. In game.** See the yellow-orange then bright-orange target, the army at the nest, the chat messages. Kill the army during migration → cancelled.
+    1. Stand in a territory (it must be the furthest claimed one): `/ht-set-state claimed`
+    2. Arm a crusade: `/c __Hostile-territory__ storage.crusade_budget = 5000 storage.crusade_cooldown_until = 0 game.print("armed")`
+    3. Within 60 s: chat "Crusade warning: …", target **yellow-orange**, a **"Crusade staging"** map tag at the nest. `/ht-crusade` shows the army growing.
+    4. After ~2 min: chat "Crusade on territory …", target **bright orange**. The army waits at the tag.
+    5. Go to the tag and kill the army: chat "… defeated", target back to no colour, tag gone.
+    6. Repeat 2, kill the first batch before the 2 min are up: chat "… cancelled: the gathering army was wiped out."
+    7. Repeat 2, then `/ht-crusade-cancel`: army removed, target back to claimed.
+    Check also: does the army react to you (chase, then return)? Do units leave the group?
+  - **In game (2026-10-12, 2.0.77):** steps 1–4 and 7 ✓. Steps 5 and 6: chat and target colour correct, but **the "Crusade staging" tag stayed on the map**. Also found: **killing the staging territory's guardian did not cancel the crusade.**
+  - **Fixes (2026-10-12):**
+    - Tag: likely cause: `on_chunk_charted` re-added the tag after the crusade ended (it didn't check the phase), and the chunk gets re-charted while the player is near the nest. Now only handled for an active crusade. Step 7 worked because the player was far away.
+    - Staging lost: cancel when the staging territory is no longer `hostile`/`challenge` (guardian killed → `claimed`, or gone). A running challenge there doesn't cancel. Chat "… cancelled: staging territory S was taken."
+    - **Headless (2026-10-12, 2.0.77, seed 12345, isolated mods folder):** army killed → tags 0; nest area re-charted → still 0 ✓. Staging guardian killed (`die()`) during migration → staging `claimed`, crusade cancelled, target `claimed`, tags 0 ✓. (The headless run couldn't show the old bug happening, so the tag fix needs the in-game retest.)
+  - [x] **Retest in game:** steps 5 and 6 (tag gone), and kill the staging guardian during migration → cancelled. **In game (2026-10-12, 2.0.77):** tag disappears ✓, killing the staging guardian cancels ✓. Old leftover tags: `/c for _, t in pairs(game.player.force.find_chart_tags(game.player.surface)) do if t.text == "Crusade staging" then t.destroy() end end`
 
 **Resolved (2026-10-12):**
 - G-a. ~~Mark the staging territory?~~ **Yes.** POC: a map tag (`force.add_chart_tag`, spawner icon, text "Crusade staging") at the staging nest, removed when the crusade ends. A tag doesn't clash with the territory colours.

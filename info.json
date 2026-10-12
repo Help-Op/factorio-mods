@@ -2,7 +2,7 @@
   "name": "Hostile-territory",
   "version": "0.1.0",
   "title": "Hostile Territory (Nauvis)",
-  "author": "Auto-generated",
+  "author": "Turoni",
   "factorio_version": "2.0",
   "dependencies": ["base >= 2.0", "space-age"]
 }
