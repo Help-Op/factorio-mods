@@ -144,14 +144,14 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 | V1 | ~~Needs `control.lua` again.~~ | Resolved: approved 2026-10-11. |
 | V2 | UPS with many enemies. | Bullet-hell numbers of biters, and big staging armies, can tank performance. Needs caps and a test. |
 | V3 | Unit speed is fixed per prototype. | Decided: slowdown sticker on spawn. See test T2. |
-| V4 | Turning off vanilla attacks. | Candidate: map settings `unit_group.max_gathering_unit_groups = 0` / `max_unit_group_size = 0`. See test T1. |
+| V4 | ~~Turning off vanilla attacks.~~ | Resolved (phase E): attack groups are cancelled in `on_unit_group_finished_gathering`. |
 | V5 | Detecting "guardian triggered". | Candidates: `on_segmented_unit_damaged` (exists), `on_built_entity` + `get_territory_for_chunk`. With the "real start = guardian can attack the player" rule, the AI state (V13) may be the only trigger we need. See test T3. |
 | V6 | "Tactical" target choice needs a scoring rule. | E.g. border territories, near pollution, weakly defended, recently claimed. Must have a neighbouring hostile territory with a nest. |
 | V7 | Demolishers on Nauvis terrain. | Still open from `plan.md` step 8 (water, trees, cliffs). |
 | V8 | Migration "without going through the player base". | The engine pathfinder doesn't avoid player buildings; units attack what blocks them. Options: (a) route through hostile territories with waypoint commands, (b) spawn the units directly at the staging nest from the budget (no real walk), (c) a mix: units near the staging nest walk, the rest are spawned there. (b) is simplest and safest. **Decided:** (b) for the POC, (a) as end goal. |
-| V9 | Where do the "biters that would normally attack" come from? | With auto attacks off, nests may hold idle units. Either collect those (recruit them into our group) or spawn new ones from the budget. Depends on T1. |
+| V9 | Where do the "biters that would normally attack" come from? | Phase E knows them exactly: the members of each cancelled group. POC removes them and keeps their pollution cost. **Phase G must bring them back** (send them to the staging nest, or respawn the same mix there from the budget). |
 | V10 | Central spot and rally structure. | Need a rule for the centre (e.g. the chunk nearest the centroid of `get_chunks()`, snapped to buildable land) and a rally prototype (enemy-force entity, built over time). |
-| V11 | Measuring pollution absorbed by nests. | With auto attacks off, does the engine still count absorbed pollution anywhere we can read (e.g. `game.get_pollution_statistics(surface)` per entity)? Part of T1. |
+| V11 | ~~Measuring pollution absorbed by nests.~~ | Resolved: the budget comes from cancelled units' `absorptions_to_join_attack` (vanilla rule). `get_pollution_statistics(surface).output_counts` also works (headless: 2643 absorbed by `biter-spawner`). |
 | V12 | Building enemy structures over time (rally, staging nest). | Options: place a "construction site" entity and swap it for the real one after a timer, or grow health over time. To test. |
 | V14 | **Demolishers don't attack the player on sight**, only in revenge or when investigating buildings (T4). Rage lasts 30 s, then it keeps `attacking` player entities in reach. Resolved for the POC by the phase B rules. | `enraged_at_target` also has `last_damage_time` (writable) and `remaining_time`. The rule "the challenge starts when the guardian can attack the player" would mean: only after the player shoots it, or (to check) when it attacks a building near the player. And "lose = aggro lost" would mean: the challenge ends 30 s after the player stops hitting it, even while standing next to it. See open questions 3b and 5b. |
 | V13 | Detecting guardian aggro: start (in range of the player) and end (aggro lost). | **Start confirmed (T4):** chasing the player gives `enraged_at_target` with `target = character`. See V14 for what that means. Likely solved: poll `get_ai_state()`. Start = `attacking`/`enraged_at_target` with a target that is a character (or near one). Lose = back to `patrolling`/`investigating`. Fallback: distance rule. See test T4. |
@@ -160,7 +160,7 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 
 | # | Test | Command / steps | Check |
 |---|------|-----------------|-------|
-| T1 | Turn off vanilla pollution attacks (V4). | `/c game.map_settings.unit_group.max_gathering_unit_groups = 0 game.map_settings.unit_group.max_unit_group_size = 0 game.player.print("Auto attacks off")` then pollute near a nest. | Do attacks stop? Do nests still absorb pollution and fill with idle units? Does evolution still rise? Can we read how much pollution nests absorbed (V11)? |
+| T1 | Turn off vanilla pollution attacks (V4). | See "T1 commands" in phase E (options A and B). | Do attacks stop? Do nests still absorb pollution and fill with idle units? Does evolution still rise? Can we read how much pollution nests absorbed (V11)? |
 | T2 | Lifelong slowdown sticker (V3). | Done headless in C1. | **Passed (2026-10-11):** still attached after 23 min; 50 % sticker halves the distance moved. Strength per ring via 5 sticker prototypes. |
 | T3 | Trigger detection (V5). | Use a throwaway save: these console handlers replace the scenario's own handlers for these events until you reload. Start: `/c local function terr(ent) local q = ent.position local t = ent.surface.get_territory_for_chunk{x = math.floor(q.x / 32), y = math.floor(q.y / 32)} return t and (#t.get_segmented_units() .. " guard(s)") or "none" end script.on_event(defines.events.on_segmented_unit_damaged, function(e) game.print("unit damaged: " .. e.segmented_unit.prototype.name .. " by " .. (e.cause and e.cause.valid and e.cause.name or "?") .. " for " .. math.floor(e.final_damage_amount)) end) script.on_event(defines.events.on_entity_damaged, function(e) if e.entity.type == "segment" or e.entity.type == "segmented-unit" then game.print("entity damaged: " .. e.entity.name .. " (" .. e.entity.type .. ")") end end) script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, function(e) game.print("built " .. e.entity.name .. ", territory: " .. terr(e.entity)) end) game.print("T3 handlers on")` Then: (1) shoot a demolisher's head, then its tail; (2) build something inside a territory and outside one; (3) let robots build inside a territory. Stop: `/c script.on_event(defines.events.on_segmented_unit_damaged, nil) script.on_event(defines.events.on_entity_damaged, nil) script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, nil) game.print("T3 handlers off")` | **Result (2026-10-11, 2.0.77):** (1) **Both fire.** `on_entity_damaged` for each hit segment (head is type `segmented-unit`, body and tail are type `segment`), and `on_segmented_unit_damaged` with `cause = character`. Many hits show 0 damage after rounding (`final_damage_amount` < 1, pistol vs. resistances). (2) Building inside a territory reports it; outside reports none. The first command only printed the guard count. **Retest with the id version (2026-10-11): works**, e.g. `built stone-furnace, territory: id 7, 1 guard(s)`. (3) **Robot building also fires** (`on_robot_built_entity`). **Still open:** does the demolisher react to the building? Id version of the build handler: `/c script.on_event({defines.events.on_built_entity, defines.events.on_robot_built_entity}, function(e) local q = e.entity.position local t = e.entity.surface.get_territory_for_chunk{x = math.floor(q.x / 32), y = math.floor(q.y / 32)} game.print("built " .. e.entity.name .. ", territory: " .. (t and ("id " .. script.register_on_object_destroyed(t) .. ", " .. #t.get_segmented_units() .. " guard(s)") or "none")) end) game.print("T3 build handler on")` (same id as `/ht-territory`). |
 | T4 | Guardian aggro (V13). | Snapshot: `/c local p = game.player local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] and x.segments[1].position or {x = 1e9, y = 1e9} local d = (h.x - p.position.x)^2 + (h.y - p.position.y)^2 if not best or d < best then u, best = x, d end end if not u then p.print("No demolisher") return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end game.player.print(n .. " target=" .. (s.target and s.target.valid and s.target.name or "none"))` Tracker (prints every state change): `/c local last script.on_nth_tick(30, function() local p = game.players[1] local u, best for _, x in pairs(p.surface.get_segmented_units()) do local h = x.segments[1] if h then local d = (h.position.x - p.position.x)^2 + (h.position.y - p.position.y)^2 if not best or d < best then u, best = x, d end end end if not u then return end local s = u.get_ai_state() local n = "?" for k, v in pairs(defines.segmented_unit_ai_state) do if v == s.type then n = k end end local line = n .. " target=" .. (s.target and s.target.valid and s.target.name or "none") if line ~= last then last = line p.print(string.format("[%.1fs] %s dist=%d", game.tick / 60, line, math.sqrt(best))) end end) game.print("T4 tracker on")` Stop: `/c script.on_nth_tick(30, nil) game.print("T4 tracker off")` | **Result (2026-10-11, 2.0.77):** the demolisher **never attacks the player on its own**, at any distance (it patrolled past at 39 tiles). Only after being shot: `patrolling` → `enraged_at_target` (`target = character`, 16 tiles) → `patrolling` again about 26 s later at 186 tiles. Matches the prototype: `enraged_duration = 30 * 60` (30 s after the **last damage**), `vision_distance = 64`, `ticks_per_scan` (it scans its territory for things to attack). **Still open:** does building in the territory make it `investigating` / `attacking` the building (T3 step 2)?
@@ -180,7 +180,7 @@ Each phase starts with a small engine test before building on it.
 - [x] **B. Trigger detection.** Done 2026-10-11 (headless + in game, incl. fix B7). Details below.
 - [x] **C. Challenge mode.** Done 2026-10-11 (C1 headless, C2–C6 in game). Spawn rate and difficulty to tune in phase I. Details below.
 - [x] **D. Claim.** Guardian dies → territory becomes Claimed, and a running challenge ends as won. Covered by A2 and B5.
-- [ ] **E. Vanilla attacks off.** Run T1 and apply the settings.
+- [ ] **E. Vanilla attacks off.** Option B built 2026-10-11; headless pass; in-game long run (E3) open. Details below.
 - [ ] **F. Crusade budget.** Turn pollution + evolution into a crusade trigger.
 - [ ] **G. Target + migration + warning.** Pick target and staging nest (build one if missing), spawn the army at the nest (POC), colour the target.
 - [ ] **H. Assault + rally + hold.** Move to the central spot, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian.
@@ -338,6 +338,61 @@ Goal: a running challenge spawns waves of biters and spitters around the partici
 - [x] **C5. Evolution.** `/c game.forces.enemy.set_evolution_factor(0.5, "nauvis")`, then start a challenge. Check: more upgraded units. **In game (2026-10-11, 2.0.77):** works.
 - [x] **C6. Save/load during waves.** Check: waves continue, clean-up still works. **In game (2026-10-11, 2.0.77):** works.
 
+### Phase E in detail (approved and built 2026-10-11)
+
+Goal: no more vanilla pollution attacks on the base. Pollution keeps spreading and being absorbed, evolution keeps rising, nests keep expanding (decision Q12). The attacks that would have happened become the budget for crusades (phase F).
+
+**How vanilla attacks work** (base `enemies.lua`, 2.0.77): a nest absorbs pollution (`absorptions_per_second`) and spawns units (up to `max_count_of_owned_units`, 7 for a biter spawner). Each unit needs `absorptions_to_join_attack` pollution to join an attack group: small biter 4, medium 20, big 80, behemoth 400. Groups gather, then leave to attack.
+
+**Engine hooks (`runtime-api.json`, 2.0.77):**
+
+| Hook | Use |
+|------|-----|
+| `on_unit_group_finished_gathering {group}` | Fires when a group is about to set off. |
+| `LuaCommandable.is_script_driven`, `.command`, `.members` | Tell engine groups from ours; read the command (`attack_area` vs `build_base` for expansion). |
+| `game.map_settings.unit_group.max_gathering_unit_groups` / `max_unit_group_size` | Map-setting switch (the docs say it only affects automatic groups). |
+| `game.get_pollution_statistics(surface).output_counts` | Pollution absorbed per prototype (e.g. `biter-spawner`), for V11. |
+
+**Two options:**
+
+| | A. Map settings | B. Intercept groups (recommended) |
+|---|---|---|
+| How | Set `max_gathering_unit_groups = 0` on init. | On `on_unit_group_finished_gathering`: if the group is engine-driven and its command is an attack (not `build_base`), cancel it. |
+| Expansion | **Risk:** expansion also uses automatic groups and may stop too. To test. | Untouched: `build_base` groups pass. |
+| Pollution economy | Unclear: full nests may stop absorbing. To test. | Unchanged: nests absorb, spawn and gather as in vanilla. |
+| Crusade budget | Must be guessed from absorption statistics. | **Exact:** each cancelled unit adds its `absorptions_to_join_attack` to `storage.crusade_budget`. That's the vanilla rule (decision Q14). |
+| Units that would attack (V9) | Stay at the nests. | Known exactly; phase G can take them over instead of removing them. |
+| Cost | Nothing. | One event per group; units still spawn and gather (vanilla UPS). |
+
+**What happens to a cancelled group (option B, POC):** members are removed (`destroy()`, no corpses) and their pollution cost goes into the budget. Nests then keep spawning and absorbing as normal. Phase G will later send them to the staging nest instead.
+
+**Steps:**
+
+**Approved (2026-10-11):** option **B** straight away (no A/B comparison). Removing cancelled attackers is fine for now, on condition that they **come back in phase G** as the crusade army. Biters attacking buildings near their own nest is fine (they defend their territory).
+
+**Built:** `scripts/attacks.lua`, wired in `control.lua` (`on_unit_group_finished_gathering`, `/ht-attacks`). `storage.crusade_budget` = sum of `absorptions_to_join_attack.pollution` of cancelled units; `storage.cancelled_attacks = {groups, units}`.
+
+**Headless test (2026-10-11, 2.0.77):** furnaces placed about 80 tiles from a nest, pollution pumped in at game speed 30.
+
+| Run | Result |
+|-----|--------|
+| Expansion sped up (1 min cooldown) | 2 attack groups cancelled (61 units, budget 244). Nests 129 → 164, so **expansion still works**. But 7 of 10 furnaces died. |
+| Killers logged | All killers were in engine groups with `attack_area`, not caught. Raw event log: 27 groups created, 15 finished gathering; the mod cancelled 2 of them and skipped 13 as `build_base` (expansion). So the killers were **expansion parties attacking buildings near the spot they settle** (vanilla behaviour). A sweep for groups that skip the event was tried and **caught nothing**, so it was removed again. |
+| Expansion off | **24 groups / 3479 units cancelled**, budget 13916, evolution 0.172. 1 of 24 furnaces died, killed by a lone biter (no group) from a nest 62 tiles away: the "nest defends itself" case. |
+
+Conclusion: every vanilla attack group fires `on_unit_group_finished_gathering` and is cancelled. Remaining damage comes from expansion parties (only near where they settle) and from biters next to their own nest.
+
+- [ ] **E1. Test T1 (in game).** ~~Compare A and B.~~ Skipped: B chosen directly. The T1 commands below still work for checking evolution and absorption. Compare A and B on a polluting base (or `/c` a few boilers next to nests). See T1 commands below. Check: do attacks stop? Does expansion continue? Do nests keep absorbing (statistics)? Does evolution rise?
+- [x] **E2. Build the chosen option.** Built and tested headless (see above). `/ht-attacks` shows cancelled groups, units and budget.
+- [ ] **E3. Long run (in game).** Play 30+ min with a polluting base. Check: no attacks on the base, expansion still happens, budget grows, nests still defend themselves when you get close.
+
+**T1 commands** (throwaway save):
+- Option A on: `/c game.map_settings.unit_group.max_gathering_unit_groups = 0 game.map_settings.unit_group.max_unit_group_size = 0 game.print("A: auto groups off")`
+- Option B on (console version of the handler): `/c storage.t1 = {groups = 0, units = 0, pollution = 0} script.on_event(defines.events.on_unit_group_finished_gathering, function(e) local g = e.group if not (g.valid and not g.is_script_driven) then return end local c = g.command if c and c.type == defines.command.build_base then game.print("expansion group passes") return end local n, p = 0, 0 for _, u in pairs(g.members) do n = n + 1 p = p + (u.prototype.absorptions_to_join_attack and u.prototype.absorptions_to_join_attack.pollution or 0) u.destroy() end storage.t1.groups = storage.t1.groups + 1 storage.t1.units = storage.t1.units + n storage.t1.pollution = storage.t1.pollution + p game.print(string.format("cancelled attack: %d units, %d pollution (total %d groups)", n, p, storage.t1.groups)) end) game.print("B: intercept on")`
+- Absorbed pollution per nest type: `/c local o = game.get_pollution_statistics("nauvis").output_counts game.print("absorbed: biter-spawner " .. math.floor(o["biter-spawner"] or 0) .. ", spitter-spawner " .. math.floor(o["spitter-spawner"] or 0))`
+- Evolution: `/c local f = game.forces.enemy game.print(string.format("evolution %.3f (pollution part %.3f)", f.get_evolution_factor("nauvis"), f.get_evolution_factor_by_pollution("nauvis")))`
+- Speed things up: `/c game.speed = 5` (back with `= 1`).
+
 ## Open questions
 
 ### Challenge mode (all POC, see fifth round)
@@ -365,6 +420,7 @@ Goal: a running challenge spawns waves of biters and spitters around the partici
 11. ~~Lost buildings?~~ Decided: nothing special.
 
 ### Vanilla
+11a. **Expansion parties** still attack player buildings near the spot where they settle (headless, phase E). Keep that as vanilla, or also cancel their attacks?
 12. Do biter nests stay on Nauvis, and do they still expand?
 13. ~~Do vanilla attacks stay?~~ Decided: turned off; pollution keeps working.
 14. ~~Pollution budget?~~ Decided: pollution absorbed by nests, as in vanilla. Follow existing pollution rules wherever possible.

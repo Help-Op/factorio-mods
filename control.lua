@@ -1,6 +1,7 @@
 local territories = require("scripts.territories")
 local challenge = require("scripts.challenge")
 local waves = require("scripts.waves")
+local attacks = require("scripts.attacks")
 
 script.on_init(territories.scan)
 script.on_configuration_changed(territories.scan)
@@ -16,6 +17,7 @@ end)
 script.on_event(defines.events.on_chunk_charted, territories.on_chunk_charted)
 script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
 script.on_event(defines.events.on_ai_command_completed, waves.on_ai_command_completed)
+script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
 
 -- Debug interface (headless harness): /c remote.call("hostile-territory-debug", "set_state", id, "warning")
 remote.add_interface("hostile-territory-debug", {
@@ -70,4 +72,9 @@ end)
 commands.add_command("ht-challenges", "List running challenges.", function(command)
   local player = game.get_player(command.player_index)
   if player then player.print(challenge.describe()) end
+end)
+
+commands.add_command("ht-attacks", "Show cancelled vanilla attacks and the crusade budget.", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(attacks.describe()) end
 end)
