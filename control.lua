@@ -3,6 +3,7 @@ local challenge = require("scripts.challenge")
 local waves = require("scripts.waves")
 local attacks = require("scripts.attacks")
 local crusade = require("scripts.crusade")
+local rally = require("scripts.rally")
 
 script.on_init(function()
   territories.scan()
@@ -28,7 +29,13 @@ end)
 script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
 script.on_nth_tick(crusade.CHECK_INTERVAL, crusade.on_tick)
 script.on_nth_tick(crusade.MIGRATION_INTERVAL, crusade.on_migration_tick)
-script.on_event(defines.events.on_ai_command_completed, waves.on_ai_command_completed)
+script.on_event(defines.events.on_ai_command_completed, function(event)
+  waves.on_ai_command_completed(event)
+  crusade.on_ai_command_completed(event)
+end)
+local rally_filters = {}
+for _, name in pairs(rally.NAMES) do rally_filters[#rally_filters + 1] = {filter = "name", name = name} end
+script.on_event(defines.events.on_entity_damaged, crusade.on_entity_damaged, rally_filters)
 script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
 
 -- Debug interface (headless harness): /c remote.call("hostile-territory-debug", "set_state", id, "warning")

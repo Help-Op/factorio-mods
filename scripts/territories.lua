@@ -1,5 +1,6 @@
 -- Registry of Nauvis territories and their state.
--- storage.territories[id] = {id, territory, state, overlay = {["x,y"] = LuaRenderObject}, centre = MapPosition (cached)}
+-- storage.territories[id] = {id, territory, state, overlay = {["x,y"] = LuaRenderObject}, centre = MapPosition (cached),
+--   guardian = segmented-unit prototype name (last seen guarding it)}
 -- The id is the registration number from script.register_on_object_destroyed, which is stable
 -- and returned again when the same territory is registered twice.
 
@@ -37,6 +38,15 @@ local function guardian_count(territory, ignored_unit_number)
   return count
 end
 
+local function remember_guardian(record)
+  for _, unit in pairs(record.territory.get_segmented_units()) do
+    if unit.valid then
+      record.guardian = unit.prototype.name
+      return
+    end
+  end
+end
+
 local function default_state(territory)
   return guardian_count(territory) > 0 and "hostile" or "claimed"
 end
@@ -49,6 +59,7 @@ function territories.get(territory)
   if not record then
     record = {id = id, territory = territory, state = default_state(territory), overlay = {}}
     storage.territories[id] = record
+    remember_guardian(record)
   end
   return record
 end
@@ -97,6 +108,7 @@ function territories.scan()
     if record.state == "hostile" or record.state == "claimed" then
       record.state = default_state(territory)
     end
+    if not record.guardian then remember_guardian(record) end
     overlay.redraw(record)
   end
 end
@@ -119,6 +131,7 @@ end
 
 function territories.on_segmented_unit_created(event)
   local record = territories.get(event.segmented_unit.territory)
+  if record then record.guardian = event.segmented_unit.prototype.name end
   if record and record.state == "claimed" then
     territories.set_state(record, "hostile")
   end

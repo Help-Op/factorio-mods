@@ -3,10 +3,10 @@
 -- Pick the one whose centre is furthest from spawn, so the army gathers on the far side of the target.
 -- Fallback: the hostile territory with a nest whose centre is nearest to the target centre.
 -- Nests are never built: no candidate → no staging → no crusade.
--- The staging nest gets a map tag for the player force. The chunk is charted first; if the tag can't be placed
--- yet (chart pending), it is placed from on_chunk_charted.
+-- The staging nest gets a map tag for the player force (scripts/tags.lua).
 
 local territories = require("scripts.territories")
+local tags = require("scripts.tags")
 
 local staging = {}
 
@@ -79,30 +79,22 @@ function staging.pick(target, surface)
   return nil
 end
 
-local function add_tag(state, surface)
-  state.tag = game.forces.player.add_chart_tag(surface, {
-    position = state.nest_position,
-    icon = {type = "entity", name = state.nest.valid and state.nest.name or "biter-spawner"},
-    text = TAG_TEXT,
-  })
+local function icon(state)
+  return {type = "entity", name = state.nest.valid and state.nest.name or "biter-spawner"}
 end
 
 function staging.mark(state, surface)
-  local p = state.nest_position
-  game.forces.player.chart(surface, {{p.x - 16, p.y - 16}, {p.x + 16, p.y + 16}})
-  add_tag(state, surface)
+  state.tag = tags.place(surface, state.nest_position, icon(state), TAG_TEXT)
 end
 
 function staging.unmark(state)
-  if state.tag and state.tag.valid then state.tag.destroy() end
+  tags.remove(state.tag)
   state.tag = nil
 end
 
 function staging.on_chunk_charted(state, event)
-  if (state.tag and state.tag.valid) or not state.nest_position or event.force.name ~= "player" then return end
-  local p = state.nest_position
-  if event.position.x ~= math.floor(p.x / 32) or event.position.y ~= math.floor(p.y / 32) then return end
-  add_tag(state, game.surfaces[event.surface_index])
+  if (state.tag and state.tag.valid) or not state.nest_position then return end
+  state.tag = tags.retry(event, state.nest_position, icon(state), TAG_TEXT)
 end
 
 return staging

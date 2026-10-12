@@ -122,7 +122,7 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 |-------|----------|
 | Remote building (Q5a) | **POC: plain vanilla.** The guardian destroys the buildings, no challenge. Revisit later. |
 | Concurrency (Q6) | **One challenge per territory, one active challenge per player.** Several players can join the same challenge, or run different challenges at the same time. |
-| Crusade numbers | POC defaults: **N = 10** enemies, **X = 60 s** hold, migration **max 5 min**, **15 min** cooldown, **one crusade at a time**. |
+| Crusade numbers | POC defaults: **N = 10** enemies, **X = 60 s** hold, migration **max 5 min**, **15 min** cooldown (**starts when a crusade ends**, 2026-10-12), **one crusade at a time**. |
 | Biter nests (Q12) | **Keep vanilla nest generation and expansion** (POC). |
 
 ## Confirmed facts
@@ -183,8 +183,8 @@ Each phase starts with a small engine test before building on it.
 - [x] **E. Vanilla attacks off.** Done 2026-10-12 (option B, headless + in game E3). E1 skipped. Details below.
 - [x] **F. Crusade budget.** Done 2026-10-12 (F1–F2 headless, F3 headless + in game). Details below.
 - [x] **G. Target + migration + warning.** Pick target and staging nest (must already exist), spawn the army at the nest (POC), colour the target. Done 2026-10-12 (G0–G3 headless, G4 in game incl. two fixes). Details below.
-- [ ] **H. Assault + rally + hold.** Move to the central spot, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian.
-- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4), crusade cost and budget speed (F), army cap and the early-kill cancel rule (G).
+- [ ] **H. Assault + rally + hold.** Move to a spot on the patrol path, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian. Approved 2026-10-12, H0–H3 done (headless), H4 in game open. Details below.
+- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4), crusade cost and budget speed (F), army cap and the early-kill cancel rule (G), guardian and rally strength (H-6), cutoff for straggler rebuilds (H-b).
 - [ ] **J. Waypoint migration.** Replace spawned armies with biters walking through enemy-controlled territories (V8 a).
 
 `territory-recapture-plan.md` becomes the engine-test notes for phases A and H.
@@ -568,6 +568,180 @@ Goal: turn an announced crusade (phase F) into a gathered army. Pick a staging t
 - G-a. ~~Mark the staging territory?~~ **Yes.** POC: a map tag (`force.add_chart_tag`, spawner icon, text "Crusade staging") at the staging nest, removed when the crusade ends. A tag doesn't clash with the territory colours.
 - G-b. ~~Bigger units further out?~~ **No, follow vanilla** (evolution only) for the POC.
 - G-c. ~~Nest type to build?~~ Not needed: no nest is built (G-3).
+
+### Phase H in detail (approved 2026-10-12)
+
+Goal: the gathered army (phase G) attacks the target, builds a rally on the guardian's patrol path and holds the territory. If it holds, the territory is lost: the guardian respawns and the territory is hostile again.
+
+**Already decided:** reclaim steps = reach a spot → build the rally → no player military + N enemies for X s → guardian respawns (3rd round). Destroying the rally resets the hold timer (4th round). N = 10, X = 60 s (6th round). Military = anything that can damage enemies, not walls (7a). Lost buildings: nothing special.
+
+**Early answers (2026-10-12):**
+
+| Topic | Answer |
+|-------|--------|
+| Build time (7c) | Scales with distance from spawn, **5 to 30 min**, so the player has time to get there. |
+| Toughness (7c) | Copies the stats of the **guardian that would spawn there**. Health scales from **×0 to ×0.75** while it is being built. |
+| Looks (7c) | Placeholder: a **white rectangle**. No art. |
+| Building (V12) | Similar to how vanilla nests are built. |
+| Rally spot | A **random point on the guardian's patrol path**. Doesn't need to be central. |
+
+**Confirmed facts (game files, 2.0.77):**
+
+| Fact | Source |
+|------|--------|
+| Demolishers: small 30 000 HP / 40 HP per tick regen, medium 100 000 / 130, big 300 000 / 400. Shared `demolisher_resistances`. | `space-age/prototypes/entity/enemies.lua` 6629–6631 |
+| Guardian per territory: `floor(clamp(distance / 576 - 0.25, 0, 2))` → small < 720 tiles, medium 720–1296, big beyond. | `prototypes/planet/nauvis-territory.lua` |
+| Vanilla expansion: the group walks with `build_base`; `on_build_base_arrived` fires on arrival, then `on_biter_base_built` fires **once for every biter sacrificed** to build part of the base. Settler groups are 5–20 units. | `runtime-api.json`, `base/prototypes/map-settings.lua` |
+| `LuaTerritory.get_patrol_path()` returns map positions, never empty; usually inside the territory, not guaranteed. | `runtime-api.json` |
+| `__core__/graphics/white-square.png` exists (placeholder sprite). | `core/graphics` |
+| `LuaSurface.create_segmented_unit{name, position, direction?, territory}` creates a guardian at a given spot, assigned to a territory (raises `on_segmented_unit_created`, cause `script_created`). `regenerate_segmented_units()` instead spawns where map gen would, and adds a new one on every call. | `runtime-api.json` |
+
+**Flow:**
+
+| Step | What happens | Ends when |
+|------|--------------|-----------|
+| 1. March | Army group gets `go_to_location` (rally spot, `distraction = by_enemy`): it fights what it meets on the way. Chat: "The crusade marches on territory X." | Group arrives (`on_ai_command_completed`), or timeout. |
+| 2. Build | Rally placed with ~0 health, map tag on it. **Builders are sacrificed one by one** over the build time (like a settler group). Health cap grows to ×0.75 of the guardian. The rest of the army guards the spot. | Build time over → rally finished. Rally destroyed → rebuild (H-b). |
+| 3. Hold | Every 10 s: rally alive, **no player military in the territory**, **≥ 10 army units in the territory**. | Held 60 s in a row → lost. A failed check resets the timer. Rally destroyed → rebuild (H-b). |
+| 4. Lost | **The rally turns into the guardian:** rally removed, `create_segmented_unit` at its spot with the territory's guardian, **full health** → `hostile` (existing handler). Chat. | — |
+| Player holds | Army wiped out → "defeated" (phase G rule). Rally removed. | — |
+
+**Proposals (to confirm):**
+
+| # | Topic | Proposal | Why |
+|---|-------|----------|-----|
+| H-1 | Build time | **Decided (H-c): by guardian size.** Small 5 min, medium 15 min, big 30 min. | Easier; follows the distance rings. |
+| H-2 | Rally prototype | `simple-entity-with-force` per guardian size: `ht-rally-small/-medium/-big`. `max_health` = **0.75 ×** the demolisher's; `resistances` and `healing_per_tick` copied in data stage. White square sprite, about 6×6 tiles. `is_military_target = true` so turrets shoot it. | One prototype per size keeps the numbers exact. With max health at 0.75 ×, "×0 → ×0.75" is simply 0 → 100 % of the prototype. |
+| H-3 | Which guardian | Save the guardian's prototype name on the territory record when it is seen (scan / unit created). Fallback: the distance formula above on the territory centre. | Exact for territories we saw with a guardian. |
+| H-4 | Building | **Our own version of the vanilla mechanic**: on arrival, set aside **builders = 10% of the army (5–20, like settler groups)**. One builder is sacrificed (removed) every `build time / builders`; each one adds its share of health. | Same feel as expansion (biters turn into the base), but we control timing and the entity. Not `build_base` itself: the engine would build a vanilla nest. |
+| H-5 | Health while building | Each sacrificed builder adds `max_health / builders` (clamped to max). Starts at ~0. | No regen (H0), so damage simply stays. |
+| H-6 | Regen | **Decided: copy the guardian's stats plainly, nothing special.** `healing_per_tick` is copied but has no effect on `simple-entity-with-force` (H0); **no scripted regen** (2026-10-12). Guardians being far too strong is a known issue, to address later (phase I). | |
+| H-7 | Army at the rally | Group command `wander` near the rally (radius ~20, `distraction = by_enemy`). | They defend the rally and attack players nearby. |
+| H-8 | Military check | Every 10 s, per chunk of the target: `count_entities_filtered{force = "player", type = {character, ammo-turret, electric-turret, fluid-turret, artillery-turret, car, spider-vehicle, combat-robot, artillery-wagon}}`. Stop at the first hit. | Walls and normal buildings don't count (7a). |
+| H-9 | Units inside | Army members whose chunk belongs to the target territory. | Matches "N enemy units inside". |
+| H-10 | March timeout | If the group hasn't arrived after 5 min: send it again from where it is. After a 2nd timeout: build where the group stands if that is inside the target; otherwise defeated. | Groups can get stuck. |
+| H-11 | After loss | Leftover army is **released** (group dissolved, units stay as normal biters). | "Lost buildings: nothing special." Biters and the guardian attack what's there. |
+| H-13 | Map tag | Tag "Crusade rally" on the rally spot (like the staging tag), removed when the crusade ends. | Decided (H-e). |
+| H-14 | Rally defence | **New (H0):** biters don't defend the rally by themselves. On `on_entity_damaged` of the rally, the army attacks `event.cause` (`attack` command, `distraction = by_enemy`), then returns to the rally. At most once per 10 s. | Without this, a turret out of their vision can kill the rally freely. |
+| H-15 | Intruder squad | **New (H4, H-g):** every 10 s in build/hold, scan the target for player military (nearest to the rally). If found and no squad is out: the ~25 % of the army (min 5) nearest the intruder form a squad: attack it → walk back to the rally → wander. A new squad only when the last one's target is gone or the squad is dead. | The military check alone only reset the hold timer; the army never reacted to a player out of its sight. |
+| H-12 | Code | New `scripts/rally.lua` (spot, build, hold checks) and `prototypes/entity/rally.lua` (data). `crusade.lua` gets phases `march` → `build` → `hold`. `on_ai_command_completed` is shared with `waves.lua`. | |
+
+**Steps:**
+- [x] **H0. Engine tests (headless).** (a) A unit group with `go_to_location` over ~300 tiles: does it arrive, and does `on_ai_command_completed` fire for the group? (b) Rally entity: can we set `health` freely, do player turrets shoot it, do biters defend it? (c) Patrol path points: inside the territory? (d) Cost of the military check on a big territory.
+  - **Headless (2026-10-12, 2.0.77, seed 12345).** Test prototype `ht-test-rally` in a throwaway mod in the harness mods folder (not in the repo): `simple-entity-with-force`, white square ×6, small demolisher stats ×0.75 health.
+
+    | Test | Result |
+    |------|--------|
+    | (a) March | 50 small biters, `go_to_location` 316 tiles, `distraction = by_enemy`: arrived in ~26 s. `on_ai_command_completed` fires with `unit_number` = group `unique_id`, `result` 2 (success) ✓. **2 of 50 units dropped out of the group** (alive, stayed behind). |
+    | (b) Health | `health` can be set freely (100 → 100) ✓. |
+    | (b) Regen | **`healing_per_tick` does nothing on `simple-entity-with-force`**: prototype says 40, health stayed at 100 for 189 ticks. |
+    | (b) Turrets | A player `gun-turret` targets the rally (`shooting_target` = rally) ✓. Yellow ammo vs. demolisher resistances: ~25 HP/s. |
+    | (b) Defence | **Biters don't defend it**: 10 idle biters 40 tiles away stayed put while the turret hit the rally. |
+    | (c) Patrol path | 64 territories, 42–74 points each (median 56). **99.9 % of points lie in their own territory**; 62 of 64 paths fully inside, worst 96 %. |
+    | (d) Military check | Largest territory (219 chunks), 9 types, `limit = 1`, no hits (worst case): **1.9 ms** per full scan. OK every 10 s. |
+
+  - **Consequences for H1–H3:**
+    - H-5/H-6: regen doesn't work on this type. **Decided (2026-10-12): fine, no scripted regen.** Stats stay plainly copied.
+    - H-9: count the army from **our own unit list** (`storage.crusade.units`), not group members, since units can drop out of the group.
+    - New **H-14 (defence)**: on `on_entity_damaged` of the rally (event filter on its name), send the army to attack `event.cause`. Without this, the army ignores attacks from outside its vision.
+    - Spot pick (H-1 spot): only patrol points whose chunk is in the target territory.
+- [x] **H1. Rally data + spot.** Prototypes, guardian per territory, build time, spot pick. `/ht-crusade` shows them. Headless.
+  - **Built:** `prototypes/entity/rally.lua` (`ht-rally-small/-medium/-big`, `simple-entity-with-force`, white square ×6, demolisher `max_health` × 0.75, `resistances` + `healing_per_tick` copied, `is_military_target`), locale `ht-rally`. `territories.lua` remembers `record.guardian` (on record creation, scan, `on_segmented_unit_created`). `scripts/rally.lua`: `guardian_for` (remembered, else the map gen distance rule), `plan` (guardian, rally prototype, build time 5/15/30 min), `pick_spot`. The trigger plans the rally and stores `guardian`, `rally_name`, `build_time`, `rally_spot` on `storage.crusade`; no free spot → no crusade, budget kept. `/ht-crusade` shows "Next rally" and "Rally".
+  - **Headless (2026-10-12, 2.0.77, seed 12345, isolated mods folder):**
+
+    | Test | Result |
+    |------|--------|
+    | Prototypes | small 22 500 / medium 75 000 / big 225 000 HP (= 0.75 × 30k / 100k / 300k), 7 resistance types each ✓ |
+    | Guardian per territory | Known for **64 of 64** territories (11 small, 24 medium, 29 big). Distance rule matches 63; the miss is at 719 tiles (rule edge 720) ✓ |
+    | Fallback | Guardian cleared → "by distance", same result ✓ |
+    | Spot pick | **Bug found:** `find_non_colliding_position` could move a patrol point out of the target (10 of 50). Fixed: the moved spot must still be inside. After fix: **50 of 50** spots inside the target and placeable ✓ |
+    | Trigger | Crusade stores `ht-rally-big`, guardian big, 30 min, spot inside + placeable ✓ |
+
+  - Note: this map's ids differ from earlier runs (no `cheating-mod` in the harness mods folder), e.g. territory 14 is at 1469 tiles here.
+- [x] **H2. March + build.** Army walks, arrives, builders sacrificed, health grows. Headless.
+  - **Built:**
+    - Phases now `migration` → `march` → `build` → `hold` → `ended`. Critical mass starts the march right away (target → `crusade`, staging tag removed, chat). A save waiting in G's `crusade` phase starts marching.
+    - `army.lua`: our own unit list `state.units`; `regroup`, `position`, `take_builder`, `destroy_all`.
+    - `rally.lua`: `place` (stored spot, else nearest free spot inside, else a new patrol spot), `builder_count`, `spot_near`, map tag "Crusade rally" (`mark`/`unmark`/`on_chunk_charted`).
+    - New `scripts/tags.lua`: shared map tag code (staging + rally). Staging tag retry only during migration.
+    - `crusade.lua`: march (`go_to_location`, radius 8, `by_enemy`), arrival via `on_ai_command_completed`, timeouts (H-10), build (builders every `build time / builders`, nearest unit within 40 tiles, +`max_health / builders` each), rebuild/defeat (H-b/H-f), defence `on_entity_damaged` with rally name filters (H-14: attack cause → walk back → wander), `finish` also removes the rally and its tag. `/ht-crusade` shows march and build progress.
+  - **Headless (2026-10-12, 2.0.77, seed 12345, isolated mods folder, target territory 1 = small guardian, 411 tiles, staging 19):**
+
+    | Test | Result |
+    |------|--------|
+    | Trigger → migration | 182 small biters, cost 729 ✓ |
+    | March | Staging tag removed ✓. ~500 tiles, arrived in < 80 s; build started ✓ |
+    | Build | Rally at the stored spot, **18 builders** (10 % of 182), +1250 HP each, one every ~17 s; 22 500 / 22 500 after 5 min → phase `hold`, chat ✓. Rally tag placed ✓ |
+    | Defence (H-14) | Turret 60 tiles away hits the rally (`damage` with cause): army reaches and kills it in ~12 s ✓. **Bug found:** they then wandered where the turret was. Fixed: attack → `go_to_location` rally → wander. After fix: group back in `wander_in_group` around the rally (spread 15–45 tiles) ✓ |
+    | Rally destroyed, army 163 | **Rebuilt** at the same spot: build #2, 16 builders, starts at ~0 ✓ |
+    | Rally destroyed, army 12 (< 10 + builders) | **Defeated**: units, rally and tags removed, target `claimed` ✓ |
+    | March timeout ×1 | Sent again (try 2) ✓ |
+    | March timeout ×2, army outside target | Defeated, army removed ✓ |
+
+  - Not tested: second timeout with the army **inside** the target (builds where it stands); chat text (no players headless).
+  - **Changed (2026-10-12): the 15 min cooldown starts when a crusade ends** (territory lost, defeated or cancelled), not at the trigger. Before, a crusade could start within a minute of the last one ending. Headless (2.0.77): no cooldown while active; cancelled at tick 6055 → 900 s cooldown; next crusade at tick 61200 (first check after it ran out) ✓.
+- [x] **H3. Hold + lost.** Checks, timer, reset, guardian respawn, release army. Headless.
+  - **Built:** `update_hold` every 10 s in phase `hold`: army units inside the target (`army.count_inside`) and player military (`rally.player_military_in`, H-8 types, `limit = 1` per chunk). Both OK → the hold timer starts (chat "… holds the territory. 60 s until it is lost."); a failed check resets it (chat "the hold is broken"); a rebuild resets it too. 60 s → `lose`: rally removed, `create_segmented_unit{name = guardian, position = rally, territory = target}`, `finish(message, lost = true)`: army **released** (`army.release`), tags removed, target → `hostile`, cooldown starts. `/ht-crusade` shows the hold progress and "ended, territory lost".
+  - **Headless (2026-10-12, 2.0.77, seed 12345, target territory 1, small guardian):**
+
+    | Test | Result |
+    |------|--------|
+    | Reach `hold` | Trigger → migration → march → build → hold in ~9 game min ✓ |
+    | Player turret inside the target (260 tiles from the rally) | `military true`, not holding ✓ |
+    | Turret removed | Hold starts (164 units inside) ✓ |
+    | Turret placed during a running hold | Hold reset ✓ |
+    | Removed, 60 s held | **Lost** ✓: target `hostile`; rally gone; a **small demolisher at the rally spot, 30 000 / 30 000 HP**, in the target territory; **163 biters stay** near the spot; no tags; cooldown 893 s ✓ |
+
+  - The test territory also kept its original guardian (it was set to `claimed` by command, not by killing it). In play the original is dead, so there is one guardian.
+  - Not tested: hold broken by **too few units** (same code path as military).
+  - Cosmetic: after a loss `/ht-crusade` shows "0 alive" because released units are no longer tracked.
+- [ ] **H4. In game.** Full crusade: march, build, defend or lose.
+    Setup: kill the guardian of a territory near spawn (small guardian → 5 min build), so it is claimed and the furthest claimed one. Your **character counts as military**: standing in the target blocks the hold. Optional speed-up: `/c game.speed = 4` (back with `= 1`).
+    1. Arm: `/c __Hostile-territory__ storage.crusade_budget = 5000 storage.crusade_cooldown_until = 0 game.print("armed")`
+    2. Within 60 s: "Crusade warning", target yellow-orange, staging tag. After ~2 min: "… march from territory S", target bright orange, staging tag gone.
+    3. On arrival: "… builds a rally at x,y (5 min)", white square + "Crusade rally" tag. `/ht-crusade` shows health growing per builder.
+    4. **Defend run:** shoot the rally: the army comes for you. Destroy it: "… rebuilds it". Then kill the army: "… defeated", target back to no colour, tags and rally gone.
+    5. **Lose run** (arm again after the 15 min cooldown, or reset with step 1): stay **outside** the target. After the build: "… holds the territory. 60 s until it is lost." → "Territory X is lost: the rally turned into a small-demolisher." Target turns red (guardian), leftover biters stay.
+    6. During a hold, walk into the target: "the hold is broken"; walk out: the hold starts again.
+    Check also: does the guardian patrol normally afterwards? Can the territory be challenged again?
+  - **In game (2026-10-12, 2.0.77): mod failed to load**: "sprite rectangle 0x0–32x32 is outside the actual sprite size 10x10: `__core__/graphics/white-square.png`". The headless server doesn't load graphics, so H0–H3 missed it. Fixed: `size = 10`, `icon_size = 10`, `scale = 19.2` (still 6×6 tiles). Retest open.
+  - **In game (2026-10-12, 2.0.77), after the sprite fix:** the crusade "seems to work pretty well". Found: entering the target during the hold prints "the hold is broken", but **the army doesn't come after the player**. It does when the player attacks the rally (H-14). Cause: the army only wanders near the rally (radius 20) and reacts to what it sees; the military check only resets the timer. See H-g.
+  - **Built H-15 (2026-10-12):** `rally.find_player_military` (nearest to the rally, one candidate per chunk), `army.split`, `check_intruders` in build + hold. `/ht-crusade` shows the squad.
+  - **Headless (2026-10-12, 2.0.77):** player turret placed in the target 392 tiles from the rally during the build. **Squad of 45** (25 % of 180) went for it, **135 stayed** at the rally, building went on. Turret destroyed after ~60 game s; squad walked back and wanders at the rally (172 of 172 near it) ✓.
+  - [ ] **Retest in game:** walk into the target during build/hold: a squad comes for you, the rest stay at the rally.
+  - **In game (2026-10-12, 2.0.77): no attack**, neither during build nor hold, while standing in the target.
+  - **Headless repro (2026-10-12, 2.0.77):** a `character` (player force) placed in the target 80 tiles from the rally during the build → squad of 45 attacked and killed it within ~12 s. So the code works headless. Suspects: (1) the squad targets the military entity **nearest the rally**, which may be the cheat kit's **spidertron**, a turret or robots, not the player; (2) the save wasn't reloaded after the change (control.lua only reloads on load). `/ht-crusade` now also shows the squad's position and its target with position.
+  - **In game (2026-10-12, 2.0.77), with the new output:** during the build the squad was sent `after character`, but its group **stood still at -187,361 for ~60 s** while the player moved. In the hold the army did attack the player.
+  - **Cause (headless repro, character teleported away):** when the target moves, the group's attack ends early and the group sits **`finished`, no command**. The squad still counted as busy (target alive, members > 0), so no new command or squad was sent.
+  - **Fix (2026-10-12):** every 10 s the squad gets a fresh command when it is idle (`finished` or no command) or a different intruder is nearest. No intruder left + idle squad → walks back to the rally.
+  - **Headless after fix (2026-10-12, 2.0.77):** tough character, teleported ~100 tiles twice: the squad followed both times, reached it and attacked (`attacking_target`, 45 within 20 tiles) ✓. Character removed → squad walked back toward the rally ✓.
+  - [ ] **Retest in game:** stand in the target and move around during the build: the squad keeps coming.
+  - **Decided (2026-10-12): the squad prefers the player character** over other military (turrets, vehicles, robots). Other military only when no character is in the target. Built: `rally.find_player_military` scans characters first. Smarter AI ideas: see "Later: smarter crusade AI". Headless (2026-10-12, 2.0.77): turret 69 tiles from the rally, character 159 tiles: squad goes `after character` ✓.
+  - **In game (2026-10-12, 2.0.77):** better during the build, but **after the rally was finished no attack**. `/ht-crusade`: squad at the rally, "sent 204 s → 344 s ago" (never re-sent), target the player 250 tiles away.
+  - **Cause:** the squad had walked back and was **wandering** at the rally while its target was still alive; only `finished` counted as idle, so it stayed "busy".
+  - **Fix (2026-10-12):** busy only while gathering, moving, pathfinding or attacking; otherwise idle → re-sent. Also re-sent every 60 s while the same intruder stays (`SQUAD_REFRESH`).
+  - **Headless after fix (2026-10-12, 2.0.77), phase hold:** tough character teleported 3× to random spots 120–220 tiles from the rally: each time the squad was re-sent within 10 s, and it reached and attacked the character (`attacking_target`, 27 next to it) ✓.
+
+**Resolved (2026-10-12):**
+- H-a. ~~Rally health after the build?~~ The rally stays as it is (max ×0.75 of the guardian) while holding. When the territory is **lost, the rally disappears and turns into the guardian at full health**.
+- H-b. ~~Rally destroyed?~~ **Keep rebuilding while there is sufficient budget.** Later maybe a cutoff, so a few lone stragglers don't keep trying in an annoying way.
+- H-c. ~~Build time curve?~~ **By guardian size:** 5 / 15 / 30 min.
+- H-d. ~~Builders?~~ 10 % of the army, 5–20. Good starting point.
+- H-e. ~~Player info?~~ **A map tag** on the rally.
+- H-6. ~~Regen?~~ Copy plainly for now; guardian strength to address later.
+
+- H-g. ~~Should the army go after player military in the target?~~ **Decided (2026-10-12): a small squad** (~25 % of the army, at least 5) attacks the military entity nearest the rally, then returns; the rest guard the rally. In **build and hold**. See H-15.
+- H-f. ~~What is the "budget" for rebuilding (H-b)?~~ **Decided: (1), the army itself.** (1) **The army itself** (it is the spent budget): rebuild while the army still has ≥ 10 + builders units; if not, the crusade is defeated. Or (2) **the global crusade budget**: each rebuild pays for new builders (spawned at the staging nest, they walk to the rally). Simpler, and it already stops lone stragglers from rebuilding.
+
+### Later: smarter crusade AI (ideas, 2026-10-12)
+
+The POC AI is easy to fool: a squad chases one target, so the player can use a character, vehicle or turret as a **decoy** to pull units away from the rally. Ideas to look at later (not planned yet):
+- **Leash:** a squad stops chasing beyond N tiles from the rally and returns.
+- **Threat first:** prefer whatever is damaging the rally or the army right now over the nearest target.
+- **Several squads:** one per threat, sized by threat (a turret line needs more than a lone character).
+- **Keep a minimum guard:** never send units below N at the rally (the hold needs 10 inside anyway).
+- **Ignore decoys:** don't chase fast vehicles they can't catch; give up after a timeout without damage dealt.
+- **Retreat / regroup:** pull back to the rally when a squad drops below half strength.
 
 ## Open questions
 
