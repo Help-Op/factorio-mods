@@ -99,7 +99,7 @@ Player buildings left in a lost territory get no special handling. The demolishe
 |-------|----------|
 | Migration (V8) | **POC: spawn the army at the staging nest** from the budget (option b). **End goal: walk with waypoints through enemy-controlled territories** (option a). If the player kills migrating units on the way, that's fine. |
 | Rally structure | A **new enemy building that takes time to build**. Destroying it **resets the hold timer**. |
-| No nest next to target | The enemy **builds a staging nest** in the neighbouring hostile territory during the warning phase. |
+| No nest next to target | ~~The enemy builds a staging nest during the warning phase.~~ **Changed (2026-10-12):** a territory without a nest is not a valid staging point. No valid one → no crusade (phase G, G-3). |
 | Pollution budget | **Pollution absorbed by nests**, as in vanilla. General rule: follow the existing pollution rules wherever we can. |
 
 ### Fifth round: challenge mode (2026-10-11)
@@ -146,13 +146,13 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 | V3 | Unit speed is fixed per prototype. | Decided: slowdown sticker on spawn. See test T2. |
 | V4 | ~~Turning off vanilla attacks.~~ | Resolved (phase E): attack groups are cancelled in `on_unit_group_finished_gathering`. |
 | V5 | Detecting "guardian triggered". | Candidates: `on_segmented_unit_damaged` (exists), `on_built_entity` + `get_territory_for_chunk`. With the "real start = guardian can attack the player" rule, the AI state (V13) may be the only trigger we need. See test T3. |
-| V6 | "Tactical" target choice needs a scoring rule. | E.g. border territories, near pollution, weakly defended, recently claimed. Must have a neighbouring hostile territory with a nest. |
+| V6 | "Tactical" target choice needs a scoring rule. | E.g. border territories, near pollution, weakly defended, recently claimed. Must have a neighbouring hostile territory with a nest. **POC (2026-10-12):** the claimed territory furthest from spawn, ties random (phase F). |
 | V7 | Demolishers on Nauvis terrain. | Still open from `plan.md` step 8 (water, trees, cliffs). |
 | V8 | Migration "without going through the player base". | The engine pathfinder doesn't avoid player buildings; units attack what blocks them. Options: (a) route through hostile territories with waypoint commands, (b) spawn the units directly at the staging nest from the budget (no real walk), (c) a mix: units near the staging nest walk, the rest are spawned there. (b) is simplest and safest. **Decided:** (b) for the POC, (a) as end goal. |
 | V9 | Where do the "biters that would normally attack" come from? | Phase E knows them exactly: the members of each cancelled group. POC removes them and keeps their pollution cost. **Phase G must bring them back** (send them to the staging nest, or respawn the same mix there from the budget). |
 | V10 | Central spot and rally structure. | Need a rule for the centre (e.g. the chunk nearest the centroid of `get_chunks()`, snapped to buildable land) and a rally prototype (enemy-force entity, built over time). |
 | V11 | ~~Measuring pollution absorbed by nests.~~ | Resolved: the budget comes from cancelled units' `absorptions_to_join_attack` (vanilla rule). `get_pollution_statistics(surface).output_counts` also works (headless: 2643 absorbed by `biter-spawner`). |
-| V12 | Building enemy structures over time (rally, staging nest). | Options: place a "construction site" entity and swap it for the real one after a timer, or grow health over time. To test. |
+| V12 | Building enemy structures over time (rally; staging nest no longer needed, G-3). | Options: place a "construction site" entity and swap it for the real one after a timer, or grow health over time. To test. |
 | V14 | **Demolishers don't attack the player on sight**, only in revenge or when investigating buildings (T4). Rage lasts 30 s, then it keeps `attacking` player entities in reach. Resolved for the POC by the phase B rules. | `enraged_at_target` also has `last_damage_time` (writable) and `remaining_time`. The rule "the challenge starts when the guardian can attack the player" would mean: only after the player shoots it, or (to check) when it attacks a building near the player. And "lose = aggro lost" would mean: the challenge ends 30 s after the player stops hitting it, even while standing next to it. See open questions 3b and 5b. |
 | V13 | Detecting guardian aggro: start (in range of the player) and end (aggro lost). | **Start confirmed (T4):** chasing the player gives `enraged_at_target` with `target = character`. See V14 for what that means. Likely solved: poll `get_ai_state()`. Start = `attacking`/`enraged_at_target` with a target that is a character (or near one). Lose = back to `patrolling`/`investigating`. Fallback: distance rule. See test T4. |
 
@@ -180,11 +180,11 @@ Each phase starts with a small engine test before building on it.
 - [x] **B. Trigger detection.** Done 2026-10-11 (headless + in game, incl. fix B7). Details below.
 - [x] **C. Challenge mode.** Done 2026-10-11 (C1 headless, C2–C6 in game). Spawn rate and difficulty to tune in phase I. Details below.
 - [x] **D. Claim.** Guardian dies → territory becomes Claimed, and a running challenge ends as won. Covered by A2 and B5.
-- [ ] **E. Vanilla attacks off.** Option B built 2026-10-11; headless pass; in-game long run (E3) open. Details below.
-- [ ] **F. Crusade budget.** Turn pollution + evolution into a crusade trigger.
-- [ ] **G. Target + migration + warning.** Pick target and staging nest (build one if missing), spawn the army at the nest (POC), colour the target.
+- [x] **E. Vanilla attacks off.** Done 2026-10-12 (option B, headless + in game E3). E1 skipped. Details below.
+- [x] **F. Crusade budget.** Done 2026-10-12 (F1–F2 headless, F3 headless + in game). Details below.
+- [ ] **G. Target + migration + warning.** Pick target and staging nest (must already exist), spawn the army at the nest (POC), colour the target. Approved 2026-10-12, G0–G1 done, G2 next. Details below.
 - [ ] **H. Assault + rally + hold.** Move to the central spot, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian.
-- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4).
+- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4), crusade cost and budget speed (F).
 - [ ] **J. Waypoint migration.** Replace spawned armies with biters walking through enemy-controlled territories (V8 a).
 
 `territory-recapture-plan.md` becomes the engine-test notes for phases A and H.
@@ -384,7 +384,7 @@ Conclusion: every vanilla attack group fires `on_unit_group_finished_gathering` 
 
 - [ ] **E1. Test T1 (in game).** ~~Compare A and B.~~ Skipped: B chosen directly. The T1 commands below still work for checking evolution and absorption. Compare A and B on a polluting base (or `/c` a few boilers next to nests). See T1 commands below. Check: do attacks stop? Does expansion continue? Do nests keep absorbing (statistics)? Does evolution rise?
 - [x] **E2. Build the chosen option.** Built and tested headless (see above). `/ht-attacks` shows cancelled groups, units and budget.
-- [ ] **E3. Long run (in game).** Play 30+ min with a polluting base. Check: no attacks on the base, expansion still happens, budget grows, nests still defend themselves when you get close.
+- [x] **E3. Long run (in game).** Play 30+ min with a polluting base. Check: no attacks on the base, expansion still happens, budget grows, nests still defend themselves when you get close. **In game (2026-10-12, 2.0.77), 10+ min:** the "attack triggered by pollution" achievement fired, but **no attack reached the base**. Nests near the player still attack (vicinity aggro works). Accepted as working. Not checked in this run: expansion and budget growth (both confirmed headless).
 
 **T1 commands** (throwaway save):
 - Option A on: `/c game.map_settings.unit_group.max_gathering_unit_groups = 0 game.map_settings.unit_group.max_unit_group_size = 0 game.print("A: auto groups off")`
@@ -392,6 +392,147 @@ Conclusion: every vanilla attack group fires `on_unit_group_finished_gathering` 
 - Absorbed pollution per nest type: `/c local o = game.get_pollution_statistics("nauvis").output_counts game.print("absorbed: biter-spawner " .. math.floor(o["biter-spawner"] or 0) .. ", spitter-spawner " .. math.floor(o["spitter-spawner"] or 0))`
 - Evolution: `/c local f = game.forces.enemy game.print(string.format("evolution %.3f (pollution part %.3f)", f.get_evolution_factor("nauvis"), f.get_evolution_factor_by_pollution("nauvis")))`
 - Speed things up: `/c game.speed = 5` (back with `= 1`).
+
+### Phase F in detail (approved and built 2026-10-12)
+
+Goal: turn the budget into a crusade trigger. When the budget covers the cost of attacking the target, spend it and announce the crusade in chat. Phase G then does the actual attack.
+
+**Decisions (2026-10-12):**
+
+| Topic | Decision |
+|-------|----------|
+| Target | The **claimed territory furthest from spawn**. Ties: a random one. Replaces the "tactical" scoring of V6 for now. |
+| Cost | Scales with the target's **distance from spawn** and with **evolution**. Higher on both = more points spent = stronger attack. Far territories are harder to keep. Once the player is pushed back, attacks get cheaper again, but stay stronger than at the start because evolution only goes up. |
+| Evolution | Also **adds to the budget**, on top of the pollution from cancelled attacks. |
+| Spending | Only the **cost** is taken from the budget. The rest stays for the next crusade. |
+| Limits | One crusade at a time, 15 min cooldown (POC defaults). |
+| Output | A chat message only. No colours yet; those come in phase G. |
+
+**Proposals (approved 2026-10-12 as starting values; tune in phase I):**
+
+| Topic | Proposal | Why |
+|-------|----------|-----|
+| Cost formula | `cost = BASE × (1 + distance / 500) × (1 + 4 × evolution)`. POC: `BASE = 400`. | One ring (500 tiles) further out adds 1× BASE. Evolution 1 makes it ×5. 400 is about 100 small biters or 20 medium ones. Examples: next to spawn at evo 0 → 400. 1000 tiles out at evo 0.5 → 3600. To tune in phase I. |
+| Distance | In tiles from the player force spawn to the territory **centre** (average of its chunks, from `LuaTerritory.get_chunks()`), saved on the territory record. | Continuous, so there are no jumps at ring edges. Same spawn point as the challenge rings. |
+| Evolution → budget | Every check, add `Δevolution × 10000`, counting only the **time** and **spawner-kill** parts of evolution. | The pollution part is already counted through cancelled attacks, so counting it again would double it. Evolution 0.1 from time and kills = 1000 points. |
+| Check | Every 60 s (`on_nth_tick`). Trigger if: no cooldown, at least one claimed territory, and `budget ≥ cost`. | Cheap, and fast enough for a 15 min cooldown. |
+| After trigger | `budget -= cost`, chat message (target, distance, cost, budget left), `storage.crusade = {target_id, cost, tick}` for phase G, start the cooldown. | |
+| Code | New `scripts/crusade.lua`. `attacks.lua` stays as it is (cancelling + pollution budget). | Keeps one job per file. |
+| Debug | `/ht-crusade`: budget, evolution part, next target, its distance and cost, cooldown left. | |
+
+**Steps:**
+- [x] **F1. Target + cost.** Territory centre and distance, target pick, cost formula, `/ht-crusade` (no spending yet). Headless: claim a few territories, check the pick and the cost.
+  - **Built:** `scripts/crusade.lua` (`pick_target`, `cost`, `describe`; centre cached as `record.centre`), `/ht-crusade`, and remote `crusade` in the debug interface (console code can't `require`).
+  - **Headless (2026-10-12, 2.0.77, seed 12345):** set states with the debug interface.
+
+    | Claimed (distance) | Evolution | Target | Cost | Expected |
+    |--------------------|-----------|--------|------|----------|
+    | none | 0 | none | – | – |
+    | 1 (411), 11 (671) | 0 | 11 | 937 | 937 |
+    | 1, 11, 14 (918) | 0 | 14 | 1135 | 1135 |
+    | 1, 11, 14 | 0.5 | 14 | 3405 | 3405 |
+    | 1 only | 0.5 | 1 | 2187 | 2187 |
+
+    Not tested: ties (random pick).
+  - In game (optional): stand in a territory, `/ht-set-state claimed`, then `/ht-crusade`.
+- [x] **F2. Evolution into budget.** Headless at high game speed: the budget grows from time evolution with no pollution.
+  - **Built:** `crusade.on_tick` every 60 s adds `Δ(by_time + by_killing_spawners) × 10000` to `storage.crusade_budget` (also tracked as `storage.crusade_evolution_points`). The baseline is set in `on_init`/`on_configuration_changed`, or on the first check, so an existing save gets no lump sum.
+  - **Headless (2026-10-12, 2.0.77, seed 12345, fresh map):**
+
+    | Test | Result |
+    |------|--------|
+    | Time only (`time_factor` ×100, speed 60, ~47 game min) | Budget 0 → 11279 = Δtime 1.128 × 10000. ✓ |
+    | Kill 10 spawners + set pollution part to 0.5 | +368 = 200 (kills 0.02) + 168 (time). Pollution added nothing. ✓ |
+
+  - **Finding:** `get_evolution_factor_by_time/_by_killing_spawners/_by_pollution` return **raw counters**, not each part's share of the real evolution. They grow linearly and go past 1 (time 1.138 while evolution was 0.532). So the evolution budget doesn't slow down as evolution nears 1. See F-d.
+  - **Default rates (raw):** time 0.000004/s → **~144 points per hour**. Spawner kill 0.002 → **20 points per spawner**. Both small next to pollution (headless phase E: 13916 points).
+- [x] **F3. Trigger.** Spend, announce, cooldown. Headless: set the budget high, see one crusade per 15 min. Then in game.
+  - **Built:** `try_trigger` in `crusade.on_tick` (every 60 s). If cooldown over, target exists, budget ≥ cost: spend, set `storage.crusade`, start 15 min cooldown, print to the player force. Until phase G, a new crusade replaces the old one (F-b). `/ht-crusade` also shows cooldown left and the last crusade.
+  - **Headless (2026-10-12, 2.0.77, seed 12345, fresh map):** claimed territories 1 (411) and 14 (918), budget 5000, speed 60, 75 game min.
+
+    | Game min | Event | Budget after |
+    |----------|-------|--------------|
+    | 1 | Crusade on 14, cost 1136 | ~3864 |
+    | 16 | Crusade on 14, cost 1152 | ~2767 |
+    | 31 | Crusade on 14, cost 1168 | ~1618 |
+    | 46 | Crusade on 14, cost 1184 | ~472 |
+    | 61–75 | Cooldown over, budget 540 < cost 1215: **no crusade** ✓ | 540 |
+
+    Cost rises slowly with time evolution (0 → 0.018). Chat text is not in the headless log (no players): check in game.
+  - [x] **In game:** check the chat message. **In game (2026-10-12, 2.0.77):** "Crusade ready: …" appears. ✓
+    1. Stand in a territory: `/ht-set-state claimed`
+    2. Fill the budget, clear the cooldown: `/c __Hostile-territory__ storage.crusade_budget = 5000 storage.crusade_cooldown_until = 0 game.print("budget 5000")`
+    3. Within 60 s: chat shows "Crusade ready: …". Then `/ht-crusade` shows ~900 s cooldown and the last crusade.
+
+**Resolved (2026-10-12):**
+- F-a. ~~Budget cap?~~ **No cap.** If the budget fills very quickly early on, that means it grows too fast: tune the numbers (phase I), not a cap.
+- F-b. ~~`storage.crusade` before phase G?~~ It just stays; the cooldown starts anyway.
+- F-c. ~~Distance from centre or furthest chunk?~~ From the **centre**.
+
+**Open (2026-10-12):**
+- F-d. The evolution budget uses the **raw** time + kill counters (linear, never slows down). Fine as it is, or should it follow the real evolution (slows down near 1, so almost nothing late game)? Proposal: keep the raw counters (simpler, steady late-game pressure) and tune `EVOLUTION_POINTS` in phase I. At default settings, evolution adds very little.
+
+### Phase G in detail (approved 2026-10-12)
+
+Goal: turn an announced crusade (phase F) into a gathered army. Pick a staging territory and nest next to the target, colour the target (warning), spawn the army at the nest over time, and switch the target to `crusade` at critical mass. Moving the army and holding the territory are phase H.
+
+**Already decided:** staging = a nest in a neighbouring hostile territory (4th round; "build if missing" dropped 2026-10-12, see G-3). Migration POC = spawn at the nest from the budget (V8 b). Warning colour starts when migration starts, crusade at critical mass (3rd round). Migration max 5 min, one crusade at a time (6th round). The units cancelled in phase E come back as this army (V9).
+
+**Flow:**
+
+| Step | What happens | Target state |
+|------|--------------|--------------|
+| 1. Trigger (F) | Budget pays the cost. | claimed |
+| 2. Staging | Pick the staging territory and nest. Mark the nest on the map. Chat: "Enemies gather near territory X." | **warning** |
+| 3. Migration | Spawn the army at the nest in batches, into one script-driven unit group that stays put. | warning |
+| 4. Critical mass | All units spawned. Chat: "Crusade on territory X." | **crusade** |
+| 5. (phase H) | Army moves to the target, rally, hold. | crusade |
+
+**Proposals (approved 2026-10-12; G-3 changed):**
+
+| Topic | Proposal | Why |
+|-------|----------|-----|
+| G-1 Staging territory | Hostile territories **touching** the target (a chunk of the target has a neighbouring chunk in it) **that have a nest**. Pick the one whose centre is **furthest from spawn**. If none touch: the **nearest hostile** territory with a nest, by centre. | "Furthest from spawn" keeps the army on the far side of the target, away from the base. The fallback covers gaps between territories. |
+| G-2 Staging nest | The enemy spawner in the staging territory **closest to the target centre**. | Shortest walk for phase H. |
+| G-3 No nest | **Decided (2026-10-12): never build one.** A territory without a nest is not a valid staging territory. If no valid staging territory exists, **no crusade**: the trigger (F3) checks staging first and doesn't spend the budget. | Very unlikely to happen, and skipping is fine. |
+| G-4 Army mix | Vanilla: use the nest's `result_units` weighted at the current evolution (same as what the nest itself spawns). Each unit costs its `absorptions_to_join_attack`, spawned until the crusade cost is used up. | Follows the vanilla rules (Q14). It's the same mix as the attacks we cancelled. |
+| G-5 Army size cap | Cap at **200 units** (POC). Leftover cost goes back to the budget. | Cost 1136 at evolution 0 = 284 small biters. Big armies are heavy on UPS and pathing. To tune in phase I. |
+| G-6 Migration time | Spawn in batches every 10 s over **2 min**; critical mass when all are spawned. Never longer than 5 min. | Gives the warning time to be seen. |
+| G-7 Army holds still | Members go in one `create_unit_group` group with no command, so they wait at the nest. Script-driven, so `attacks.lua` leaves it alone. | Needs the G0 test. |
+| G-8 Cancel | The crusade is cancelled if the target is no longer `warning`/`crusade` (e.g. a debug change), or the **whole army is killed** during migration. Target → `claimed`, chat message. | The player can prevent a crusade by hitting the staging nest early. |
+| G-9 End until phase H | The crusade stays in `crusade` state with the army waiting. Debug `/ht-crusade-cancel` ends it (target → `claimed`, army removed). No new crusade while one is active. | Lets us test G without H. |
+| G-10 Code | Extend `scripts/crusade.lua` (state machine in `storage.crusade`). Stage + army helpers in a new `scripts/army.lua` if it gets big. | |
+
+**Steps:**
+- [x] **G0. Engine test (headless).** (a) Do the target's neighbouring chunks belong to other territories, or are there gaps? (b) Find spawners inside a territory. (c) `result_units` at a given evolution. (d) Spawn ~200 units into a script-driven group with no command: do they stay put for 5 min? Does `attacks.lua` ignore them?
+  - **Headless (2026-10-12, 2.0.77, seed 12345, chunks ±40 around spawn):**
+
+    | Test | Result |
+    |------|--------|
+    | (a) Adjacency | Territories **touch**: 64 territories, on average **5 neighbours**, none isolated. 16% of border chunk-edges have no territory (start area, map edge, ungenerated). Check = the 8 chunks around each chunk + `get_territory_for_chunk`. |
+    | (b) Nests | `count_entities_filtered{area = chunk.area, type = "unit-spawner"}` per chunk. **52 of 64** territories have a nest (in generated chunks). |
+    | (c) Spawn table | `prototypes.entity["biter-spawner"].result_units` = `{unit, spawn_points = {{evolution_factor, weight}}}`; weights interpolate between points. E.g. small-biter 0.3 @ 0 → 0 @ 0.6; medium 0 @ 0.2 → 0.3 @ 0.6 → 0.1 @ 0.7; big 0 @ 0.5 → 0.4 @ 1; behemoth 0 @ 0.9 → 0.3 @ 1. |
+    | (d) Army holds | 200 small biters in a `create_unit_group` with no command: **all 200 stayed within 19 tiles for 6+ game min**. Group stays valid, `is_script_driven = true`, state 0 (gathering). `attacks.lua` cancelled nothing. ✓ |
+- [x] **G1. Staging.** Pick the staging territory and nest (no nest → not valid; none valid → no crusade, budget kept). Map tag. `/ht-crusade` shows them. Headless.
+  - **Built:** `scripts/staging.lua` (`pick`, `mark`, `unmark`, `on_chunk_charted`). `territories.centre` moved from `crusade.lua` to `territories.lua`. The F3 trigger now picks staging before spending; `storage.crusade` gets `staging_id`, `nest`, `nest_position`, `tag`. Map tag: the player force charts the nest chunk, then `add_chart_tag` (spawner icon, "Crusade staging"); retried from `on_chunk_charted` if the chunk isn't charted yet. A replaced crusade removes its old tag.
+  - **Headless (2026-10-12, 2.0.77, seed 12345, fresh map, target = territory 14):**
+
+    | Case | Result |
+    |------|--------|
+    | Neighbours of 14 | 3, 11, 45 (no nests), 15 (742 tiles), 40 (950), 49 (1138), **48 (1444)**, all hostile. Picked **48** with nest at 498,-1237 ✓ (furthest from spawn with a nest). |
+    | Fallback: 15, 40, 48, 49 set to `warning` | Picked **51**, the nearest hostile territory with a nest (577 tiles from the target centre) ✓ |
+    | Trigger (budget 5000) | Crusade on 14, staging 48, cost 1136. Map tag placed (1 tag; charting works headless) ✓ |
+    | No hostile territory left | "Next staging: none", **no crusade**, budget kept (5007) ✓ |
+
+  - Map tag looks: check in G4.
+- [ ] **G2. Warning + migration.** Target → `warning`, army spawns in batches into the group, budget refunds over the cap. Headless.
+- [ ] **G3. Critical mass + cancel.** → `crusade` state, chat messages, cancel rules, `/ht-crusade-cancel`. Headless.
+- [ ] **G4. In game.** See the yellow-orange then bright-orange target, the army at the nest, the chat messages. Kill the army during migration → cancelled.
+
+**Resolved (2026-10-12):**
+- G-a. ~~Mark the staging territory?~~ **Yes.** POC: a map tag (`force.add_chart_tag`, spawner icon, text "Crusade staging") at the staging nest, removed when the crusade ends. A tag doesn't clash with the territory colours.
+- G-b. ~~Bigger units further out?~~ **No, follow vanilla** (evolution only) for the POC.
+- G-c. ~~Nest type to build?~~ Not needed: no nest is built (G-3).
 
 ## Open questions
 

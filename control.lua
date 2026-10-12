@@ -2,9 +2,16 @@ local territories = require("scripts.territories")
 local challenge = require("scripts.challenge")
 local waves = require("scripts.waves")
 local attacks = require("scripts.attacks")
+local crusade = require("scripts.crusade")
 
-script.on_init(territories.scan)
-script.on_configuration_changed(territories.scan)
+script.on_init(function()
+  territories.scan()
+  crusade.init()
+end)
+script.on_configuration_changed(function()
+  territories.scan()
+  crusade.init()
+end)
 
 script.on_event(defines.events.on_territory_created, territories.on_territory_created)
 script.on_event(defines.events.on_territory_destroyed, territories.on_territory_destroyed)
@@ -14,8 +21,12 @@ script.on_event(defines.events.on_segmented_unit_died, function(event)
   local claimed = territories.on_segmented_unit_died(event)
   if claimed then challenge.on_won(claimed.id) end
 end)
-script.on_event(defines.events.on_chunk_charted, territories.on_chunk_charted)
+script.on_event(defines.events.on_chunk_charted, function(event)
+  territories.on_chunk_charted(event)
+  crusade.on_chunk_charted(event)
+end)
 script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
+script.on_nth_tick(crusade.CHECK_INTERVAL, crusade.on_tick)
 script.on_event(defines.events.on_ai_command_completed, waves.on_ai_command_completed)
 script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
 
@@ -25,6 +36,7 @@ remote.add_interface("hostile-territory-debug", {
     local record = storage.territories[id]
     if record and territories.states[state] then territories.set_state(record, state) end
   end,
+  crusade = function() return crusade.describe() end,
 })
 
 -- Debug commands -------------------------------------------------------------
@@ -77,4 +89,9 @@ end)
 commands.add_command("ht-attacks", "Show cancelled vanilla attacks and the crusade budget.", function(command)
   local player = game.get_player(command.player_index)
   if player then player.print(attacks.describe()) end
+end)
+
+commands.add_command("ht-crusade", "Show the crusade budget, the next target and its cost.", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(crusade.describe()) end
 end)

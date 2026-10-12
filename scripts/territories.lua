@@ -1,5 +1,5 @@
 -- Registry of Nauvis territories and their state.
--- storage.territories[id] = {id, territory, state, overlay = {["x,y"] = LuaRenderObject}}
+-- storage.territories[id] = {id, territory, state, overlay = {["x,y"] = LuaRenderObject}, centre = MapPosition (cached)}
 -- The id is the registration number from script.register_on_object_destroyed, which is stable
 -- and returned again when the same territory is registered twice.
 
@@ -56,6 +56,19 @@ end
 function territories.get_at(surface, map_position)
   local chunk = {x = math.floor(map_position.x / 32), y = math.floor(map_position.y / 32)}
   return territories.get(surface.get_territory_for_chunk(chunk))
+end
+
+-- Average of the territory's chunk centres, cached on the record. Nil if it has no chunks.
+function territories.centre(record)
+  if not record.centre then
+    local x, y, n = 0, 0, 0
+    for _, chunk in pairs(record.territory.get_chunks()) do
+      x, y, n = x + chunk.x * 32 + 16, y + chunk.y * 32 + 16, n + 1
+    end
+    if n == 0 then return nil end
+    record.centre = {x = x / n, y = y / n}
+  end
+  return record.centre
 end
 
 function territories.set_state(record, state)
