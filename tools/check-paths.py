@@ -7,7 +7,7 @@ Checks prototypes whose name starts with hf-, ht- or contains "cheat". Exit code
 import json, os, re, sys
 
 GAME_DATA = "C:/Program Files (x86)/Steam/steamapps/common/Factorio/data/"
-MODS = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/../"
+MODS = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/mods/"
 OUR_MODS = {"Hostile-fauna", "Hostile-territory", "cheating-mod"}
 FILE = re.compile(r"^__([^_].*?)__/(.*\.(png|jpg|ogg|wav|voc))$")
 

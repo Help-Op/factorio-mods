@@ -1,0 +1,9 @@
+{
+  "name": "Hostile-fauna",
+  "version": "0.1.0",
+  "title": "Hostile Fauna",
+  "author": "Turoni",
+  "description": "Enemy overhaul for Nauvis: slower enemies, new units with their own niches, distance-gated nests.",
+  "factorio_version": "2.1",
+  "dependencies": ["base >= 2.1", "space-age"]
+}

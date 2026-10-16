@@ -1,0 +1,9 @@
+{
+  "name": "cheating-mod",
+  "version": "0.1.0",
+  "title": "Cheating Mod (demolisher test kit)",
+  "author": "Sam",
+  "description": "Starts every player with mech armor, heavy weapons, bots and a spidertron, for testing demolisher fights.",
+  "factorio_version": "2.1",
+  "dependencies": ["base >= 2.1", "space-age", "? quality"]
+}

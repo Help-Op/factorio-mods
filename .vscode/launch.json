@@ -5,7 +5,7 @@
       "type": "factorio",
       "request": "launch",
       "name": "Factorio Mod Debug",
-      "factorioArgs": ["--load-scenario", "base/freeplay"]
+      "factorioArgs": ["--mod-directory", "E:/dev/factorio/mods", "--load-scenario", "base/freeplay"]
     }
   ]
 }

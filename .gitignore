@@ -1,0 +1,10 @@
+# Factorio writes these into the mod directory (mods/ is --mod-directory for debug runs)
+mods/mod-list.json
+mods/mod-settings.dat
+mods/*.zip
+
+# Output from --dump-data and the headless harness
+script-output/
+
+# FMTK writes a machine-specific workspaceStorage path here (W13)
+.vscode/settings.json

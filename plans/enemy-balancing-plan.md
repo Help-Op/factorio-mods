@@ -2,7 +2,7 @@
 
 Sub-plan of phase I in [vision-plan.md](vision-plan.md). Status: **D1–D28 decided, EB1c done (2026-10-15), next: EB2a** (started 2026-10-12, decisions 2026-10-12).
 
-The work in this plan goes into the separate mod **`../Hostile-fauna`** (D10). This plan stays here for now; it can move to `Hostile-fauna` once that mod has its own repo.
+The work in this plan goes into the separate mod **`mods/Hostile-fauna`** (D10). Both mods share this workspace repo since 2026-10-16 (see [workspace-migration-plan.md](workspace-migration-plan.md)).
 
 ## Goal
 
@@ -414,7 +414,7 @@ Speeds at player 0.25 tiles/tick (EB3 starting point, D13):
   - [x] C4. **One-point patrol path** → circles, ~20 tiles out.
   - [x] C5. **`set_body_nodes` on a sleeping wyrm** → works, stays `patrolling`.
   - [x] C6. **Asleep vs full** → asleep = frozen.
-  - [ ] In game (user): commands in [commands.md](commands.md) "Wyrm control". Check how it looks: does a dormant wyrm look natural standing still (animation, idle effects)? Does a `set_body_nodes` jump look bad when you see it? Does a forced `investigating` look natural?
+  - [ ] In game (user): commands in [commands.md](../docs/commands.md) "Wyrm control". Check how it looks: does a dormant wyrm look natural standing still (animation, idle effects)? Does a `set_body_nodes` jump look bad when you see it? Does a forced `investigating` look natural?
 - [ ] **EB4. First niche units.** Build 2–3 units. In game: do they feel different, and do they combine well?
 - [ ] **EB5. Plug into the mod.** Use them in challenge rings and crusade armies, and possibly in spawners (`result_units`).
 - [ ] **EB6. Tune.** HP, damage, numbers per ring and evolution. Resistances per the weapon-checkpoint effort bands.
