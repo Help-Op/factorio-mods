@@ -3,6 +3,6 @@
   "version": "0.1.0",
   "title": "Hostile Territory (Nauvis)",
   "author": "Turoni",
-  "factorio_version": "2.0",
-  "dependencies": ["base >= 2.0", "space-age"]
+  "factorio_version": "2.1",
+  "dependencies": ["base >= 2.1", "space-age", "Hostile-fauna >= 0.1.0"]
 }

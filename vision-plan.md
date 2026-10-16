@@ -171,6 +171,7 @@ Tests: (a) shoot once, then stand still about 20 tiles away without shooting. Do
 - (a) Shot from a spidertron: `enraged_at_target target=spidertron`, `left=` counts down 30 → 0 and does **not** reset while the player is near. After the countdown it switches to **`attacking target=spidertron`** and keeps fighting, so vanilla "aggro" lasts as long as a player entity is in reach. On foot and running away (first run), it went back to `patrolling`.
 - (b) Building in the territory: about 10 s after the furnace was placed, `investigating target=none` → about 10 s later `attacking target=stone-furnace` → `patrolling` after it was destroyed. The delay comes from `ticks_per_scan`.
 - Runtime API: `LuaSegmentedUnit.health` is writable (for healing on fail); `LuaEntityPrototype.vision_distance` and `enraged_duration` are readable. |
+| T5 | Crusade starts without arming (phase I). | New freeplay with the mod; **don't** use the arm command. Build a normal polluting base, kill one guardian near spawn. Watch with `/ht-crusade` (budget, from-evolution part, target, cost). | Does a crusade start on its own? How many minutes after the claim? How much budget came from cancelled attacks vs. evolution? Is that pace fun, too slow or too fast? Budget sources: cancelled attacks (`attacks.lua`) + 10 000 per 1.0 time/spawner evolution; cost `400 × (1 + d/500) × (1 + 4 × evo)`. |
 
 ## Phases (draft, to refine)
 
@@ -183,8 +184,8 @@ Each phase starts with a small engine test before building on it.
 - [x] **E. Vanilla attacks off.** Done 2026-10-12 (option B, headless + in game E3). E1 skipped. Details below.
 - [x] **F. Crusade budget.** Done 2026-10-12 (F1–F2 headless, F3 headless + in game). Details below.
 - [x] **G. Target + migration + warning.** Pick target and staging nest (must already exist), spawn the army at the nest (POC), colour the target. Done 2026-10-12 (G0–G3 headless, G4 in game incl. two fixes). Details below.
-- [ ] **H. Assault + rally + hold.** Move to a spot on the patrol path, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian. Approved 2026-10-12, H0–H3 done (headless), H4 in game open. Details below.
-- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4), crusade cost and budget speed (F), army cap and the early-kill cancel rule (G), guardian and rally strength (H-6), cutoff for straggler rebuilds (H-b).
+- [x] **H. Assault + rally + hold.** Move to a spot on the patrol path, build the rally, check hold conditions (rally destroyed → timer reset), respawn the guardian. Done as POC 2026-10-12 (H0–H3 headless, H4 in game incl. squad fixes). Smarter AI later. Details below.
+- [ ] **I. Balancing.** Known items: challenge spawn rate (C2) and difficulty in rings 1–2 (C4), crusade cost and budget speed (F), army cap and the early-kill cancel rule (G), guardian and rally strength (H-6), cutoff for straggler rebuilds (H-b). Enemy feel, speed and niches: see [enemy-balancing-plan.md](enemy-balancing-plan.md). Pace of crusades without arming: test T5.
 - [ ] **J. Waypoint migration.** Replace spawned armies with biters walking through enemy-controlled territories (V8 a).
 
 `territory-recapture-plan.md` becomes the engine-test notes for phases A and H.
@@ -615,7 +616,7 @@ Goal: the gathered army (phase G) attacks the target, builds a rally on the guar
 | H-3 | Which guardian | Save the guardian's prototype name on the territory record when it is seen (scan / unit created). Fallback: the distance formula above on the territory centre. | Exact for territories we saw with a guardian. |
 | H-4 | Building | **Our own version of the vanilla mechanic**: on arrival, set aside **builders = 10% of the army (5–20, like settler groups)**. One builder is sacrificed (removed) every `build time / builders`; each one adds its share of health. | Same feel as expansion (biters turn into the base), but we control timing and the entity. Not `build_base` itself: the engine would build a vanilla nest. |
 | H-5 | Health while building | Each sacrificed builder adds `max_health / builders` (clamped to max). Starts at ~0. | No regen (H0), so damage simply stays. |
-| H-6 | Regen | **Decided: copy the guardian's stats plainly, nothing special.** `healing_per_tick` is copied but has no effect on `simple-entity-with-force` (H0); **no scripted regen** (2026-10-12). Guardians being far too strong is a known issue, to address later (phase I). | |
+| H-6 | Regen | **Decided: copy the guardian's stats plainly, nothing special.** `healing_per_tick` is copied but has no effect on `simple-entity-with-force` (H0); **no scripted regen** (2026-10-12). Guardians being far too strong is a known issue, to address later (phase I). **2.1 regression (user, 2026-10-15, 2.1.21):** `simple-entity-with-force` heals in 2.1 (confirmed in game: 1 → 3381 HP in under 1 s; the rally showed 75000/75000 at builders 3/19). **Fixed:** `healing_per_tick = 0` on the rally prototype. Retest passed in game (user, 2026-10-15, 2.1.21): crusades work as expected. | |
 | H-7 | Army at the rally | Group command `wander` near the rally (radius ~20, `distraction = by_enemy`). | They defend the rally and attack players nearby. |
 | H-8 | Military check | Every 10 s, per chunk of the target: `count_entities_filtered{force = "player", type = {character, ammo-turret, electric-turret, fluid-turret, artillery-turret, car, spider-vehicle, combat-robot, artillery-wagon}}`. Stop at the first hit. | Walls and normal buildings don't count (7a). |
 | H-9 | Units inside | Army members whose chunk belongs to the target territory. | Matches "N enemy units inside". |
@@ -695,7 +696,7 @@ Goal: the gathered army (phase G) attacks the target, builds a rally on the guar
   - The test territory also kept its original guardian (it was set to `claimed` by command, not by killing it). In play the original is dead, so there is one guardian.
   - Not tested: hold broken by **too few units** (same code path as military).
   - Cosmetic: after a loss `/ht-crusade` shows "0 alive" because released units are no longer tracked.
-- [ ] **H4. In game.** Full crusade: march, build, defend or lose.
+- [x] **H4. In game.** Full crusade: march, build, defend or lose. **Done as POC (2026-10-12, 2.0.77):** after the squad fixes below, attacks behave "way closer to expected". Good enough for the POC; further tuning goes to phase I and "Later: smarter crusade AI".
     Setup: kill the guardian of a territory near spawn (small guardian → 5 min build), so it is claimed and the furthest claimed one. Your **character counts as military**: standing in the target blocks the hold. Optional speed-up: `/c game.speed = 4` (back with `= 1`).
     1. Arm: `/c __Hostile-territory__ storage.crusade_budget = 5000 storage.crusade_cooldown_until = 0 game.print("armed")`
     2. Within 60 s: "Crusade warning", target yellow-orange, staging tag. After ~2 min: "… march from territory S", target bright orange, staging tag gone.
@@ -708,14 +709,14 @@ Goal: the gathered army (phase G) attacks the target, builds a rally on the guar
   - **In game (2026-10-12, 2.0.77), after the sprite fix:** the crusade "seems to work pretty well". Found: entering the target during the hold prints "the hold is broken", but **the army doesn't come after the player**. It does when the player attacks the rally (H-14). Cause: the army only wanders near the rally (radius 20) and reacts to what it sees; the military check only resets the timer. See H-g.
   - **Built H-15 (2026-10-12):** `rally.find_player_military` (nearest to the rally, one candidate per chunk), `army.split`, `check_intruders` in build + hold. `/ht-crusade` shows the squad.
   - **Headless (2026-10-12, 2.0.77):** player turret placed in the target 392 tiles from the rally during the build. **Squad of 45** (25 % of 180) went for it, **135 stayed** at the rally, building went on. Turret destroyed after ~60 game s; squad walked back and wanders at the rally (172 of 172 near it) ✓.
-  - [ ] **Retest in game:** walk into the target during build/hold: a squad comes for you, the rest stay at the rally.
+  - [x] **Retest in game:** walk into the target during build/hold: a squad comes for you, the rest stay at the rally. Covered by the final H4 result.
   - **In game (2026-10-12, 2.0.77): no attack**, neither during build nor hold, while standing in the target.
   - **Headless repro (2026-10-12, 2.0.77):** a `character` (player force) placed in the target 80 tiles from the rally during the build → squad of 45 attacked and killed it within ~12 s. So the code works headless. Suspects: (1) the squad targets the military entity **nearest the rally**, which may be the cheat kit's **spidertron**, a turret or robots, not the player; (2) the save wasn't reloaded after the change (control.lua only reloads on load). `/ht-crusade` now also shows the squad's position and its target with position.
   - **In game (2026-10-12, 2.0.77), with the new output:** during the build the squad was sent `after character`, but its group **stood still at -187,361 for ~60 s** while the player moved. In the hold the army did attack the player.
   - **Cause (headless repro, character teleported away):** when the target moves, the group's attack ends early and the group sits **`finished`, no command**. The squad still counted as busy (target alive, members > 0), so no new command or squad was sent.
   - **Fix (2026-10-12):** every 10 s the squad gets a fresh command when it is idle (`finished` or no command) or a different intruder is nearest. No intruder left + idle squad → walks back to the rally.
   - **Headless after fix (2026-10-12, 2.0.77):** tough character, teleported ~100 tiles twice: the squad followed both times, reached it and attacked (`attacking_target`, 45 within 20 tiles) ✓. Character removed → squad walked back toward the rally ✓.
-  - [ ] **Retest in game:** stand in the target and move around during the build: the squad keeps coming.
+  - [x] **Retest in game:** stand in the target and move around during the build: the squad keeps coming. Covered by the final H4 result.
   - **Decided (2026-10-12): the squad prefers the player character** over other military (turrets, vehicles, robots). Other military only when no character is in the target. Built: `rally.find_player_military` scans characters first. Smarter AI ideas: see "Later: smarter crusade AI". Headless (2026-10-12, 2.0.77): turret 69 tiles from the rally, character 159 tiles: squad goes `after character` ✓.
   - **In game (2026-10-12, 2.0.77):** better during the build, but **after the rally was finished no attack**. `/ht-crusade`: squad at the rally, "sent 204 s → 344 s ago" (never re-sent), target the player 250 tiles away.
   - **Cause:** the squad had walked back and was **wandering** at the rally while its target was still alive; only `finished` counted as idle, so it stayed "busy".
@@ -742,6 +743,102 @@ The POC AI is easy to fool: a squad chases one target, so the player can use a c
 - **Keep a minimum guard:** never send units below N at the rally (the hold needs 10 inside anyway).
 - **Ignore decoys:** don't chase fast vehicles they can't catch; give up after a timeout without damage dealt.
 - **Retreat / regroup:** pull back to the rally when a squad drops below half strength.
+
+### Later: challenge and army templates (idea, 2026-10-12)
+
+Not planned yet. Challenges and crusades will mix `Hostile-fauna` units with vanilla ones (`enemy-balancing-plan.md` D18). Idea: **templates** that define a mix-up (which units, which waves, which combination of challenge types) and **when** each template is used (distance, evolution, territory, maybe random weight). Today the mix is hard-coded in `waves.lua` and `army.lua`.
+
+### Idea: challenge arena and player punch (2026-10-15)
+
+**Goal:** a survivors-like feel **only inside a challenge**. Enemies keep their normal (rebalanced) speed everywhere else, and turret balance stays roughly intact. Two parts: (1) an **arena** that slows things inside it, (2) the player **packs more punch per bullet than a turret**.
+
+Status: **decided (2026-10-15)**, next step AR1.
+
+#### Decisions (2026-10-15)
+
+| # | Topic | Decision |
+|---|-------|----------|
+| AR-a | Player slow | **No** for the first tests. Maybe later. |
+| AR-b | Which enemies | **All enemy units** inside the arena (challenge waves, passing vanilla biters, crusade units). |
+| AR-c | Turrets | **(a) Accept** that turrets in the arena profit from the slow. |
+| AR-d | Edge | **The arena edge is the lose line.** The arena is **fixed** at the challenge start; it doesn't follow the player. |
+| PP-a | Player punch method | **(b) Gun `damage_modifier`** first. (a) per-ammo later, for player-only effects. |
+| PP-b | Strength | **2×** per bullet to start. |
+| PP-c | When | **Always**, not only in the arena. |
+
+POC defaults (proposed with the decisions, change freely): centre = the triggering participant's position at challenge start; radius **80 tiles** (waves spawn 40–50 tiles from the player, so mostly inside); outside the arena for `LOSE_GRACE` (5 s) = lose, on top of today's rules (guardian not engaged, nobody within 100 tiles of a guardian).
+
+#### Confirmed facts (2.1.21 docs and game files)
+
+| Fact | Source |
+|------|--------|
+| Stickers slow anything that takes them: `target_movement_modifier` (units, characters), `vehicle_speed_modifier` (vehicles). `duration_in_ticks` can be short, so a short sticker **refreshed every 30 ticks** acts as an area effect: leave the area and it wears off. | `prototype-api.json` |
+| `LuaControl.character_running_speed_modifier` is a writable per-character modifier (−1 = stopped). | `runtime-api.json` |
+| `LuaSegmentedUnit.speed` / `target_speed` exist, but the AI sets the speed. Slowing the guardian is not simple. | `runtime-api.json` |
+| `AmmoItemPrototype.ammo_type` can be an **array** with `source_type` = `default` / `player` / `turret` / `vehicle`. Same magazine, different damage (or effects) per shooter. Vanilla uses it for cannon shells (`base/prototypes/item.lua:2842`). | `prototype-api.json`, base |
+| Guns have `attack_parameters.damage_modifier`. Player guns (pistol, SMG, shotgun, …) are separate prototypes from turrets, so they can be scaled alone. | `prototype-api.json` |
+| Flat resistance makes **per-bullet damage** count a lot: big biter takes 0.18 from 5 phys, 14.4 from 24 (EB D19). A player bullet that hits harder than a turret bullet gets through armour that turret bullets bounce off. | `enemy-balancing-plan.md` |
+
+#### Part 1: arena (proposal)
+
+| # | Topic | Proposal |
+|---|-------|----------|
+| AR-1 | Shape | Circle around the challenge start, radius ~60 tiles (POC). Visible ring via `rendering.draw_circle`. |
+| AR-2 | Enemy slow | Every 30 ticks, enemy units inside get a short slow sticker (~1 s). Outside the arena: full speed within a second. **Replaces** the lifelong stickers on wave units (`waves.lua`). Strength per ring stays (50 % → 10 %). |
+| AR-3 | Player slow | **Decided: not for now (AR-a).** Optional, smaller than the enemy slow, so kiting still works. Via `character_running_speed_modifier` (save and restore the old value) or a player sticker. |
+| AR-4 | Which enemies | All enemy units inside (also passing vanilla biters and crusade units), or only challenge units. |
+| AR-5 | Turrets | Turrets in the arena profit from slowed enemies. Options: (a) accept it; (b) no slow near player turrets; (c) arena switches off while non-character military (turrets, robots) is inside. |
+| AR-6 | Edge | Today you lose at 100+ tiles. Option: the arena edge **is** the lose line (outside > 5 s = lose). |
+| AR-7 | Guardian | Not slowed (POC). |
+
+Cost: one `find_entities_filtered{position, radius, force = "enemy", type = "unit"}` per challenge every 30 ticks, ≤ 60 units each. Cheap.
+
+#### Part 2: player punch (proposal)
+
+| Option | How | Pro | Con |
+|--------|-----|-----|-----|
+| (a) `source_type` ammo | Each magazine gets a `player` entry (e.g. 2× damage) and a `turret` entry (vanilla). Loop in `data-final-fixes` | Exact per ammo; can add **player-only effects** (slow, knockback, pierce) | Every ammo, incl. other mods' ammo |
+| (b) Gun `damage_modifier` | Raise it on player guns (pistol, SMG, shotgun, rocket launcher, flamethrower) | One number per gun, works with any mod's ammo | Same buff for every ammo tier |
+| (c) Script on `on_entity_damaged` | Extra damage when the cause is a character | Could be arena-only | UPS, hacky. Not recommended |
+| (d) Weaker turrets | Force turret modifiers | — | Fights with research |
+
+**Recommendation:** start with (b), move to (a) when we want player-only effects. Lives in `Hostile-fauna` (player speed is there too, D11). Reopens EB D9 ("player tools out of scope") and changes the checkpoint math (D19–D23): the checkpoint table must use player damage, not turret damage.
+
+#### Steps
+
+- [x] AR0. Answer AR-a … PP-c. Done 2026-10-15, see decisions.
+- [x] AR1. Headless: short refreshed sticker on a unit. Speed drops inside, back to normal ~1 s after leaving. (Character dropped: no player slow, AR-a.)
+  - Added `ht-arena-slow-10` … `-50` to `prototypes/entity/challenge-stickers.lua`: `duration_in_ticks = 60`, no graphics.
+  - **Headless (2026-10-15, 2.1.21), passed.** Three small biters (`speed` 0.225) walk east on flat grass, `go_to_location`, `distraction = none`. For 300 ticks: *refresh* gets `ht-arena-slow-50` every 30 ticks, *spam* gets it every tick, *control* gets nothing.
+
+    | Biter | Ticks 0–300 | After the last sticker (tick 300) | Stickers attached |
+    |-------|-------------|-----------------------------------|-------------------|
+    | control | 13.4 tiles / 60 ticks | 13.4 | 0 |
+    | refresh (every 30) | **6.6 / 60 = exactly 50 %** | 6.7 for ticks 300–360, then **13.4 from tick 360** | 1 |
+    | spam (every tick) | 6.6 / 60, same as refresh | same | **1**: a second sticker of the same name refreshes it, it doesn't stack |
+
+  - Result: refreshing every 30 ticks keeps the slow steady. Full speed returns **≤ 60 ticks** after the last refresh. Applying it more often than needed is harmless.
+  - Harness note: an old headless server from another session (PID 14816, started 20:49) was still running and holding port 34299. Used ports 34391 / RCON 27191 instead; PID 14816 stopped afterwards on the user's request.
+- [ ] AR2. Build the arena (new `scripts/arena.lua`, hooked into `challenge.lua`): ring drawn, slow sticker refresh for all enemy units inside, lose when every participant is outside the edge for 5 s. Drop the lifelong wave stickers.
+- [ ] AR3. In game: feel test (user).
+- [ ] PP1. Player guns `damage_modifier` × 2 in `Hostile-fauna` (PP-a/b): pistol, SMG, shotgun, combat shotgun, rocket launcher, flamethrower. Note in EB plan that D9 is partly reopened. Headless: SMG bullet vs. gun turret bullet on a big biter.
+- [ ] PP2. Update the checkpoint table (EB D23) with player damage.
+
+#### Open questions
+
+- ~~AR-a … PP-c~~ Decided 2026-10-15.
+- ~~AR-e. Radius 80, centre at the player's start position?~~ **OK to start (2026-10-15).**
+- ~~AR-f. Leftovers still flee on a win (now at full speed once outside)?~~ **Yes, fine (2026-10-15).**
+
+## Open questions
+
+- AR-a. Slow the player too? If yes, how much compared to the enemies?
+- AR-b. All enemies inside the arena, or only challenge units (AR-4)?
+- AR-c. Turrets in the arena (AR-5): a, b or c?
+- AR-d. Arena edge = lose line (AR-6)? Fixed around the start point, or does it follow the player?
+- PP-a. Player punch: (b) gun modifier first, or straight to (a) per-ammo?
+- PP-b. How much stronger? Start at 2× per bullet?
+- PP-c. Always, or only inside the arena? (Arena-only needs option c or a gun swap. Not recommended.)
 
 ## Open questions
 

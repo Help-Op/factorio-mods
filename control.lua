@@ -4,12 +4,14 @@ local waves = require("scripts.waves")
 local attacks = require("scripts.attacks")
 local crusade = require("scripts.crusade")
 local rally = require("scripts.rally")
+local patrol = require("scripts.patrol")
 
 script.on_init(function()
   territories.scan()
   crusade.init()
 end)
 script.on_configuration_changed(function()
+  patrol.migrate()
   territories.scan()
   crusade.init()
 end)
@@ -29,6 +31,8 @@ end)
 script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
 script.on_nth_tick(crusade.CHECK_INTERVAL, crusade.on_tick)
 script.on_nth_tick(crusade.MIGRATION_INTERVAL, crusade.on_migration_tick)
+script.on_nth_tick(patrol.INTERVAL, patrol.on_tick)
+script.on_nth_tick(patrol.LIVE_INTERVAL, patrol.on_live_tick)
 script.on_event(defines.events.on_ai_command_completed, function(event)
   waves.on_ai_command_completed(event)
   crusade.on_ai_command_completed(event)
@@ -46,6 +50,18 @@ remote.add_interface("hostile-territory-debug", {
   end,
   crusade = function() return crusade.describe() end,
   crusade_cancel = function() return crusade.finish("Crusade cancelled (debug).") end,
+  -- reroute one territory now (runs again even if done); returns its stats
+  reroute = function(id)
+    local record = storage.territories[id]
+    if not (record and record.territory.valid) then return nil end
+    return patrol.reroute(record)
+  end,
+  -- reroute stats per territory: {[id] = record.patrol}
+  patrol = function()
+    local out = {}
+    for id, record in pairs(storage.territories or {}) do out[id] = record.patrol or false end
+    return out
+  end,
 })
 
 -- Debug commands -------------------------------------------------------------

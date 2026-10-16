@@ -2,12 +2,9 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "factoriomod",
+      "type": "factorio",
       "request": "launch",
       "name": "Factorio Mod Debug",
-      "hookSettings": true,
-      "hookData": true,
-      "hookControl": ["Hostile-territory"],
       "factorioArgs": ["--load-scenario", "base/freeplay"]
     }
   ]

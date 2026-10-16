@@ -1,6 +1,6 @@
 # Hostile Territory
 
-Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires Space Age, targets Factorio 2.0 (installed: 2.0.77).
+Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires Space Age, targets Factorio 2.1 (installed: 2.1.21, experimental; switched from 2.0.77 on 2026-10-15).
 
 ## How we work
 
@@ -15,6 +15,7 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 - Clear structure, short and to the point. Use headings, bullets and tables. No filler.
 - Plans use: Goal → Decisions / Confirmed facts → Issues → Step-by-step checklist (`- [ ]`) → Open questions.
 - Give in-game test commands as one-line `/c ...` console commands that I can paste.
+- **Keep useful commands in [commands.md](commands.md)**: one command per fenced code block (plain lines get merged by markdown). Add every new debug command or test snippet that will be reused.
 
 ## Plan files
 
@@ -22,22 +23,26 @@ Factorio mod that adds Vulcanus-style demolisher territories to Nauvis. Requires
 |------|-------|--------|
 | [vision-plan.md](vision-plan.md) | Overall vision: challenges, crusades, territory states | Draft, refining |
 | [plan.md](plan.md) | Nauvis territories via map gen | Main plan. Steps 1–6 done, 7–8 open |
+| [enemy-balancing-plan.md](enemy-balancing-plan.md) | Phase I: enemy feel, speed, niches, data-stage capabilities | Decisions D1–D28 made (D25: switched to 2.1). EB1c done, next: EB2a. Work goes into `../Hostile-fauna` |
 | [territory-recapture-plan.md](territory-recapture-plan.md) | Enemies recapturing cleared territories | Active, still exploring |
 | [nauvis-territories-plan.md](nauvis-territories-plan.md) | Old approach | Superseded by `plan.md` |
+| [workspace-migration-plan.md](workspace-migration-plan.md) | Move to monorepo workspace `E:\dev\factorio` | Decisions W1–W11 made. Next: step 1 (you commit) |
+| [commands.md](commands.md) | In-game commands for testing (debug, crusades, kits, enemies) | Living reference |
 | [overlay-debug-report.md](overlay-debug-report.md) | Old runtime overlay bugs | Outdated, to archive |
 
 ## Project layout
 
 - `data.lua` requires `prototypes/planet/nauvis-territory.lua`, which sets `data.raw.planet.nauvis.map_gen_settings.territory_settings`.
-- `control.lua` (approved 2026-10-11) only wires events and debug commands. Logic lives in `scripts/` (`territories.lua`: registry + state, `overlay.lua`: map colours, `challenge.lua`: challenge start/win/lose, `waves.lua`: challenge enemies, `attacks.lua`: cancels vanilla attacks, pollution budget, `crusade.lua`: evolution budget, target, cost, trigger and crusade phases, `staging.lua`: staging nest pick + map tag, `army.lua`: army mix, spawning and unit list, `rally.lua`: rally plan, spot, build, `tags.lua`: map tags). `prototypes/entity/` holds the tiny biter and slowdown stickers. See phases A–E in `vision-plan.md`.
+- `control.lua` (approved 2026-10-11) only wires events and debug commands. Logic lives in `scripts/` (`territories.lua`: registry + state, `overlay.lua`: map colours, `challenge.lua`: challenge start/win/lose, `waves.lua`: challenge enemies, `attacks.lua`: cancels vanilla attacks, pollution budget, `crusade.lua`: evolution budget, target, cost, trigger and crusade phases, `staging.lua`: staging nest pick + map tag, `army.lua`: army mix, spawning and unit list, `rally.lua`: rally plan, spot, build, `tags.lua`: map tags, `patrol.lua`: reroutes patrol paths over land using the elevation noise, and wyrms make land when kited over water). `prototypes/entity/` holds the tiny biter and slowdown stickers. See phases A–E in `vision-plan.md`.
 - Debug through VS Code with the Factorio Mod Debug extension (`.vscode/launch.json` launches straight into freeplay).
-- `../cheating-mod` is a separate helper mod for testing (start gear strong enough to kill demolishers).
+- `../Hostile-fauna` is the enemy overhaul mod (slower enemies, new units, new segmented units, player speed). Hostile Territory has a hard dependency on it. Own git repo. Plan: `enemy-balancing-plan.md`.
+- `../cheating-mod` is a separate helper mod for testing. Map setting `cheating-mod-auto-kit` (default off) gives the demolisher kit on spawn. `/cheat-kit [name]` (demolisher, pistol, smg-yellow, smg-red, smg-uranium, shotgun, flamethrower, rockets) and `/cheat-clear` work anytime.
 
 ## Factorio gotchas
 
-- Use the 2.x API: `storage`, not `global`. `rendering.draw_*` returns a `LuaRenderObject`, which you remove with `.destroy()`.
+- Use the 2.1 API: `storage`, not `global`. `rendering.draw_*` returns a `LuaRenderObject`, which you remove with `.destroy()`.
 - Territory units must be `segmented-unit` prototypes (demolishers), not biters.
-- Check the API against the installed game files (`Factorio/data/`) and the 2.0 docs. Don't trust memory.
+- Check the API against the installed game files (`Factorio/data/`) and the 2.1 docs. Don't trust memory.
 - Headless test harness (described in `plan.md` step 5): `--create` with map-gen settings, then `--start-server` with RCON, then generate chunks and count territories and demolishers. Use `/c __Hostile-territory__ ...` to read the mod's `storage`. The server needs `auto_pause = false`. Headless never charts chunks, so map overlays must be tested in game (`force.chart()` and chart tags do work headless).
-- Harness details: build `server-settings.json` from `data/server-settings.example.json` (a partial file is rejected). Run with an isolated `--mod-directory` (junction to this mod + minimal `mod-list.json`), because VS Code debugging enables `debugadapter`, which fails headless. In Git Bash set `MSYS_NO_PATHCONV=1`, or `/c` gets rewritten to a path. Console code can't `require`; read module output through the `hostile-territory-debug` remote interface. Stop the server by PID, not by image name. Headless doesn't load sprites, so wrong sprite sizes only show up in game: check image sizes in the game files.
+- Harness details: build `server-settings.json` from `data/server-settings.example.json` (a partial file is rejected). Run with an isolated `--mod-directory` (junction to this mod + minimal `mod-list.json`), so the run only has the mods under test (`Hostile-fauna` + this mod). On 2.1 the `debugadapter` mod is gone; FMTK uses Factorio's native debugger (launch `type: "factorio"`). In Git Bash set `MSYS_NO_PATHCONV=1`, or `/c` gets rewritten to a path. Console code can't `require`; read module output through the `hostile-territory-debug` remote interface. Stop the server by PID, not by image name, and always at the end of a test run: a forgotten headless server crashed the in-game start (2026-10-15). Headless doesn't load sprites, so wrong sprite sizes and missing files only show up in game: check image sizes in the game files, and after prototype changes run `--dump-data` + `python tools/check-paths.py <write-data>/script-output/data-raw-dump.json` (every file path in our prototypes must exist; caught the earth wyrm icon bug).
 - The parameter lists in `doc-html/runtime-api.json` aren't in call order. Sort them by `order` before trusting them.

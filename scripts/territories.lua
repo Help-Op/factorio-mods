@@ -1,10 +1,11 @@
 -- Registry of Nauvis territories and their state.
 -- storage.territories[id] = {id, territory, state, overlay = {["x,y"] = LuaRenderObject}, centre = MapPosition (cached),
---   guardian = segmented-unit prototype name (last seen guarding it)}
+--   guardian = segmented-unit prototype name (last seen guarding it), patrol = reroute stats (scripts/patrol.lua)}
 -- The id is the registration number from script.register_on_object_destroyed, which is stable
 -- and returned again when the same territory is registered twice.
 
 local overlay = require("scripts.overlay")
+local patrol = require("scripts.patrol")
 
 local territories = {}
 
@@ -60,6 +61,7 @@ function territories.get(territory)
     record = {id = id, territory = territory, state = default_state(territory), overlay = {}}
     storage.territories[id] = record
     remember_guardian(record)
+    patrol.queue(record)
   end
   return record
 end
@@ -92,6 +94,7 @@ function territories.remove_id(id)
   local record = storage.territories[id]
   if not record then return end
   overlay.clear(record)
+  patrol.forget(record)
   storage.territories[id] = nil
 end
 
@@ -109,6 +112,7 @@ function territories.scan()
       record.state = default_state(territory)
     end
     if not record.guardian then remember_guardian(record) end
+    patrol.queue(record)
     overlay.redraw(record)
   end
 end

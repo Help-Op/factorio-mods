@@ -42,10 +42,10 @@ for _, expr in ipairs(territory_expressions) do
 end
 
 -- enable territory settings on the existing Nauvis prototype
--- (units must be segmented-unit prototypes, so this needs Space Age's demolishers)
+-- (units must be segmented-unit prototypes: the earth wyrms from Hostile-fauna, EB3b)
 data.raw.planet.nauvis.map_gen_settings.territory_settings =
 {
-  units = {"small-demolisher", "medium-demolisher", "big-demolisher"},
+  units = {"hf-earth-wyrm-small", "hf-earth-wyrm-medium", "hf-earth-wyrm-big"},
   territory_index_expression = "hostile_territory_expression",
   territory_variation_expression = "hostile_territory_variation",
   minimum_territory_size = 10

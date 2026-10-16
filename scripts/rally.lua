@@ -12,8 +12,10 @@ local tags = require("scripts.tags")
 
 local rally = {}
 
-local GUARDIANS = {"small-demolisher", "medium-demolisher", "big-demolisher"}
-local SIZE = {["small-demolisher"] = "small", ["medium-demolisher"] = "medium", ["big-demolisher"] = "big"}
+local GUARDIANS = {"hf-earth-wyrm-small", "hf-earth-wyrm-medium", "hf-earth-wyrm-big"} -- Hostile-fauna (EB3b)
+local SIZE = {["hf-earth-wyrm-small"] = "small", ["hf-earth-wyrm-medium"] = "medium", ["hf-earth-wyrm-big"] = "big",
+  -- saves from before EB3b still have demolisher guardians
+  ["small-demolisher"] = "small", ["medium-demolisher"] = "medium", ["big-demolisher"] = "big"}
 local BUILD_TIME = {small = 5 * 60 * 60, medium = 15 * 60 * 60, big = 30 * 60 * 60}
 local SPOT_SEARCH_RADIUS = 20
 local TAG_TEXT = "Crusade rally"
