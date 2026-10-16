@@ -75,7 +75,7 @@ C:\Users\Sam\AppData\Roaming\Factorio\mods\
 ## Steps
 
 - [x] **1. Commit current work (you).** Done 2026-10-16 (`a398997`). Commit everything in Hostile-territory, including the untracked `commands.md`, `enemy-balancing-plan.md`, `scripts/patrol.lua`, `scripts/test-plan.md`, `tools/` and this plan.
-- [x] **2. Clone into the workspace.** Done 2026-10-16: cloned at `a398997`, origin points to `hostile-territory.git` for now. **Still open:** rename the repo on GitHub (you), then run `git remote set-url origin https://github.com/Help-Op/factorio-mods.git`. Original plan: `git clone C:\Users\Sam\AppData\Roaming\Factorio\mods\Hostile-territory E:\dev\factorio`. Rename the GitHub repo to `factorio-mods` (you, on GitHub), then `git remote set-url origin https://github.com/Help-Op/factorio-mods.git`.
+- [x] **2. Clone into the workspace.** Done 2026-10-16: cloned at `a398997`, Repo renamed on GitHub (you, 2026-10-16), `origin` set to `https://github.com/Help-Op/factorio-mods.git`, `git ls-remote` resolves (HEAD `a398997`). Original plan: `git clone C:\Users\Sam\AppData\Roaming\Factorio\mods\Hostile-territory E:\dev\factorio`. Rename the GitHub repo to `factorio-mods` (you, on GitHub), then `git remote set-url origin https://github.com/Help-Op/factorio-mods.git`.
 - [x] **3. Restructure with `git mv`.** Done 2026-10-16: 28 renames staged. `mods/Hostile-territory/` holds only `info.json`, `data.lua`, `control.lua`, `locale/`, `prototypes/`, `scripts/` (no graphics, thumbnail or changelog yet). Links in `CLAUDE.md` are broken until step 7.
   - Mod files → `mods/Hostile-territory/`: `info.json`, `data.lua`, `control.lua`, `scripts/`, `prototypes/`, `locale/` (plus `graphics/`, `thumbnail.png`, `changelog.txt` if they exist).
   - `*-plan.md`, `overlay-debug-report.md`, `scripts/test-plan.md` → `plans/`.
@@ -92,12 +92,12 @@ C:\Users\Sam\AppData\Roaming\Factorio\mods\
   - Harness note: the first RCON command after auth got an empty reply and did not run, so the first try showed only 5 territories (start area only). Send a throwaway command first.
   - Original step: Update the `CLAUDE.md` project layout, the plan table and the harness notes. Fix `enemy-balancing-plan.md` line 5. Update the harness so its isolated mod dir has junctions to `E:\dev\factorio\mods\<mod>` (W11). Update every `commands.md` link to `docs/commands.md`. Then run `tools/check-paths.py` on a fresh `--dump-data`.
   - Test: one headless harness run (territory count matches plan.md step 5).
-- [ ] **8. Swap the AppData folders for junctions.** Partly done 2026-10-16:
+- [x] **8. Swap the AppData folders for junctions.** Done 2026-10-16:
   - The backup is `C:\Users\Sam\AppData\Roaming\Factorio\dev-mods-backup`. It's on the same disk as the mods folder, so the move is a plain rename with no copy-and-delete, and it's outside the mods folder, so Factorio ignores it.
   - The old Hostile-territory repo was checked first. Its changes since `a398997` are line endings only (`git diff --ignore-cr-at-eol` is empty), so nothing is lost.
   - [x] `Hostile-fauna` and `cheating-mod` moved to the backup. Junction `Hostile-fauna` → `E:\dev\factorio\mods\Hostile-fauna` created and resolves.
-  - [ ] `Hostile-territory`: the move failed because the folder was in use (it was the Claude session's working directory). Do it from a session opened in `E:\dev\factorio`, with VS Code closed on the old folder: move the folder to the backup, then create the junction.
-  - [ ] Test (you): launch Factorio from Steam and check that both mods show in the mod list and a new game starts.
+  - [x] `Hostile-territory`: done 2026-10-16 from a session in `E:\dev\factorio`. Old repo rechecked first: clean at `a398997`. Moved to the backup, junction → `E:\dev\factorio\mods\Hostile-territory` created, `info.json` resolves through it. (First try failed because the folder was the Claude session's working directory.)
+  - [x] Test (you, 2026-10-16, 2.1.21): Steam launch works, the mods load through the junctions, `cheating-mod` is correctly missing (W7).
   - Original step: Move the old `Hostile-territory`, `Hostile-fauna` and `cheating-mod` folders out of `AppData\...\mods` into a backup, e.g. `E:\dev\factorio-backup`. Then create junctions for `Hostile-territory` and `Hostile-fauna` only (no junction for `cheating-mod`, W7):
   ```bash
   cmd //c mklink /J "C:\Users\Sam\AppData\Roaming\Factorio\mods\Hostile-territory" "E:\dev\factorio\mods\Hostile-territory"

@@ -27,7 +27,7 @@ Monorepo for my Factorio mods (`E:\dev\factorio`). Main mod: **Hostile Territory
 | [territory-recapture-plan.md](plans/territory-recapture-plan.md) | Enemies recapturing cleared territories | Active, still exploring |
 | [test-plan.md](plans/test-plan.md) | Test plan (moved from `scripts/`) | |
 | [nauvis-territories-plan.md](plans/nauvis-territories-plan.md) | Old approach | Superseded by `plan.md` |
-| [workspace-migration-plan.md](plans/workspace-migration-plan.md) | Move to monorepo workspace `E:\dev\factorio` | Steps 1–7 done. Step 8 partly done: Hostile-territory junction still to do. GitHub rename pending |
+| [workspace-migration-plan.md](plans/workspace-migration-plan.md) | Move to monorepo workspace `E:\dev\factorio` | Steps 1–8 done (repo is now `Help-Op/factorio-mods`). Next: step 9 cleanup after a few days |
 | [commands.md](docs/commands.md) | In-game commands for testing (debug, crusades, kits, enemies) | Living reference |
 | [overlay-debug-report.md](plans/overlay-debug-report.md) | Old runtime overlay bugs | Outdated, to archive |
 
