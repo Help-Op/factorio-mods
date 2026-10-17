@@ -1,4 +1,4 @@
-> **Status:** outdated (2.0 era, uses `global`) · **Parent:** none · **Next:** archive (roadmap R1) · [Roadmap](roadmap.md)
+> **Status:** archived 2026-10-17, outdated (2.0 era, uses `global`) · [Roadmap](../roadmap.md)
 
 **Hostile-territory: Overlay troubleshooting log**
 

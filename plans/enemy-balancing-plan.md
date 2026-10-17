@@ -275,7 +275,7 @@ Speeds at player 0.25 tiles/tick (EB3 starting point, D13):
     - `/cheat-clear`: empty inventory, guns, armor (back to a bare character).
     - Tier kits use normal quality and reset the health bonus. Rockets kit: rockets in the slot, explosive rockets in the inventory.
     - **Headless (2026-10-15, 2.1.21): loads**, setting defaults to off, both commands registered. **In game (user, 2026-10-15): works** (spawn without armor, `smg-yellow`, `/cheat-clear`, demolisher kit).
-- [ ] **EB2. Engine tests.** One test unit per uncertain lever, headless + in game. Plan (2026-10-15, fields checked in the 2.1.21 docs), approved 2026-10-15:
+- [x] **EB2. Engine tests.** Done 2026-10-15 (Q-EB2-2 decided by D29, 2026-10-15). The test units in `Hostile-fauna/prototypes/test-units.lua` stay loaded until EB4 decides what to promote (likely thorns and splitter) or remove. One test unit per uncertain lever, headless + in game. Plan (2026-10-15, fields checked in the 2.1.21 docs), approved 2026-10-15:
 
   | Unit | Base (deepcopy, tinted) | Lever | Expected | Vanilla use |
   |------|------------------------|-------|----------|-------------|
@@ -448,7 +448,7 @@ Done: D25 is complete. Hostile Territory and cheating-mod use **none** of the re
 | Shotgun pellets briefly slow enemies | Relevant to checkpoints (D21): the shotgun already has a niche |
 | `ScriptTriggerEffectItem::custom_event` | Script triggers can raise our own event. Cleaner control hooks (death effects, healer idea) |
 | `LuaForce::add_alert` / `add_custom_alert` | Possible crusade and challenge alerts in the alert bar |
-| `LuaTerritory::visibility_condition` (`never` / `has-unit` / `always`) | Could control how territories show on the map. Look at with the overlay (plan.md) |
+| `LuaTerritory::visibility_condition` (`never` / `has-unit` / `always`) | Could control how territories show on the map. Look at with the overlay ([territory-mapgen-plan.md](territory-mapgen-plan.md)) |
 | `"+"` dependency modifier (optional but on by default) | Option for the Hostile-fauna dependency if it shouldn't be hard |
 | Bugfix 2.1.21: unit groups set to wander could ignore new commands | Our crusade guard uses `wander`; this fix helps us |
 

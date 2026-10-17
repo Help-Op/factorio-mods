@@ -133,7 +133,7 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 |------|--------|
 | `LuaTerritory.regenerate_segmented_units()` respawns the guardian and makes a cleared territory hostile again. | `territory-recapture-plan.md`, tested 2026-10-11, 2.0.77 |
 | Per-territory colour works with `rendering.draw_rectangle{render_mode = "chart"}` per chunk. Force colour does not change the overlay. | `territory-recapture-plan.md`, tested 2026-10-11 |
-| Territories already generate on Nauvis via map gen, with a safe starting area (384 tiles). | `plan.md` steps 1–6 |
+| Territories already generate on Nauvis via map gen, with a safe starting area (384 tiles). | `territory-mapgen-plan.md` steps 1–6 |
 | "A territory with no units will not appear on player's maps." A claimed territory loses the red overlay by itself. | `LuaTerritory` docs, 2.0.77 |
 | `LuaTerritory` has no id, but it is a `RegistrationTarget`: `script.register_on_object_destroyed(territory)` returns a registration number we can use as a key. | `runtime-api.json`, 2.0.77 |
 | `LuaSegmentedUnit.get_ai_state()` returns `{type = defines.segmented_unit_ai_state.*}`: `patrolling`, `investigating`, `attacking` (+ `target`), `enraged_at_target` (+ `target`, `attacked_me`), `enraged_at_nothing` (+ `remaining_time`). `set_ai_state()` also exists. | `runtime-api.json`, 2.0.77 |
@@ -149,7 +149,7 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 | V4 | ~~Turning off vanilla attacks.~~ | Resolved (phase E): attack groups are cancelled in `on_unit_group_finished_gathering`. |
 | V5 | Detecting "guardian triggered". | Candidates: `on_segmented_unit_damaged` (exists), `on_built_entity` + `get_territory_for_chunk`. With the "real start = guardian can attack the player" rule, the AI state (V13) may be the only trigger we need. See test T3. |
 | V6 | "Tactical" target choice needs a scoring rule. | E.g. border territories, near pollution, weakly defended, recently claimed. Must have a neighbouring hostile territory with a nest. **POC (2026-10-12):** the claimed territory furthest from spawn, ties random (phase F). |
-| V7 | Demolishers on Nauvis terrain. | Still open from `plan.md` step 8 (water, trees, cliffs). |
+| V7 | Demolishers on Nauvis terrain. | Still open from `territory-mapgen-plan.md` step 8 (water, trees, cliffs). |
 | V8 | Migration "without going through the player base". | The engine pathfinder doesn't avoid player buildings; units attack what blocks them. Options: (a) route through hostile territories with waypoint commands, (b) spawn the units directly at the staging nest from the budget (no real walk), (c) a mix: units near the staging nest walk, the rest are spawned there. (b) is simplest and safest. **Decided:** (b) for the POC, (a) as end goal. |
 | V9 | Where do the "biters that would normally attack" come from? | Phase E knows them exactly: the members of each cancelled group. POC removes them and keeps their pollution cost. **Phase G must bring them back** (send them to the staging nest, or respawn the same mix there from the budget). |
 | V10 | Central spot and rally structure. | Need a rule for the centre (e.g. the chunk nearest the centroid of `get_chunks()`, snapped to buildable land) and a rally prototype (enemy-force entity, built over time). |
@@ -831,16 +831,6 @@ Cost: one `find_entities_filtered{position, radius, force = "enemy", type = "uni
 - ~~AR-a … PP-c~~ Decided 2026-10-15.
 - ~~AR-e. Radius 80, centre at the player's start position?~~ **OK to start (2026-10-15).**
 - ~~AR-f. Leftovers still flee on a win (now at full speed once outside)?~~ **Yes, fine (2026-10-15).**
-
-## Open questions
-
-- AR-a. Slow the player too? If yes, how much compared to the enemies?
-- AR-b. All enemies inside the arena, or only challenge units (AR-4)?
-- AR-c. Turrets in the arena (AR-5): a, b or c?
-- AR-d. Arena edge = lose line (AR-6)? Fixed around the start point, or does it follow the player?
-- PP-a. Player punch: (b) gun modifier first, or straight to (a) per-ammo?
-- PP-b. How much stronger? Start at 2× per bullet?
-- PP-c. Always, or only inside the arena? (Arena-only needs option c or a gun swap. Not recommended.)
 
 ## Open questions
 

@@ -1,6 +1,6 @@
 # Plan: add Vulcanus-style territories to Nauvis
 
-> **Status:** superseded by [plan.md](plan.md), don't use · **Parent:** none · **Next:** archive (roadmap R1) · [Roadmap](roadmap.md)
+> **Status:** archived 2026-10-17, superseded by [territory-mapgen-plan.md](../territory-mapgen-plan.md), don't use · [Roadmap](../roadmap.md)
 
 ## Goal
 

@@ -1,6 +1,8 @@
-# Hostile Territory: Nauvis Territories
+# Hostile Territory: Territory map gen
 
-> **Status:** steps 1–6 done, Decisions partly outdated (roadmap R2) · **Parent:** [vision-plan.md](vision-plan.md) (foundation) · **Next:** step 7 docs, step 8 in-game validation · [Roadmap](roadmap.md)
+> **Status:** steps 1–7 done, step 8 in-game validation partly open · **Parent:** [vision-plan.md](vision-plan.md) (foundation) · **Next:** step 8 · [Roadmap](roadmap.md)
+
+Renamed from `plan.md` on 2026-10-17. This plan covers the map-gen side only: `territory_settings` on Nauvis, the unit pool, the starting area and the distance tiers. Gameplay on top of the territories lives in [vision-plan.md](vision-plan.md).
 
 ## Goal
 
@@ -10,9 +12,10 @@ This means territory-based enemy placement—not copying Vulcanus's terrain or b
 
 ## Decisions
 
-- **Space Age is required.** `info.json` declares `"space-age"`. This unblocks the unit pool: the territory system only works with Space Age's `segmented-unit` prototypes (demolishers).
-- **The mod targets Factorio 2.0** (`"factorio_version": "2.0"`, `"base >= 2.0"`). The installed game moved from 2.1.14 (experimental) back to 2.0.77 (stable), and the 2.1 target stopped the mod loading. The territory setup behaves identically on both: same headless test results on 2.0.77 and 2.1.14.
-- **No runtime code.** `control.lua` and the `demolisher-nest` entity were deleted. Territories come entirely from map generation, and the engine manages the demolishers. Check them with the map view, `surface.get_territories()`, or the headless harness (step 5).
+- **Space Age is required.** `info.json` declares `"space-age"`. This unblocks the unit pool: the territory system only works with `segmented-unit` prototypes.
+- **The mod targets Factorio 2.1** (`"factorio_version": "2.1"`, `"base >= 2.1"`), since 2026-10-15 ([enemy-balancing-plan.md](enemy-balancing-plan.md) D25). History: it targeted 2.0 for a while when the installed game went back to 2.0.77. The territory setup behaved identically on 2.0.77, 2.1.14 and 2.1.21.
+- **Units are earth wyrms** from `Hostile-fauna` (`hf-earth-wyrm-small/medium/big`), not demolishers, since 2026-10-17 (enemy-balancing EB3b, D31). Hostile Territory depends on `Hostile-fauna`.
+- **Territory generation stays pure map gen.** The engine creates the territories and their guards. Runtime code (`control.lua`, back since vision phase A) only adds gameplay on top: states, challenges, crusades, patrol rerouting. The original "no runtime code" decision of step 6 applied to the old broken debug code only.
 
 ## Key facts (first checked against Factorio 2.1.14 data; the territory behaviour was re-tested on 2.0.77)
 
@@ -25,6 +28,8 @@ This means territory-based enemy placement—not copying Vulcanus's terrain or b
 - In 2.x, `rendering.draw_*` returns a `LuaRenderObject`, and you remove it with `obj.destroy()`. `rendering.destroy(id)` no longer exists.
 
 ## Issues found
+
+All resolved (steps 2–7). Kept for history.
 
 ### Data stage — `prototypes/planet/nauvis-territory.lua`
 
@@ -40,7 +45,7 @@ This means territory-based enemy placement—not copying Vulcanus's terrain or b
 
 | # | Issue | Effect |
 |---|-------|--------|
-| R1 | Uses `global` instead of `storage`, initialized at file scope (line 41). | The nest registry is lost on every save/load. This is the likely cause of the `registered_nests=0` runs in `overlay-debug-report.md`. |
+| R1 | Uses `global` instead of `storage`, initialized at file scope (line 41). | The nest registry is lost on every save/load. This is the likely cause of the `registered_nests=0` runs in `archive/overlay-debug-report.md`. |
 | R2 | `script.on_init` is registered twice (lines 1 and 201). | The second call replaces the first, so the demolisher scan on init never runs. |
 | R3 | The first `on_init` calls `register_nest` before its `local` declaration (line 101). | It would resolve to a nil global if it ran. It's hidden for now by R2. |
 | R4 | `rendering.destroy(id)` is wrapped in `pcall` (`safe_destroy`). | It fails silently every time, so old overlays are never removed and pile up. |
@@ -54,7 +59,7 @@ This means territory-based enemy placement—not copying Vulcanus's terrain or b
 |---|-------|--------|
 | E1 | A `simple-entity` that uses the small-biter icon as its sprite. It's only used by the debug code in `control.lua`. | Not part of the territory feature. Remove it or keep it as a debug-only marker. |
 
-### Docs
+### Docs (resolved 2026-10-17: both files moved to `archive/`)
 
 | # | Issue | Effect |
 |---|-------|--------|
@@ -73,7 +78,8 @@ Each step is meant to be done and checked on its own, in order.
 - [x] **3. Switch the unit pool to segmented units (D2).**
   - Now uses `{"small-demolisher", "medium-demolisher", "big-demolisher"}`. Custom segmented-unit prototypes are possible later.
   - Verified: the data stage loads with no prototype errors (Factorio 2.1.14 + Space Age).
-  - Still open (check in step 8): can demolishers move across Nauvis terrain (water, trees, cliffs) properly?
+  - Later replaced by the earth wyrms from `Hostile-fauna` (enemy-balancing EB3b, 2026-10-17).
+  - Terrain question: answered by enemy-balancing D32–D35 (patrol paths rerouted over land, wyrms make land when kited over water).
 - [x] **4. Fix the starting-area exclusion (D3).**
   - Finding: `starting_spot_at_angle` (`core/prototypes/noise-functions.lua`) is positive inside a circle centred `distance` tiles from spawn. Even Vulcanus's version only moves cell IDs inside that circle, so it doesn't by itself stop demolishers spawning near the start.
   - New approach, which doesn't depend on an angle and works with multiple starting positions:
@@ -93,17 +99,18 @@ Each step is meant to be done and checked on its own, in order.
 - [x] **6. Decide what to do with the runtime code (R1–R7, E1).**
   - Chose option A: deleted `control.lua` (every `/ht-*` command, the overlays and the nest scans) and `prototypes/entity/demolisher-nest.lua`, and removed its require from `data.lua`.
   - Map-gen territories need no runtime code. If debug tooling is wanted later, write a small new command on top of `surface.get_territories()` rather than restoring the old code.
-  - Also retargeted `info.json` to Factorio 2.0 after the game moved to 2.0.77.
+  - Also retargeted `info.json` to Factorio 2.0 after the game moved to 2.0.77 (back to 2.1 since 2026-10-15, D25).
+  - Superseded later: `control.lua` came back in vision phase A for gameplay (states, challenges, crusades). Territory generation itself still needs no runtime code.
   - Verified on 2.0.77 with the headless harness. Default settings: 97 territories, 66 demolishers, nearest 408 tiles from spawn. No enemies: 98 territories, 0 demolishers. This matches 2.1.14.
-- [ ] **7. Clean up the docs (P1, P2).**
-- [ ] **8. Validate in Factorio.** In progress.
+- [x] **7. Clean up the docs (P1, P2).** Done 2026-10-17: `nauvis-territories-plan.md` and `overlay-debug-report.md` moved to `plans/archive/`; this plan renamed from `plan.md` and its Decisions updated.
+- [ ] **8. Validate in Factorio.** In progress. Since EB3b the guards are earth wyrms, not demolishers: read "demolisher" below as "wyrm".
   - [x] The mod loads in the normal game client (2.0.77) with Space Age, with no errors.
   - [x] On a new game, territories appear on the map.
   - [x] At least one demolisher appears inside a territory.
   - [ ] Small, medium and big demolishers all appear, at roughly the intended distances (small up to 720 tiles, medium from 720, big from 1,296). The headless test showed this for seed 12345; confirm in game.
   - [ ] Spawn-area safety: no territory or demolisher reaches the start area (headless: nearest demolisher 408 tiles). Try several seeds.
   - [ ] The no-enemies map setting gives territories with no demolishers (headless: confirmed).
-  - [ ] Demolisher behaviour on Nauvis terrain, the open question from step 3. Do they move properly across or around water, trees and cliffs, or get stuck?
+  - [ ] Wyrm behaviour on Nauvis terrain (water, trees, cliffs). Water: handled by the patrol reroute (enemy-balancing D32–D35). Trees and cliffs: still to watch in game.
   - [ ] Gameplay feel. Do they react to buildings in their territory and attack as on Vulcanus? Does the difficulty curve feel right next to biters?
   - Useful console command to list demolishers and their distance from spawn (chart or explore further out first):
     `/c for _,e in pairs(game.player.surface.find_entities_filtered{type="segmented-unit"}) do game.print(e.name.." @ "..math.floor((e.position.x^2+e.position.y^2)^0.5)) end`
@@ -114,4 +121,4 @@ Each step is meant to be done and checked on its own, in order.
 - New Nauvis chunks get demolisher territories from the selected unit pool.
 - The starting area and no-enemies behavior match the intended design.
 - The mod loads with Space Age and doesn't load without it.
-- Any runtime code that's kept is diagnostic only, persists correctly across save/load, and doesn't drive territory generation.
+- Runtime code builds gameplay on top of the territories, but doesn't drive territory generation.

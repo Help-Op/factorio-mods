@@ -14,7 +14,7 @@ flowchart TD
     V["<b>Vision</b><br/>vision-plan.md"]
 
     subgraph HT["Hostile Territory mod"]
-        MG["Territories via map gen<br/>plan.md<br/>steps 1–6 done"]
+        MG["Territory map gen<br/>territory-mapgen-plan.md<br/>steps 1–7 done"]
         AH["Phases A–H<br/>state, trigger, challenge, claim,<br/>attacks off, budget, target, assault"]
         REC["Recapture engine tests<br/>territory-recapture-plan.md"]
         AR["Arena + player punch<br/>AR2–AR3, PP1–PP2"]
@@ -59,38 +59,36 @@ Green: done · Yellow: current focus · Blue: decided, up next · Grey: later or
 |------|-------|--------|-----------|
 | [vision-plan.md](vision-plan.md) | Overall vision: territory states, challenges, crusades. Phases A–J | A–H done (POC), I in progress | Arena AR2 (decided, not built) |
 | [enemy-balancing-plan.md](enemy-balancing-plan.md) | Phase I: enemy feel, speed, niches. Work goes into `mods/Hostile-fauna` | D1–D36 decided, EB1–EB3c done | **EB4: first niche units** |
-| [plan.md](plan.md) | Territories on Nauvis via map gen (the foundation) | Steps 1–6 done | 7 docs cleanup, 8 in-game validation |
+| [territory-mapgen-plan.md](territory-mapgen-plan.md) | Territories on Nauvis via map gen (the foundation) | Steps 1–7 done | 8 in-game validation |
 | [territory-recapture-plan.md](territory-recapture-plan.md) | Engine tests: respawning guardians, territory colour | Tests done, mostly absorbed by phase H | Open questions only |
 | [workspace-migration-plan.md](workspace-migration-plan.md) | Monorepo `E:\dev\factorio` | Steps 1–8 done | 9 delete backup (a few days after 2026-10-16), 10 packaging, 11 harness script |
 | [planning-structure-plan.md](planning-structure-plan.md) | This roadmap, the inbox, plan headers | Built 2026-10-17 | User review |
-| [test-plan.md](test-plan.md) | Crusade test snippet | Small, overlaps `docs/commands.md` | See R4 |
-| [nauvis-territories-plan.md](nauvis-territories-plan.md) | Old map-gen approach | Superseded by `plan.md` | Archive (R1) |
-| [overlay-debug-report.md](overlay-debug-report.md) | Old overlay bugs (`global`, 2.0 era) | Outdated | Archive (R1) |
+| [archive/](archive/) | Old map-gen approach, old overlay bugs | Archived 2026-10-17, don't use | |
 | [docs/commands.md](../docs/commands.md) | In-game test commands | Living reference | |
 
 ## Open threads, roughly in order
 
 | # | Thread | Plan | Blocked by |
 |---|--------|------|------------|
-| 1 | **EB4** first niche units (2–3), in-game feel test | enemy-balancing | — |
+| 1 | **EB4** first niche units (2–3), in-game feel test. Also decides which EB2 test units to promote or remove | enemy-balancing | — |
 | 2 | **Arena** AR2 build, AR3 feel test | vision (arena section) | — |
 | 3 | **Player punch** PP1 gun damage ×2, PP2 checkpoint table | vision (arena) + enemy-balancing D9/D23 | — |
 | 4 | **EB5** use niche units in challenges and crusades, maybe spawners | enemy-balancing | EB4 |
 | 5 | **EB6** tune HP, damage, numbers per ring | enemy-balancing | EB5 |
-| 6 | Map-gen validation in game (seeds, tiers, terrain) | plan.md step 8 | — |
+| 6 | Map-gen validation in game (seeds, tiers, terrain) | territory-mapgen step 8 | — |
 | 7 | Workspace cleanup, packaging, harness script | workspace-migration 9–11 | 9: wait a few days |
 | 8 | Phase J: waypoint migration | vision | Phase I |
 | 9 | Later ideas: army templates, smarter crusade AI, play telemetry | vision, enemy-balancing Q1 | EB5 |
 
 ## Issues across plans
 
-Found while building this roadmap (2026-10-17). Not fixed yet, one at a time.
+Found while building this roadmap (2026-10-17). Fixed ones are struck through.
 
 | # | Issue | Where |
 |---|-------|-------|
-| R1 | Two plans are outdated but still sit next to active ones. Move to `plans/archive/`? | `nauvis-territories-plan.md`, `overlay-debug-report.md` |
-| R2 | Decisions say "targets 2.0" and "no runtime code". Both are superseded (D25: 2.1; `control.lua` is back since phase A). | `plan.md` Decisions |
-| R3 | Two `## Open questions` sections. The first lists AR-a … PP-c, which were decided 2026-10-15. | `vision-plan.md` near the end |
-| R4 | `test-plan.md` is a 4-line crusade snippet that duplicates `docs/commands.md`. Merge and delete? | `test-plan.md` |
-| R5 | EB2 is unchecked, though sub-steps 1–3 are done. Only Q-EB2-2 is open. | `enemy-balancing-plan.md` EB2 |
+| R1 | ~~Two outdated plans next to active ones.~~ Moved to `plans/archive/` (2026-10-17). | |
+| R2 | ~~`plan.md` too broad a name, outdated Decisions.~~ Renamed to `territory-mapgen-plan.md`, Decisions updated (2026-10-17). | |
+| R3 | ~~Stale second `## Open questions` block (AR-a … PP-c).~~ Deleted (2026-10-17). | |
+| R4 | ~~`test-plan.md` duplicates `docs/commands.md`.~~ Removed by user (2026-10-17). | |
+| R5 | ~~EB2 unchecked though done.~~ Ticked (2026-10-17); test units stay until EB4. | |
 | R6 | The note "recapture needs control.lua, against the no-runtime-code decision" is outdated. | `territory-recapture-plan.md` open questions |
