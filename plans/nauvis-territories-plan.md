@@ -1,5 +1,7 @@
 # Plan: add Vulcanus-style territories to Nauvis
 
+> **Status:** superseded by [plan.md](plan.md), don't use · **Parent:** none · **Next:** archive (roadmap R1) · [Roadmap](roadmap.md)
+
 ## Goal
 
 Add territory-based enemy spawning to Nauvis so that the world behaves similarly to Vulcanus, where the game uses a territory map and then spawns unit groups from a unit pool (for example `small-demolisher`, `medium-demolisher`, `big-demolisher`).

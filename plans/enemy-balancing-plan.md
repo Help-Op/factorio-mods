@@ -1,6 +1,7 @@
 # Enemy Balancing
 
-Sub-plan of phase I in [vision-plan.md](vision-plan.md). Status: **D1–D36 decided, EB1–EB3c done (2026-10-17), next: EB4** (started 2026-10-12, decisions 2026-10-12).
+> **Status:** D1–D36 decided, EB1–EB3c done (2026-10-17) · **Parent:** phase I in [vision-plan.md](vision-plan.md) · **Next:** EB4 first niche units · [Roadmap](roadmap.md)  
+> Started 2026-10-12, decisions 2026-10-12.
 
 The work in this plan goes into the separate mod **`mods/Hostile-fauna`** (D10). Both mods share this workspace repo since 2026-10-16 (see [workspace-migration-plan.md](workspace-migration-plan.md)).
 

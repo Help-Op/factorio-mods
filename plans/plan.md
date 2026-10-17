@@ -1,5 +1,7 @@
 # Hostile Territory: Nauvis Territories
 
+> **Status:** steps 1–6 done, Decisions partly outdated (roadmap R2) · **Parent:** [vision-plan.md](vision-plan.md) (foundation) · **Next:** step 7 docs, step 8 in-game validation · [Roadmap](roadmap.md)
+
 ## Goal
 
 Add enemy territories to Nauvis using Factorio's territory map-generation API, based on the system used by Vulcanus.

@@ -1,3 +1,5 @@
+> **Status:** crusade test snippet, overlaps `docs/commands.md` · **Parent:** none · **Next:** merge into commands.md (roadmap R4) · [Roadmap](roadmap.md)
+
 - Stand inside a territory near some enemy nests (a crusade needs a nest to stage from), then mark it as claimed: /ht-set-state claimed
 - Give it a big budget and clear the cooldown: 
 /c __Hostile-territory__ storage.crusade_budget = 1e6; storage.crusade_cooldown_until = 0

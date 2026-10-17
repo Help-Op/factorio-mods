@@ -1,5 +1,7 @@
 # Hostile Territory: Vision
 
+> **Status:** phases A–H done (POC), phase I in progress · **Parent:** none (top level) · **Next:** arena AR2; phase I in [enemy-balancing-plan.md](enemy-balancing-plan.md) · [Roadmap](roadmap.md)
+
 ## Goal
 
 Make territories the central mechanic on Nauvis.

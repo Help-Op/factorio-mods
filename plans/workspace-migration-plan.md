@@ -1,5 +1,7 @@
 # Workspace migration plan
 
+> **Status:** steps 1–8 done · **Parent:** none (workspace) · **Next:** step 9, delete the backup a few days after 2026-10-16 · [Roadmap](roadmap.md)
+
 ## Goal
 
 Move development into one workspace at `E:\dev\factorio`:

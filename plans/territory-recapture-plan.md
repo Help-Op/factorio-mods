@@ -1,5 +1,7 @@
 # Hostile Territory: Recapturing Territories
 
+> **Status:** engine tests done, mostly absorbed by phase H · **Parent:** [vision-plan.md](vision-plan.md) (phases A and H) · **Next:** none, open questions only · [Roadmap](roadmap.md)
+
 ## Goal
 
 Let enemies take back territories that the player has cleared. Once a territory loses its demolisher, it should be able to become hostile again under rules we decide later (timer, pollution, expansion from neighbouring territories, and so on).

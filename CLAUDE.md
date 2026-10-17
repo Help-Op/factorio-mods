@@ -13,23 +13,18 @@ Monorepo for my Factorio mods (`E:\dev\factorio`). Main mod: **Hostile Territory
 ## Writing style
 
 - Clear structure, short and to the point. Use headings, bullets and tables. No filler.
-- Plans use: Goal → Decisions / Confirmed facts → Issues → Step-by-step checklist (`- [ ]`) → Open questions.
+- Plans use: header line → Goal → Decisions / Confirmed facts → Issues → Step-by-step checklist (`- [ ]`) → Open questions.
 - Give in-game test commands as one-line `/c ...` console commands that I can paste.
 - **Keep useful commands in [docs/commands.md](docs/commands.md)**: one command per fenced code block (plain lines get merged by markdown). Add every new debug command or test snippet that will be reused.
 
-## Plan files
+## Roadmap, inbox and plan files
 
-| File | Topic | Status |
-|------|-------|--------|
-| [vision-plan.md](plans/vision-plan.md) | Overall vision: challenges, crusades, territory states | Draft, refining |
-| [plan.md](plans/plan.md) | Nauvis territories via map gen | Main plan. Steps 1–6 done, 7–8 open |
-| [enemy-balancing-plan.md](plans/enemy-balancing-plan.md) | Phase I: enemy feel, speed, niches, data-stage capabilities | Decisions D1–D36 made (D25: switched to 2.1, D36: new game required). EB1–EB3c done (earth wyrms, patrol reroute, wyrm control), next: EB4 (first niche units). Work goes into `mods/Hostile-fauna` |
-| [territory-recapture-plan.md](plans/territory-recapture-plan.md) | Enemies recapturing cleared territories | Active, still exploring |
-| [test-plan.md](plans/test-plan.md) | Test plan (moved from `scripts/`) | |
-| [nauvis-territories-plan.md](plans/nauvis-territories-plan.md) | Old approach | Superseded by `plan.md` |
-| [workspace-migration-plan.md](plans/workspace-migration-plan.md) | Move to monorepo workspace `E:\dev\factorio` | Steps 1–8 done (repo is now `Help-Op/factorio-mods`). Next: step 9 cleanup after a few days |
-| [commands.md](docs/commands.md) | In-game commands for testing (debug, crusades, kits, enemies) | Living reference |
-| [overlay-debug-report.md](plans/overlay-debug-report.md) | Old runtime overlay bugs | Outdated, to archive |
+CLAUDE.md says **how** we work. **What** we work on lives in `plans/`. Details: [planning-structure-plan.md](plans/planning-structure-plan.md).
+
+- **[roadmap.md](plans/roadmap.md)** is the big picture: every plan with status and next step, open threads in order, a Mermaid map of how the plans connect, and issues across plans. Read it at the start of a session to find where we are.
+- **[inbox.md](plans/inbox.md)** collects my random thoughts: one dated line each. Don't put them straight into plans. Triage together when a step is done or the list gets long: move to a plan (with a link), park, or drop.
+- **Every plan starts with a header line:** `> **Status:** … · **Parent:** … · **Next:** … · [Roadmap](roadmap.md)`.
+- **Plans stay the source of truth.** The roadmap only summarises them. When a plan's status or next step changes, update its header line **and** its roadmap row (and the map, if needed) in the same edit. A new plan file gets a header line and a roadmap row.
 
 ## Workspace layout
 
