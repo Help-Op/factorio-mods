@@ -64,4 +64,4 @@ What the API offers:
 - What triggers a recapture: a timer, pollution, a neighbouring hostile territory, or player activity?
 - Should we respawn into the original territory (`regenerate_segmented_units`), or grow territories by moving chunks with `set_territory_for_chunks`?
 - Should a cleared territory stay a territory with no guard, or be cleared with `clear_territory_for_chunks`? The latter may let the map generator recreate it.
-- Is it enough to keep state in `storage` (cleared tick, owner, colour state), or does it need runtime code? Recapture needs a `control.lua` again, which goes against the "no runtime code" decision in `plan.md`.
+- ~~Is it enough to keep state in `storage`, or does it need runtime code?~~ **Answered (2026-10-17):** runtime code is back since vision phase A. Territory state lives in `storage.territories` (`scripts/territories.lua`), and phase H respawns the guardian when a crusade holds.

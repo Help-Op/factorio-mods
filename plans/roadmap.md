@@ -91,4 +91,4 @@ Found while building this roadmap (2026-10-17). Fixed ones are struck through.
 | R3 | ~~Stale second `## Open questions` block (AR-a … PP-c).~~ Deleted (2026-10-17). | |
 | R4 | ~~`test-plan.md` duplicates `docs/commands.md`.~~ Removed by user (2026-10-17). | |
 | R5 | ~~EB2 unchecked though done.~~ Ticked (2026-10-17); test units stay until EB4. | |
-| R6 | The note "recapture needs control.lua, against the no-runtime-code decision" is outdated. | `territory-recapture-plan.md` open questions |
+| R6 | ~~Outdated "recapture needs control.lua" note.~~ Marked as answered (2026-10-17). | |
