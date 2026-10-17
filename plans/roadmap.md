@@ -80,6 +80,38 @@ Green: done · Yellow: current focus · Blue: decided, up next · Grey: later or
 | 8 | Phase J: waypoint migration | vision | Phase I |
 | 9 | Later ideas: army templates, smarter crusade AI, play telemetry | vision, enemy-balancing Q1 | EB5 |
 
+## Not yet specified (fog)
+
+Things we know are coming but can't phrase as a clear question yet. When one becomes a question, move it into the open questions of the plan that owns it and delete it here.
+
+| Topic | What we know so far | Likely plan |
+|-------|---------------------|-------------|
+| Destination of the POC | Phases A–I exist, but there is no line for "playable first version" or a mod portal release | vision |
+| Recapture without a crusade | Should territories also turn hostile by timer, pollution or neighbours? Crusades already cover the main case | territory-recapture |
+| What changes per challenge ring | More than wave size and tier: more spitters, extra mechanics, "more complicated" challenges (vision 1a) | vision, enemy-balancing |
+| Guardian strength | Guardians and rallies are known to be far too strong (H-6), no direction yet | enemy-balancing EB6 |
+| Vanilla nests on Nauvis | Do they stay, do they expand, and what about expansion parties that still attack (vision 11a, 12)? | vision |
+| Smarter crusade AI | The POC is easy to fool with decoys. Ideas listed, nothing decided ("Later: smarter crusade AI") | vision |
+| Army and challenge templates | Unit mixes are hard-coded today. Templates by distance, evolution, territory ("Later: templates") | vision, after EB5 |
+| Niches that need script | Skirmisher/kiting (D29 parked), healer/buffer (no data-only way) | enemy-balancing, after EB4 |
+| Play telemetry | Collect fight data while playing, to tune effort bands (EB Q1) | enemy-balancing |
+
+## Out of scope
+
+Decided **not** to do. "For now" means it may come back with a new decision; "No" means settled.
+
+| Item | Status | Source |
+|------|--------|--------|
+| Copying Vulcanus terrain or biomes | No, a separate terrain project | territory-mapgen Goal |
+| Old-save support | No, players start a new game | EB D36 |
+| Building a staging nest when none exists | No, no nest means no crusade | vision G-3 |
+| Scripted regen for guardians and rallies | No | vision H-6 |
+| Sea wyrm | For now, earth wyrm first | EB D15, E8 |
+| Slow or knockback ammo for the player | For now (gun damage ×2 is in, PP1) | EB D9 |
+| Slowing the player in the arena | For now, maybe later | vision AR-a |
+| Art for the rally | For now, a white rectangle placeholder | vision H (7c) |
+| Remote building triggering a challenge | For now, plain vanilla in the POC | vision Q5a |
+
 ## Issues across plans
 
 Found while building this roadmap (2026-10-17). Fixed ones are struck through.

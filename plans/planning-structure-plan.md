@@ -19,12 +19,15 @@ Make the big picture easy to follow while new ideas keep coming in.
 | PS3 | Plan headers | Every plan starts with one status line: Status · Parent · Next. The roadmap summarises these. |
 | PS4 | CLAUDE.md | The plan table moves to the roadmap. CLAUDE.md keeps workflow, conventions, layout, gotchas, and explains the inbox/roadmap flow. |
 | PS5 | Visual | Mermaid in `roadmap.md` (VS Code preview, GitHub). No Miro: second source of truth, drifts, not versioned. |
+| PS6 | Fog and out of scope (2026-10-17) | Two roadmap sections, borrowed from the wayfinder skill: **Not yet specified** (known unknowns that aren't a clear question yet) and **Out of scope** (decided not to do, marked "for now" or "no"). Wayfinder itself not adopted: it moves decisions into GitHub issues and is built for one destination. |
 
 ## Rules
 
 - **Source of truth:** the plan files. The roadmap is a summary and must never hold a decision that isn't in a plan.
 - **When a plan's status changes**, update its header line and its roadmap row in the same edit.
 - **Inbox triage:** when a step is done, or when the inbox gets long. Each idea goes to a plan (with a link back), to "Parked" in the inbox, or is dropped.
+- **Fog:** when a fog item can be phrased as a question, move it to the owning plan's open questions and remove it from the roadmap. An inbox idea that is clearly coming but vague can become fog during triage.
+- **Out of scope:** when we decide not to do something, add it there with its source. Reopening needs a new decision.
 - **New plan file:** add it to the roadmap table and diagram, with a header line.
 
 ## Steps
@@ -34,9 +37,10 @@ Make the big picture easy to follow while new ideas keep coming in.
 - [x] 3. Create `inbox.md` (2026-10-17).
 - [x] 4. Add the header line to every plan (2026-10-17).
 - [x] 5. Update CLAUDE.md: replace the plan table with a link to the roadmap, add the inbox/roadmap workflow (2026-10-17).
-- [ ] 6. User review: does the roadmap help? Adjust the format if not.
+- [x] 5b. Add Fog and Out of scope sections to the roadmap (PS6, 2026-10-17).
+- [x] 6. User review: "Format helps for sure" (user, 2026-10-17).
 - [ ] 7. First inbox triage, once there are a few ideas.
 
 ## Open questions
 
-- Should the stale plans (`nauvis-territories-plan.md`, `overlay-debug-report.md`) move to `plans/archive/`? (Roadmap issue R1.)
+None. Archiving the stale plans (R1) was decided and done 2026-10-17.

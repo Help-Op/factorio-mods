@@ -22,6 +22,7 @@ Monorepo for my Factorio mods (`E:\dev\factorio`). Main mod: **Hostile Territory
 CLAUDE.md says **how** we work. **What** we work on lives in `plans/`. Details: [planning-structure-plan.md](plans/planning-structure-plan.md).
 
 - **[roadmap.md](plans/roadmap.md)** is the big picture: every plan with status and next step, open threads in order, a Mermaid map of how the plans connect, and issues across plans. Read it at the start of a session to find where we are.
+- The roadmap also holds **Not yet specified** (fog: things coming but not yet a clear question) and **Out of scope** (decided not to do). Move fog into a plan's open questions once it can be phrased; check Out of scope before proposing something new.
 - **[inbox.md](plans/inbox.md)** collects my random thoughts: one dated line each. Don't put them straight into plans. Triage together when a step is done or the list gets long: move to a plan (with a link), park, or drop.
 - **Every plan starts with a header line:** `> **Status:** … · **Parent:** … · **Next:** … · [Roadmap](roadmap.md)`.
 - **Plans stay the source of truth.** The roadmap only summarises them. When a plan's status or next step changes, update its header line **and** its roadmap row (and the map, if needed) in the same edit. A new plan file gets a header line and a roadmap row.
