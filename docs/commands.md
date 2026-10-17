@@ -173,3 +173,43 @@ Check the player running speed (0.25 = 15 tiles/s):
 ```
 /c game.print(prototypes.entity["character"].running_speed)
 ```
+
+## Counter-artillery test
+
+Fire a slow artillery shell 300 tiles east of you (speed 0.2, so about 25 s in flight). It explodes at the target:
+
+```
+/c local p=game.player.position game.player.surface.create_entity{name="artillery-projectile",position=p,target={p.x+300,p.y},speed=0.2,force="player"}
+```
+
+While it flies: find every shell, print its position and delete it. If the shell never lands, script can intercept artillery (confirmed 2026-10-17, 2.1.21):
+
+```
+/c for _,e in pairs(game.player.surface.find_entities_filtered{type="artillery-projectile"}) do game.print(serpent.line(e.position)) e.destroy() end
+```
+
+## Hive layout test (L3/L4)
+
+Needs the `ht-layout-test` mod (`mods/ht-layout-test` junction, see `plans/hive-layout-plan.md` L3/L4; the junction points to the current version, L4). GPS link to the nearest base (click it to open the map there):
+
+```
+/ht-layout-nearest
+```
+
+Check bases and territories within 1500 tiles of you (only already generated chunks). Prints a summary and writes `script-output/l4-ingame-result.txt` (`l3-…` for L3):
+
+```
+/ht-layout-check
+```
+
+Generate and chart 2560 × 2560 tiles around spawn, so you can see all bases on the map (takes a while):
+
+```
+/c local s=game.player.surface s.request_to_generate_chunks({0,0},40) s.force_generate_chunk_requests() game.player.force.chart(s,{{-1280,-1280},{1280,1280}})
+```
+
+L4 only: move the wyrm of every fully generated territory to its base centre (it patrols again afterwards):
+
+```
+/ht-layout-move-brains
+```

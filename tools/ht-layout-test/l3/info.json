@@ -1,0 +1,9 @@
+{
+  "name": "ht-layout-test",
+  "version": "0.0.3",
+  "title": "HT layout test (L3)",
+  "author": "Turoni",
+  "description": "Test only. Every enemy base is a worm core with a ring of nests (hive-layout-plan.md L3).",
+  "factorio_version": "2.1",
+  "dependencies": ["base >= 2.1", "space-age", "? Hostile-fauna", "? Hostile-territory"]
+}

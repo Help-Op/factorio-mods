@@ -3,6 +3,9 @@ mods/mod-list.json
 mods/mod-settings.dat
 mods/*.zip
 
+# Junction to tools/ht-layout-test for debug runs (hive-layout-plan.md L3)
+mods/ht-layout-test
+
 # Output from --dump-data and the headless harness
 script-output/
 

@@ -1,0 +1,9 @@
+{
+  "name": "ht-layout-test",
+  "version": "0.0.4",
+  "title": "HT layout test (L4)",
+  "author": "Turoni",
+  "description": "Test only. Territories from our own points, one brain base (worm core + nest ring) per territory (hive-layout-plan.md L4).",
+  "factorio_version": "2.1",
+  "dependencies": ["base >= 2.1", "space-age", "? Hostile-fauna", "? Hostile-territory"]
+}

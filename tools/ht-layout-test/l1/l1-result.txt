@@ -1,0 +1,20 @@
+worms=1 spawners=8 (in 120x120 box)
+worm medium-worm-turret at 200.4,0.4
+spawner biter-spawner at 200.5,-19.5  r=19.5  angle=-89
+spawner biter-spawner at 186.5,-13.5  r=19.1  angle=-135
+spawner biter-spawner at 214.5,-13.5  r=19.8  angle=-43
+spawner biter-spawner at 180.5,0.5  r=19.5  angle=179
+spawner biter-spawner at 220.5,0.5  r=20.5  angle=1
+spawner biter-spawner at 186.5,14.5  r=19.8  angle=133
+spawner biter-spawner at 214.5,14.5  r=20.5  angle=45
+spawner biter-spawner at 200.5,20.5  r=20.5  angle=89
+target 0 (220,0) tile=dirt-5 nearby=unit,unit-spawner
+target 1 (214,14) tile=dirt-3 nearby=unit,unit-spawner
+target 2 (200,20) tile=dirt-3 nearby=unit,unit-spawner
+target 3 (186,14) tile=dirt-3 nearby=unit,unit-spawner
+target 4 (180,0) tile=dirt-5 nearby=unit,unit-spawner
+target 5 (186,-14) tile=dirt-5 nearby=unit,unit-spawner
+target 6 (200,-20) tile=dirt-5 nearby=unit,tree,unit-spawner
+target 7 (214,-14) tile=dirt-6 nearby=unit,unit-spawner
+worm target tile=dirt-5
+enemy turrets on surface=1 spawners=8

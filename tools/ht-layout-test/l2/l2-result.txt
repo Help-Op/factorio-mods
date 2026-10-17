@@ -1,0 +1,20 @@
+territories=53 worms=23 worms outside any territory=0 other enemies: turrets=0 spawners=0
+fully generated territories:
+  #1 chunks=69 worms=0 chunk-centroid=(-386,-142) | can_place=true tiles5x5=dry-dirtx25 | point (-319,-41) d=0.43 tile=dry-dirt start_area=1 from_origin=322 in_territory=#nil nearby=
+  #2 chunks=106 worms=1 chunk-centroid=(-486,222) | worm (-428.8,196.0) to chunk-centroid=63 to patrol-centroid=51 | point distance at worm=1.04
+  #3 chunks=124 worms=0 chunk-centroid=(127,-465) | can_place=false tiles5x5=deepwaterx25 | point (156,-415) d=0.42 tile=deepwater start_area=0 from_origin=443 in_territory=#3 nearby=
+  #4 chunks=60 worms=0 chunk-centroid=(406,-190) | can_place=true tiles5x5=sand-3x25 | point (300,-224) d=0.43 tile=sand-3 start_area=1 from_origin=374 in_territory=#nil nearby=
+  #5 chunks=135 worms=1 chunk-centroid=(438,321) | worm (401.5,378.7) to chunk-centroid=69 to patrol-centroid=63 | point distance at worm=1.60
+  #19 chunks=162 worms=1 chunk-centroid=(-497,-520) | worm (-580.8,-483.2) to chunk-centroid=91 to patrol-centroid=98 | point distance at worm=1.37
+  #20 chunks=89 worms=0 chunk-centroid=(-589,-216) | can_place=false tiles5x5=sand-1x13 waterx5 sand-2x7 | point (-651,-274) d=0.45 tile=sand-1 start_area=0 from_origin=706 in_territory=#20 nearby=
+  #21 chunks=138 worms=1 chunk-centroid=(-524,519) | worm (-451.2,479.6) to chunk-centroid=83 to patrol-centroid=87 | point distance at worm=1.34
+  #24 chunks=117 worms=1 chunk-centroid=(-306,856) | worm (-267.9,825.4) to chunk-centroid=48 to patrol-centroid=72 | point distance at worm=0.97
+  #27 chunks=141 worms=1 chunk-centroid=(-117,-661) | worm (-104.2,-743.3) to chunk-centroid=83 to patrol-centroid=81 | point distance at worm=1.98
+  #28 chunks=92 worms=1 chunk-centroid=(-213,608) | worm (-269.6,603.1) to chunk-centroid=57 to patrol-centroid=57 | point distance at worm=0.87
+  #30 chunks=50 worms=0 chunk-centroid=(-57,443) | can_place=true tiles5x5=red-desert-1x25 | point (-47,346) d=0.35 tile=red-desert-1 start_area=1 from_origin=349 in_territory=#nil nearby=
+  #32 chunks=145 worms=1 chunk-centroid=(232,645) | worm (213.4,571.9) to chunk-centroid=75 to patrol-centroid=68 | point distance at worm=1.47
+  #36 chunks=152 worms=1 chunk-centroid=(597,-442) | worm (591.7,-415.8) to chunk-centroid=27 to patrol-centroid=25 | point distance at worm=1.18
+  #38 chunks=133 worms=1 chunk-centroid=(674,625) | worm (664.3,584.2) to chunk-centroid=42 to patrol-centroid=41 | point distance at worm=1.25
+  #40 chunks=113 worms=1 chunk-centroid=(682,-51) | worm (754.2,-126.5) to chunk-centroid=105 to patrol-centroid=88 | point distance at worm=1.14
+  #41 chunks=147 worms=1 chunk-centroid=(827,262) | worm (825.6,287.8) to chunk-centroid=26 to patrol-centroid=13 | point distance at worm=1.56
+summary: full=17 with 1 worm=12 with 0=5 with 2+=0
