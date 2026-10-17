@@ -23,7 +23,7 @@ Monorepo for my Factorio mods (`E:\dev\factorio`). Main mod: **Hostile Territory
 |------|-------|--------|
 | [vision-plan.md](plans/vision-plan.md) | Overall vision: challenges, crusades, territory states | Draft, refining |
 | [plan.md](plans/plan.md) | Nauvis territories via map gen | Main plan. Steps 1–6 done, 7–8 open |
-| [enemy-balancing-plan.md](plans/enemy-balancing-plan.md) | Phase I: enemy feel, speed, niches, data-stage capabilities | Decisions D1–D28 made (D25: switched to 2.1). EB1c done, next: EB2a. Work goes into `mods/Hostile-fauna` |
+| [enemy-balancing-plan.md](plans/enemy-balancing-plan.md) | Phase I: enemy feel, speed, niches, data-stage capabilities | Decisions D1–D36 made (D25: switched to 2.1, D36: new game required). EB1–EB3c done (earth wyrms, patrol reroute, wyrm control), next: EB4 (first niche units). Work goes into `mods/Hostile-fauna` |
 | [territory-recapture-plan.md](plans/territory-recapture-plan.md) | Enemies recapturing cleared territories | Active, still exploring |
 | [test-plan.md](plans/test-plan.md) | Test plan (moved from `scripts/`) | |
 | [nauvis-territories-plan.md](plans/nauvis-territories-plan.md) | Old approach | Superseded by `plan.md` |
