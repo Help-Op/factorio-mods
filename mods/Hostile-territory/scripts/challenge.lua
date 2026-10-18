@@ -137,7 +137,12 @@ local function lose(record)
   local territory_record = storage.territories[record.territory_id]
   if territory_record and territory_record.territory.valid then
     for _, unit in pairs(territory_record.territory.get_segmented_units()) do
-      if unit.valid then unit.health = unit.max_health end
+      if unit.valid then
+        unit.health = unit.max_health
+        -- calm it down: a brain can't wander off, so its rage would last enraged_duration and restart the
+        -- challenge as soon as a player comes back (territory-brain-plan.md B-I8)
+        unit.set_ai_state{type = defines.segmented_unit_ai_state.patrolling, waypoint = 1}
+      end
     end
     territories.set_state(territory_record, "hostile")
   end

@@ -1,5 +1,6 @@
 -- Crusade rally (phase H): what to build, how long it takes and where.
--- Guardian = the one last seen in the territory (territories.lua), else the map gen rule on the territory centre:
+-- Guardian = a brain (Hostile-fauna, territory-brain-plan.md B1) of the size of the one last seen in the territory
+-- (territories.lua; older wyrm or demolisher guardians map to the same size), else the map gen rule on the territory centre:
 -- floor(clamp(distance / 576 - 0.25, 0, 2)) → small / medium / big (prototypes/planet/nauvis-territory.lua).
 -- Rally prototype ht-rally-<size> and build time follow the guardian size (H-c).
 -- Spot = a random patrol path point inside the target territory, moved to free space for the rally;
@@ -12,9 +13,10 @@ local tags = require("scripts.tags")
 
 local rally = {}
 
-local GUARDIANS = {"hf-earth-wyrm-small", "hf-earth-wyrm-medium", "hf-earth-wyrm-big"} -- Hostile-fauna (EB3b)
-local SIZE = {["hf-earth-wyrm-small"] = "small", ["hf-earth-wyrm-medium"] = "medium", ["hf-earth-wyrm-big"] = "big",
-  -- saves from before EB3b still have demolisher guardians
+local GUARDIANS = {"hf-brain-small", "hf-brain-medium", "hf-brain-big"} -- Hostile-fauna (territory-brain-plan.md B1)
+-- older guardians map to the brain of the same size, so a lost territory always gets a brain
+local SIZE = {["hf-brain-small"] = "small", ["hf-brain-medium"] = "medium", ["hf-brain-big"] = "big",
+  ["hf-earth-wyrm-small"] = "small", ["hf-earth-wyrm-medium"] = "medium", ["hf-earth-wyrm-big"] = "big",
   ["small-demolisher"] = "small", ["medium-demolisher"] = "medium", ["big-demolisher"] = "big"}
 local BUILD_TIME = {small = 5 * 60 * 60, medium = 15 * 60 * 60, big = 30 * 60 * 60}
 local SPOT_SEARCH_RADIUS = 20
@@ -26,7 +28,7 @@ local function in_territory(surface, record, position)
 end
 
 function rally.guardian_for(record, surface)
-  if record.guardian and SIZE[record.guardian] then return record.guardian end
+  if record.guardian and SIZE[record.guardian] then return "hf-brain-" .. SIZE[record.guardian] end
   local centre = territories.centre(record)
   if not centre then return GUARDIANS[1] end
   local spawn = game.forces.player.get_spawn_position(surface)

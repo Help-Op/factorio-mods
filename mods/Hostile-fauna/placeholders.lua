@@ -4,4 +4,8 @@
 -- graphics/placeholder/white-square.png is 64×64 px: size = 64, scale = 0.5 → 1 tile; scale it up per entity.
 -- {name = "entity name", art = "placeholder" | "tinted vanilla", source = "path"}
 
-return {}
+return {
+  {name = "hf-brain-small", art = "tinted vanilla", source = "hf-earth-wyrm-small head (small demolisher)"},
+  {name = "hf-brain-medium", art = "tinted vanilla", source = "hf-earth-wyrm-medium head (medium demolisher)"},
+  {name = "hf-brain-big", art = "tinted vanilla", source = "hf-earth-wyrm-big head (big demolisher)"},
+}

@@ -35,7 +35,7 @@ local DEFAULT_HALF_WIDTH = 3
 local LAND_SEARCH_RADIUS = 16
 local FALLBACK_TILE = "landfill"
 patrol.INTERVAL = 1
-patrol.LIVE_INTERVAL = 31 -- not 30: on_nth_tick(30) is taken by challenge.on_tick (one handler per interval)
+patrol.LIVE_INTERVAL = 31 -- not 30: keeps it off the ticks of challenge.on_tick (spreads the work)
 
 local floor, abs, max, min = math.floor, math.abs, math.max, math.min
 

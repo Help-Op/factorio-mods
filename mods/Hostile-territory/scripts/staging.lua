@@ -1,5 +1,8 @@
 -- Staging point for a crusade (phase G): an existing enemy nest in a hostile territory next to the target.
 -- Candidates: hostile territories touching the target (a chunk next to one of its chunks) that have a nest.
+-- A touching territory whose base isn't generated yet (one base per territory, territory-brain-plan.md B-I9) gets
+-- the chunks around its point generated first (map gen builds the base, brain.lua places the brain). A point on
+-- water has no base (brain.lua claims that territory), so it's skipped.
 -- Pick the one whose centre is furthest from spawn, so the army gathers on the far side of the target.
 -- Fallback: the hostile territory with a nest whose centre is nearest to the target centre.
 -- Nests are never built: no candidate → no staging → no crusade.
@@ -47,6 +50,29 @@ local function nearest_nest(record, surface, point)
   return best
 end
 
+-- Generates the chunks around the territory's point (its base: ring radius 18 + nest size fits in 3x3 chunks)
+-- if they aren't yet. Returns true if the base can exist (point outside the starting area and not on water).
+local WATER_RADIUS = 3 -- same as brain.lua FIT_RADIUS
+local function ensure_base(record, surface)
+  local chunk = record.territory.get_chunks()[1]
+  if not chunk then return false end
+  local p = surface.calculate_tile_properties({"hostile_point_nearest_x", "hostile_point_nearest_y"},
+    {{chunk.x * 32 + 16, chunk.y * 32 + 16}})
+  local point = {x = p.hostile_point_nearest_x[1] + 0.5, y = p.hostile_point_nearest_y[1] + 0.5}
+  local cx, cy = math.floor(point.x / 32), math.floor(point.y / 32)
+  local missing = false
+  for dx = -1, 1 do
+    for dy = -1, 1 do
+      if not surface.is_chunk_generated({cx + dx, cy + dy}) then missing = true end
+    end
+  end
+  if missing then
+    surface.request_to_generate_chunks(point, 1)
+    surface.force_generate_chunk_requests()
+  end
+  return surface.count_tiles_filtered{position = point, radius = WATER_RADIUS, collision_mask = "water_tile"} == 0
+end
+
 -- Returns staging record, nest entity; or nil if there is no valid staging territory.
 function staging.pick(target, surface)
   local target_centre = territories.centre(target)
@@ -60,6 +86,7 @@ function staging.pick(target, surface)
       local distance = distance2(centre, spawn)
       if not best_distance or distance > best_distance then
         local nest = nearest_nest(record, surface, target_centre)
+        if not nest and ensure_base(record, surface) then nest = nearest_nest(record, surface, target_centre) end
         if nest then best, best_nest, best_distance = record, nest, distance end
       end
     end

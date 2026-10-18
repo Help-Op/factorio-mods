@@ -1,0 +1,9 @@
+{
+  "name": "ht-map-check",
+  "version": "0.0.1",
+  "title": "HT map check",
+  "author": "Turoni",
+  "description": "Test only, changes no data. Checks Hostile Territory's territories and brain bases (territory-brain-plan.md B2/B3). Headless: on tick 2. In game: /ht-map-check.",
+  "factorio_version": "2.1",
+  "dependencies": ["Hostile-territory"]
+}

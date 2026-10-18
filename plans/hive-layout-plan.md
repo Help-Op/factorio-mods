@@ -1,6 +1,6 @@
 # Hive layout in map gen
 
-> **Status:** L1–L3 done, L4 headless done (2026-10-17, 2.1.21) · **Parent:** "Territory brain" in [roadmap.md](roadmap.md) fog · **Next:** L4d in game (user) · [Roadmap](roadmap.md)
+> **Status:** done (2026-10-17, 2.1.21): L1–L4 success, built into the mods by territory-brain-plan.md · **Parent:** "Territory brain" in [roadmap.md](roadmap.md) fog · **Next:** none · [Roadmap](roadmap.md)
 
 ## Goal
 
@@ -120,7 +120,7 @@ Harness without a server: `--create l1.zip --map-gen-seed 12345`, then `--benchm
       - Runtime check of named noise expressions with `calculate_tile_properties` works well for debugging (values at chosen tiles).
     - [x] L3c. **In game (user):** start a new map with the debug config (launch.json, `mods/` has the junction; check that `ht-layout-test` is enabled in the mod list). Commands: [docs/commands.md](../docs/commands.md) "Hive layout test (L3)". Look at the bases on the map and up close: does it read as "worm core with a ring of nests"? Is the spacing OK? Are lakes eating too many bases?
       - **Result (user, 2026-10-17, 2.1.21):** ✅ "Works exactly how I hoped it could work." Some rings not complete, which is completely acceptable; far and away most looked good. Test is a complete success.
-- [ ] **L4. One base per territory, from our own territory points** (L-g c, user 2026-10-17). Question: can map gen place exactly one base per territory, when the territories don't exist yet while chunks are generated?
+- [x] **L4. One base per territory, from our own territory points** (L-g c, user 2026-10-17). Question: can map gen place exactly one base per territory, when the territories don't exist yet while chunks are generated?
   - **Idea:** the territories and the bases both come from the **same points**, which noise can compute on its own, so they can't disagree.
     - **Points:** one per grid cell of `G` tiles, moved inside the cell by per-cell random values (L3 trick, `voronoi_cell_id{jitter = 0}`). The offset is capped at ±`J`·G/2, so each point keeps a margin of (1 − J)·G/2 from its cell edge.
     - **Territory index (per chunk):** the id of the nearest point among the 3×3 surrounding cells (a 9-way min, written out with `if()`). Id = cell index, e.g. `(i + 500) * 1000 + (j + 500)`. This replaces `hostile_territory_expression`. It gives Voronoi cells like today, but around points we know.
@@ -143,8 +143,9 @@ Harness without a server: `--create l1.zip --map-gen-seed 12345`, then `--benchm
       | Territory size (chunks) | 108–201, avg 150 (before: 50–162). No small fragments now: every territory is a whole Voronoi cell |
       | Map-gen time | Same as L3: 44 s for create + 81×81 chunks + check, both runs |
     - [x] L4c. **Wyrm moved to the base centre:** 29 / 29, head 0.0 tiles from the point right after `set_body_nodes` ✅ (headless, same run). Not tested: what it does afterwards (a normal wyrm patrols again; the brain will be dormant).
-    - [ ] L4d. **In game (user):** new map with the debug config (`mods/ht-layout-test` now points to the L4 version). Commands: [docs/commands.md](../docs/commands.md) "Hive layout test (L3/L4)". Look at the territory colours on the map plus the bases: one base per territory, roughly in the middle? Shapes OK? Then `/ht-layout-move-brains` and look at a wyrm in its base.
-      - **Partial result (user, 2026-10-17, 2.1.21):** `/ht-layout-move-brains` moves the wyrms to the centre (seen in at least one place) ✅. Bases per territory and shapes: not reported yet.
+    - [x] L4d. **In game (user):** new map with the debug config (`mods/ht-layout-test` now points to the L4 version). Commands: [docs/commands.md](../docs/commands.md) "Hive layout test (L3/L4)". Look at the territory colours on the map plus the bases: one base per territory, roughly in the middle? Shapes OK? Then `/ht-layout-move-brains` and look at a wyrm in its base.
+      - **Partial result (user, 2026-10-17, 2.1.21):** `/ht-layout-move-brains` moves the wyrms to the centre (seen in at least one place) ✅. 
+      - **Result (user, 2026-10-17, 2.1.21):** ✅ Each territory has one base, and the shapes look OK.
 
 
 ## Open questions

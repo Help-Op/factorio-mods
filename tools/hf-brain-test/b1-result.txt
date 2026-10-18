@@ -1,0 +1,5 @@
+territories=34 segmented units=34 (hf-brain-small=11, hf-brain-medium=21, hf-brain-big=2)
+segments of first unit: 1 (hf-brain-small)
+tick 600: provoked hf-brain-small at (289.2,-312.0), character at (304.2,-312.0) 15 tiles away, AI state 0
+tick 1500 (25 s, all units full activity): moved > 0.5 tiles = 0, max drift = 0.00 tiles
+provoked brain: drift 0.00 tiles, AI state enraged_at_nothing, character dead

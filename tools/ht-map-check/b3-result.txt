@@ -1,0 +1,31 @@
+territories=63 fully generated=29 | bases per full territory: 1=29 0=0 2+=0 | base point is its territory's point=29 | core worms (radius 8)=32 | points with water within 3 tiles=9 | no unit + base area clean=9, not clean=0 | points with a base but no territory=0 | territory size (chunks) min=108 avg=150 max=201 | territories without unit=9 | units that are not a brain=0 | brain distance from point min=0 max=0 | enemies=240 stray=0 in starting area=0
+Brains placed on their base: 29. Territories claimed at map gen (water): 11.
+territory #1 chunks=124 bases=1 units=1 point=(-497,-289) | hf-brain-small 0 tiles from point
+territory #2 chunks=131 bases=1 units=1 point=(-130,-427) | hf-brain-small 0 tiles from point
+territory #3 chunks=149 bases=1 units=0 point=(-502,283)
+territory #4 chunks=132 bases=1 units=0 point=(296,-471)
+territory #8 chunks=194 bases=1 units=0 point=(-856,-526)
+territory #10 chunks=188 bases=1 units=1 point=(-895,-169) | hf-brain-medium 0 tiles from point
+territory #17 chunks=149 bases=1 units=1 point=(-822,224) | hf-brain-medium 0 tiles from point
+territory #18 chunks=183 bases=1 units=0 point=(-874,-1109)
+territory #19 chunks=156 bases=1 units=0 point=(-915,542)
+territory #22 chunks=123 bases=1 units=0 point=(-658,981)
+territory #23 chunks=120 bases=1 units=1 point=(-452,728) | hf-brain-medium 0 tiles from point
+territory #26 chunks=183 bases=1 units=1 point=(-438,-983) | hf-brain-medium 0 tiles from point
+territory #27 chunks=135 bases=1 units=1 point=(-521,-494) | hf-brain-medium 0 tiles from point
+territory #28 chunks=141 bases=1 units=1 point=(-265,1012) | hf-brain-medium 0 tiles from point
+territory #30 chunks=158 bases=1 units=1 point=(-224,636) | hf-brain-small 0 tiles from point
+territory #32 chunks=168 bases=1 units=0 point=(-137,-999)
+territory #33 chunks=201 bases=1 units=1 point=(269,902) | hf-brain-medium 0 tiles from point
+territory #36 chunks=154 bases=1 units=1 point=(239,574) | hf-brain-small 0 tiles from point
+territory #37 chunks=136 bases=1 units=1 point=(308,-951) | hf-brain-medium 0 tiles from point
+territory #39 chunks=136 bases=1 units=1 point=(484,-187) | hf-brain-small 0 tiles from point
+territory #40 chunks=148 bases=1 units=1 point=(613,-650) | hf-brain-medium 0 tiles from point
+territory #41 chunks=108 bases=1 units=1 point=(477,87) | hf-brain-small 0 tiles from point
+territory #44 chunks=163 bases=1 units=1 point=(680,1043) | hf-brain-medium 0 tiles from point
+territory #45 chunks=110 bases=1 units=1 point=(637,-1016) | hf-brain-medium 0 tiles from point
+territory #46 chunks=161 bases=1 units=1 point=(687,605) | hf-brain-medium 0 tiles from point
+territory #47 chunks=162 bases=1 units=0 point=(838,187)
+territory #48 chunks=140 bases=1 units=1 point=(1014,-82) | hf-brain-medium 0 tiles from point
+territory #49 chunks=161 bases=1 units=0 point=(962,-530)
+territory #53 chunks=144 bases=1 units=1 point=(1032,604) | hf-brain-medium 0 tiles from point

@@ -3,4 +3,5 @@
 
 require("prototypes.nest-rules")
 require("prototypes.earth-wyrm")
+require("prototypes.brain") -- needs earth-wyrm
 require("prototypes.test-units") -- EB2 engine tests, temporary

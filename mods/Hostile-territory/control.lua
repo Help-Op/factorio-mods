@@ -5,15 +5,24 @@ local attacks = require("scripts.attacks")
 local crusade = require("scripts.crusade")
 local rally = require("scripts.rally")
 local patrol = require("scripts.patrol")
+local brain = require("scripts.brain")
+local regrow = require("scripts.regrow")
+local staging = require("scripts.staging")
 
 script.on_init(function()
   territories.scan()
   crusade.init()
+  regrow.init()
+  brain.init()
+  brain.scan()
 end)
 script.on_configuration_changed(function()
   patrol.migrate()
   territories.scan()
   crusade.init()
+  regrow.init()
+  brain.init()
+  brain.scan()
 end)
 
 script.on_event(defines.events.on_territory_created, territories.on_territory_created)
@@ -24,15 +33,32 @@ script.on_event(defines.events.on_segmented_unit_died, function(event)
   local claimed = territories.on_segmented_unit_died(event)
   if claimed then challenge.on_won(claimed.id) end
 end)
+script.on_event(defines.events.on_chunk_generated, brain.on_chunk_generated)
 script.on_event(defines.events.on_chunk_charted, function(event)
   territories.on_chunk_charted(event)
   crusade.on_chunk_charted(event)
 end)
-script.on_nth_tick(challenge.CHECK_INTERVAL, challenge.on_tick)
-script.on_nth_tick(crusade.CHECK_INTERVAL, crusade.on_tick)
-script.on_nth_tick(crusade.MIGRATION_INTERVAL, crusade.on_migration_tick)
-script.on_nth_tick(patrol.INTERVAL, patrol.on_tick)
-script.on_nth_tick(patrol.LIVE_INTERVAL, patrol.on_live_tick)
+-- script.on_nth_tick keeps one handler per interval: a second registration with the same interval silently
+-- replaces the first (that switched off the crusade check, 2026-10-17). Always register through every().
+local nth_tick = {}
+local function every(interval, handler)
+  local handlers = nth_tick[interval]
+  if not handlers then
+    handlers = {}
+    nth_tick[interval] = handlers
+    script.on_nth_tick(interval, function(event)
+      for _, h in ipairs(handlers) do h(event) end
+    end)
+  end
+  handlers[#handlers + 1] = handler
+end
+
+every(challenge.CHECK_INTERVAL, challenge.on_tick)
+every(crusade.CHECK_INTERVAL, crusade.on_tick)
+every(crusade.MIGRATION_INTERVAL, crusade.on_migration_tick)
+every(patrol.INTERVAL, patrol.on_tick)
+every(regrow.INTERVAL, regrow.on_tick)
+every(patrol.LIVE_INTERVAL, patrol.on_live_tick)
 script.on_event(defines.events.on_ai_command_completed, function(event)
   waves.on_ai_command_completed(event)
   crusade.on_ai_command_completed(event)
@@ -49,6 +75,27 @@ remote.add_interface("hostile-territory-debug", {
     if record and territories.states[state] then territories.set_state(record, state) end
   end,
   crusade = function() return crusade.describe() end,
+  brains = function() return brain.describe() .. " " .. regrow.describe() end,
+  -- n regrowth rounds now; returns the number of pieces built
+  regrow = function(n) return regrow.run(n or 1) end,
+  -- staging choice for a target territory id (may generate a neighbour's base): {id, x, y} or nil
+  staging_for = function(id)
+    local record = storage.territories[id]
+    if not (record and record.territory.valid) then return nil end
+    local chosen, nest = staging.pick(record, game.surfaces[territories.surface_name])
+    if not chosen then return nil end
+    return {id = chosen.id, x = nest.position.x, y = nest.position.y}
+  end,
+  -- what a lost crusade does, without the crusade: a brain at x, y in the territory there, its base registered
+  place_brain = function(x, y)
+    local surface = game.surfaces[territories.surface_name]
+    local record = territories.get_at(surface, {x = x, y = y})
+    if not record then return nil end
+    local name = rally.guardian_for(record, surface)
+    surface.create_segmented_unit{name = name, position = {x, y}, territory = record.territory, force = "enemy"}
+    regrow.register(record, {x = x, y = y})
+    return name
+  end,
   crusade_cancel = function() return crusade.finish("Crusade cancelled (debug).") end,
   -- reroute one territory now (runs again even if done); returns its stats
   reroute = function(id)
@@ -119,6 +166,11 @@ end)
 commands.add_command("ht-crusade", "Show the crusade budget, the next target and its cost.", function(command)
   local player = game.get_player(command.player_index)
   if player then player.print(crusade.describe()) end
+end)
+
+commands.add_command("ht-brains", "Show how many brains were placed on their base and how many territories started claimed (water).", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(brain.describe() .. " " .. regrow.describe()) end
 end)
 
 commands.add_command("ht-crusade-cancel", "End the active crusade: army removed, target back to claimed.", function(command)

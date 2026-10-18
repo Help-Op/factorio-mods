@@ -36,6 +36,7 @@ local territories = require("scripts.territories")
 local staging = require("scripts.staging")
 local army = require("scripts.army")
 local rally = require("scripts.rally")
+local regrow = require("scripts.regrow")
 
 local crusade = {}
 
@@ -236,11 +237,12 @@ local function update_march(state, surface, target)
   defeat(state, "the army never reached the territory")
 end
 
--- The rally turns into the guardian: full health, assigned to the target territory.
+-- The rally turns into the guardian: full health, assigned to the target territory. Its base grows around it (regrow.lua).
 local function lose(state, surface, target)
   local position = state.rally.position
   state.rally.destroy()
   surface.create_segmented_unit{name = state.guardian, position = position, territory = target.territory, force = "enemy"}
+  regrow.register(target, position)
   crusade.finish(string.format("Territory %d is lost: the rally turned into a %s.", state.target_id, state.guardian), true)
 end
 

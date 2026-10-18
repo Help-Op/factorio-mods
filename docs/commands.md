@@ -74,6 +74,8 @@ Elevation noise vs. real water in the chunk you stand in (Q-EB3b-8; sample at in
 
 ## Wyrm control (EB3c)
 
+Since territory-brain B2 the territory guardians are brains, not wyrms; these commands act on the nearest segmented unit, so they work on brains too (a brain has all speeds 0: "send", "enrage" and "hold" don't move it; the `set_body_nodes` jump does).
+
 All act on the wyrm nearest to you. Results of the headless tests: `enemy-balancing-plan.md` EB3c.
 
 Send it to where you stand now (`investigating`; it patrols again once it arrives):
@@ -188,28 +190,62 @@ While it flies: find every shell, print its position and delete it. If the shell
 /c for _,e in pairs(game.player.surface.find_entities_filtered{type="artillery-projectile"}) do game.print(serpent.line(e.position)) e.destroy() end
 ```
 
-## Hive layout test (L3/L4)
+## Territory brains and bases (territory-brain-plan.md)
 
-Needs the `ht-layout-test` mod (`mods/ht-layout-test` junction, see `plans/hive-layout-plan.md` L3/L4; the junction points to the current version, L4). GPS link to the nearest base (click it to open the map there):
+Every territory has one brain base, built by map gen around the territory's point; the brain stands in the middle. The map check commands need the `ht-map-check` mod (`mods/ht-map-check` junction to `tools/ht-map-check`, debug runs only).
 
-```
-/ht-layout-nearest
-```
-
-Check bases and territories within 1500 tiles of you (only already generated chunks). Prints a summary and writes `script-output/l4-ingame-result.txt` (`l3-…` for L3):
+GPS link to the nearest brain base (click it to open the map there):
 
 ```
-/ht-layout-check
+/ht-map-nearest
 ```
 
-Generate and chart 2560 × 2560 tiles around spawn, so you can see all bases on the map (takes a while):
+Check territories and brain bases within 1500 tiles of you (generated chunks only). Prints a summary and writes `script-output/map-check-ingame-result.txt`:
+
+```
+/ht-map-check
+```
+
+How many brains were moved onto their base, how many territories started claimed (water), how many bases regrow:
+
+```
+/ht-brains
+```
+
+Generate and chart 2560 × 2560 tiles around spawn, to see all bases on the map (takes a while):
 
 ```
 /c local s=game.player.surface s.request_to_generate_chunks({0,0},40) s.force_generate_chunk_requests() game.player.force.chart(s,{{-1280,-1280},{1280,1280}})
 ```
 
-L4 only: move the wyrm of every fully generated territory to its base centre (it patrols again afterwards):
+List every brain (and wyrm) with its position and AI state:
 
 ```
-/ht-layout-move-brains
+/c local t={} for k,v in pairs(defines.segmented_unit_ai_state) do t[v]=k end for _,u in pairs(game.player.surface.get_segmented_units()) do local h=u.segments[1].position game.print(string.format("%s [gps=%d,%d] %s",u.prototype.name,h.x,h.y,t[u.get_ai_state().type])) end
 ```
+
+Spawn a small brain 25 tiles east of you, without a territory (`hf-brain-medium`, `hf-brain-big` for the others):
+
+```
+/c local p=game.player p.surface.create_segmented_unit{name="hf-brain-small",position={p.position.x+25,p.position.y},force="enemy"}
+```
+
+Run 10 regrowth rounds now (normally one piece per base per minute); prints how many pieces were built:
+
+```
+/c game.print(remote.call("hostile-territory-debug","regrow",10))
+```
+
+What a lost crusade does, without the crusade: a brain where you stand (in the territory there), its base grows around it. Step aside first, pieces can't go where you stand:
+
+```
+/c local p=game.player.position game.print(remote.call("hostile-territory-debug","place_brain",math.floor(p.x)+0.5,math.floor(p.y)+0.5))
+```
+
+Where a crusade on territory 12 would stage (id from `/ht-territory`; may generate a neighbour's base):
+
+```
+/c game.print(serpent.line(remote.call("hostile-territory-debug","staging_for",12)))
+```
+
+The map-gen layout tests (hive-layout-plan.md L1–L4) live in `tools/ht-layout-test/` and are no longer linked into `mods/`; their commands (`/ht-layout-*`) are gone from normal runs.
