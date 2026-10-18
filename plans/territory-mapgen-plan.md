@@ -83,7 +83,7 @@ Each step is meant to be done and checked on its own, in order.
 - [x] **4. Fix the starting-area exclusion (D3).**
   - Finding: `starting_spot_at_angle` (`core/prototypes/noise-functions.lua`) is positive inside a circle centred `distance` tiles from spawn. Even Vulcanus's version only moves cell IDs inside that circle, so it doesn't by itself stop demolishers spawning near the start.
   - New approach, which doesn't depend on an angle and works with multiple starting positions:
-    - `hostile_starting_area = distance < hostile_starting_area_radius`. `distance` is the built-in distance to the nearest starting position, and the radius is 384 tiles.
+    - `hostile_starting_area = distance < hostile_starting_area_radius`. `distance` is the built-in distance to the nearest starting position, and the radius is 384 tiles. **Changed 2026-10-18 to 150, and near-spawn points are pushed out to 200 instead of joining the starting area** ([challenge-feel-plan.md](challenge-feel-plan.md) P6/E2).
     - The territory index inside the starting area is forced to `-1`. That makes it a single territory of its own, separate from the voronoi cells, which use values 0–1.
     - The variation expression adds `-99 * hostile_starting_area`. A negative variation means an empty spawn location, per the `TerritorySettings` API docs.
   - Verified: a headless `--create` map generates with no noise-expression errors.

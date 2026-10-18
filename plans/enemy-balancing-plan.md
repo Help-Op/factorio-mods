@@ -1,6 +1,6 @@
 # Enemy Balancing
 
-> **Status:** D1–D36 decided, EB1–EB3c done (2026-10-17) · **Parent:** phase I in [vision-plan.md](vision-plan.md) · **Next:** EB4 first niche units · [Roadmap](roadmap.md)  
+> **Status:** D1–D36 decided, EB1–EB3c done (2026-10-17) · **Parent:** phase I in [vision-plan.md](vision-plan.md) · **Next:** EB4 niche units, picked per problem from [challenge-feel-plan.md](challenge-feel-plan.md) · [Roadmap](roadmap.md)  
 > Started 2026-10-12, decisions 2026-10-12.
 
 The work in this plan goes into the separate mod **`mods/Hostile-fauna`** (D10). Both mods share this workspace repo since 2026-10-16 (see [workspace-migration-plan.md](workspace-migration-plan.md)).
@@ -422,7 +422,7 @@ Speeds at player 0.25 tiles/tick (EB3 starting point, D13):
       - `set_body_nodes` jump: doesn't look natural, but works with no noticeable problems or side effects ✅
       - Forced `investigating`: looks OK ✅
       - Enraged (`set_ai_state` `enraged_at_nothing`): works ✅. Note: the wyrm **stayed enraged**, and a **challenge started every time the player came near**. Probably normal (an enraged wyrm near the player counts as a fight), but keep in mind when wyrm control gets used for real (e.g. bringing a dormant wyrm home must not trigger challenges).
-- [ ] **EB4. First niche units.** Build 2–3 units. In game: do they feel different, and do they combine well?
+- [ ] **EB4. First niche units.** Build 2–3 units. In game: do they feel different, and do they combine well? **Since 2026-10-18 driven by [challenge-feel-plan.md](challenge-feel-plan.md):** a niche unit gets built when a problem there calls for it, not up front.
 - [ ] **EB5. Plug into the mod.** Use them in challenge rings and crusade armies, and possibly in spawners (`result_units`).
 - [ ] **EB6. Tune.** HP, damage, numbers per ring and evolution. Resistances per the weapon-checkpoint effort bands.
 

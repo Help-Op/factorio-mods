@@ -1,11 +1,11 @@
 # Roadmap
 
-> The big picture on one page. A summary of the plan files, which stay the source of truth. Last updated: 2026-10-17 (game 2.1.21).
+> The big picture on one page. A summary of the plan files, which stay the source of truth. Last updated: 2026-10-18 (game 2.1.21).
 > New ideas go to [inbox.md](inbox.md). How this works: [planning-structure-plan.md](planning-structure-plan.md).
 
 ## Where we are
 
-The core loop of Hostile Territory works as a POC: territories on Nauvis (map gen), challenges to take them, crusades to win them back (phases A–H of the vision). Now in **phase I, balancing**: making enemies feel right in the separate mod `Hostile-fauna`. Earth wyrms replaced the demolishers (EB3b) and can be controlled by script (EB3c). Since 2026-10-17 every territory has **one brain base**, and its **brain** (a standing-still segmented unit) is the guardian; bases regrow, water territories start claimed (territory-brain-plan.md). **Current focus: EB4, the first niche units.**
+The core loop of Hostile Territory works as a POC: territories on Nauvis (map gen), challenges to take them, crusades to win them back (phases A–H of the vision). Now in **phase I, balancing**: making enemies feel right in the separate mod `Hostile-fauna`. Earth wyrms replaced the demolishers (EB3b) and can be controlled by script (EB3c). Since 2026-10-17 every territory has **one brain base**, and its **brain** (a standing-still segmented unit) is the guardian; bases regrow, water territories start claimed (territory-brain-plan.md). The first-ring challenge is **done for now** ([challenge-feel-plan.md](challenge-feel-plan.md), 2026-10-18): siege → wake → swarm → last stand, winnable with one stack of yellow ammo. **Current focus: ring layout** ([ring-layout-plan.md](ring-layout-plan.md)): rings as bands, oil only from ring 1 on.
 
 ## Map
 
@@ -29,6 +29,8 @@ flowchart TD
         EB6["EB6 tune"]
     end
 
+    CF["Challenge feel<br/>challenge-feel-plan.md<br/>first ring done"]
+    RL["Ring layout<br/>ring-layout-plan.md<br/>R1 built"]
     HL["Hive layout in map gen<br/>hive-layout-plan.md<br/>L1–L4 done"]
     TB["Territory brain<br/>territory-brain-plan.md<br/>done"]
     CA["Counter-artillery<br/>counter-artillery-plan.md<br/>interview"]
@@ -47,14 +49,19 @@ flowchart TD
     HL --> TB
     AH -. challenge, crusade .-> TB
     TB --> CA
+    AH --> CF
+    CF --> RL
+    MG -. rings, oil .-> RL
+    CF -. picks answers from .-> EB4
+    CF -. picks answers from .-> AR
 
     classDef done fill:#d4edda,stroke:#2e7d32,color:#000
     classDef now fill:#fff3cd,stroke:#b8860b,stroke-width:3px,color:#000
     classDef next fill:#e3f2fd,stroke:#1565c0,color:#000
     classDef later fill:#f0f0f0,stroke:#999,color:#555
-    class MG,AH,REC,WS,PS,HL,TB done
-    class EB4 now
-    class EB,AR,EB5,EB6 next
+    class MG,AH,REC,WS,PS,HL,TB,CF done
+    class RL now
+    class EB,EB4,AR,EB5,EB6 next
     class J,TPL,V,CA later
 ```
 
@@ -65,13 +72,15 @@ Green: done · Yellow: current focus · Blue: decided, up next · Grey: later or
 | Plan | Topic | Status | Next step |
 |------|-------|--------|-----------|
 | [vision-plan.md](vision-plan.md) | Overall vision: territory states, challenges, crusades. Phases A–J | A–H done (POC), I in progress | Arena AR2 (decided, not built) |
-| [enemy-balancing-plan.md](enemy-balancing-plan.md) | Phase I: enemy feel, speed, niches. Work goes into `mods/Hostile-fauna` | D1–D36 decided, EB1–EB3c done | **EB4: first niche units** |
+| [challenge-feel-plan.md](challenge-feel-plan.md) | Phase I, problem-driven: feel target for challenges, playtests, gaps → experiments | Feel target + ring-1 decisions CF-D1–D6 (2026-10-18): ring 1 only, one-shot small biters, 1 stack of yellow ammo, enemies from nests. Found P3: ring-1 brain unbeatable (30 000 HP, 2400 HP/s regen) | **First ring done for now** (2026-10-18, PT9: won, 35 magazines left): siege → wake → swarm → last stand. Later: P2 arsenal, rings beyond the first |
+| [enemy-balancing-plan.md](enemy-balancing-plan.md) | Phase I: enemy feel, speed, niches. Work goes into `mods/Hostile-fauna` | D1–D36 decided, EB1–EB3c done | EB4 niche units, picked per problem from challenge-feel-plan.md |
 | [territory-mapgen-plan.md](territory-mapgen-plan.md) | Territories on Nauvis via map gen (the foundation) | Steps 1–7 done | 8 in-game validation |
 | [territory-recapture-plan.md](territory-recapture-plan.md) | Engine tests: respawning guardians, territory colour | Tests done, mostly absorbed by phase H | Open questions only |
 | [workspace-migration-plan.md](workspace-migration-plan.md) | Monorepo `E:\dev\factorio` | Steps 1–8 done | 9 delete backup (a few days after 2026-10-16), 10 packaging, 11 harness script |
 | [territory-brain-plan.md](territory-brain-plan.md) | Move L4 into the mods: brain as guardian, one brain base per territory, water → claimed, regrowth | Done 2026-10-17 (B1–B6), confirmed in game. Open notes B-I10–B-I12 (brain seen before its base, brain too strong, crusades maybe slower) | None; brain strength → EB6 |
 | [hive-layout-plan.md](hive-layout-plan.md) | Can map gen make exact base shapes (worm in the middle, ring of nests)? | L1–L4 done 2026-10-17: worm core + nest ring per base (L3), one base per territory from our own points (L4), both confirmed in game | Done; continues in territory-brain-plan.md |
 | [counter-artillery-plan.md](counter-artillery-plan.md) | Hive counter units shoot player artillery shells mid-flight; 30 s recharge, count by challenge level. Artillery cheese on the brain is "sort of acceptable" until then | Interview: CA-D1–D8 decided 2026-10-17, nothing built | Open questions, then CA1 fire-event test |
+| [ring-layout-plan.md](ring-layout-plan.md) | Rings as bands around the safe zone; oil only from ring 1 on | R1 built + headless ✅ (2026-10-18, 5 seeds): ring = grid layer (4 / 12 / 20 territories), no oil in ring 0 or the safe zone, 6 guaranteed wells in the closest ring-1 territory | **In-game check on a new map** |
 | [planning-structure-plan.md](planning-structure-plan.md) | This roadmap, the inbox, plan headers | Built 2026-10-17 | User review |
 | [archive/](archive/) | Old map-gen approach, old overlay bugs | Archived 2026-10-17, don't use | |
 | [docs/commands.md](../docs/commands.md) | In-game test commands | Living reference | |
@@ -80,9 +89,11 @@ Green: done · Yellow: current focus · Blue: decided, up next · Grey: later or
 
 | # | Thread | Plan | Blocked by |
 |---|--------|------|------------|
-| 1 | **EB4** first niche units (2–3), in-game feel test. Also decides which EB2 test units to promote or remove | enemy-balancing | — |
+| 1 | **Challenge feel**: first ring done; later P2 (arsenal), rings beyond the first; then P2 (arsenal not useful) | challenge-feel | — |
+| 1a | **Ring layout**: in-game check of R1 (new map) | ring-layout | — |
+| 1b | **EB4** niche units, only when a problem calls for them. Also decides which EB2 test units to promote or remove | enemy-balancing | challenge-feel problems |
 | 2 | **Arena** AR2 build, AR3 feel test | vision (arena section) | — |
-| 3 | **Player punch** PP1 gun damage ×2, PP2 checkpoint table | vision (arena) + enemy-balancing D9/D23 | — |
+| 3 | **Player punch** PP1 gun damage ×3 for pistol + SMG (now E1-1 in challenge-feel), PP2 checkpoint table | vision (arena) + enemy-balancing D9/D23 | — |
 | 4 | **EB5** use niche units in challenges and crusades, maybe spawners | enemy-balancing | EB4 |
 | 5 | **EB6** tune HP, damage, numbers per ring | enemy-balancing | EB5 |
 | 6 | Map-gen validation in game (seeds, tiers, terrain) | territory-mapgen step 8 | — |
@@ -120,7 +131,7 @@ Decided **not** to do. "For now" means it may come back with a new decision; "No
 | Building a staging nest when none exists | No, no nest means no crusade | vision G-3 |
 | Scripted regen for guardians and rallies | No | vision H-6 |
 | Sea wyrm | For now, earth wyrm first | EB D15, E8 |
-| Slow or knockback ammo for the player | For now (gun damage ×2 is in, PP1) | EB D9 |
+| Slow or knockback ammo for the player | For now (gun damage ×3 is in, PP1 / CF-D8) | EB D9 |
 | Slowing the player in the arena | For now, maybe later | vision AR-a |
 | Art for the rally | For now, a white rectangle placeholder | vision H (7c) |
 | Remote building triggering a challenge | For now, plain vanilla in the POC | vision Q5a |

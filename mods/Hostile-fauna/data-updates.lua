@@ -17,3 +17,9 @@ for name, speed in pairs(BITER_SPEEDS) do
   unit.distance_per_frame = unit.distance_per_frame * speed / unit.movement_speed
   unit.movement_speed = speed
 end
+
+-- CF-D2/CF-D8 (challenge-feel-plan.md): one yellow bullet (5 physical) kills a small biter (15 HP) when the player
+-- fires it. The modifier sits on the player's guns, so gun turrets keep the vanilla balance. Replaces PP-b (2×).
+for _, name in pairs({"pistol", "submachine-gun"}) do
+  data.raw.gun[name].attack_parameters.damage_modifier = 3
+end

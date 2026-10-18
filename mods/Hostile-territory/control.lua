@@ -8,6 +8,7 @@ local patrol = require("scripts.patrol")
 local brain = require("scripts.brain")
 local regrow = require("scripts.regrow")
 local staging = require("scripts.staging")
+local oil = require("scripts.oil")
 
 script.on_init(function()
   territories.scan()
@@ -15,6 +16,7 @@ script.on_init(function()
   regrow.init()
   brain.init()
   brain.scan()
+  oil.init()
 end)
 script.on_configuration_changed(function()
   patrol.migrate()
@@ -23,6 +25,7 @@ script.on_configuration_changed(function()
   regrow.init()
   brain.init()
   brain.scan()
+  oil.init()
 end)
 
 script.on_event(defines.events.on_territory_created, territories.on_territory_created)
@@ -33,7 +36,10 @@ script.on_event(defines.events.on_segmented_unit_died, function(event)
   local claimed = territories.on_segmented_unit_died(event)
   if claimed then challenge.on_won(claimed.id) end
 end)
-script.on_event(defines.events.on_chunk_generated, brain.on_chunk_generated)
+script.on_event(defines.events.on_chunk_generated, function(event)
+  brain.on_chunk_generated(event)
+  oil.on_chunk_generated(event)
+end)
 script.on_event(defines.events.on_chunk_charted, function(event)
   territories.on_chunk_charted(event)
   crusade.on_chunk_charted(event)
@@ -63,9 +69,17 @@ script.on_event(defines.events.on_ai_command_completed, function(event)
   waves.on_ai_command_completed(event)
   crusade.on_ai_command_completed(event)
 end)
-local rally_filters = {}
-for _, name in pairs(rally.NAMES) do rally_filters[#rally_filters + 1] = {filter = "name", name = name} end
-script.on_event(defines.events.on_entity_damaged, crusade.on_entity_damaged, rally_filters)
+-- rallies (crusade defence) and enemy nests / worms (siege, challenge-feel-plan.md E9)
+local damage_filters = {{filter = "type", type = "unit-spawner"}, {filter = "type", type = "turret"}}
+for _, name in pairs(rally.NAMES) do damage_filters[#damage_filters + 1] = {filter = "name", name = name} end
+script.on_event(defines.events.on_entity_damaged, function(event)
+  local type = event.entity.type
+  if type == "unit-spawner" or type == "turret" then
+    challenge.on_base_damaged(event)
+  else
+    crusade.on_entity_damaged(event)
+  end
+end, damage_filters)
 script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
 
 -- Debug interface (headless harness): /c remote.call("hostile-territory-debug", "set_state", id, "warning")
@@ -76,6 +90,7 @@ remote.add_interface("hostile-territory-debug", {
   end,
   crusade = function() return crusade.describe() end,
   brains = function() return brain.describe() .. " " .. regrow.describe() end,
+  oil = function() return storage.oil end,
   -- n regrowth rounds now; returns the number of pieces built
   regrow = function(n) return regrow.run(n or 1) end,
   -- staging choice for a target territory id (may generate a neighbour's base): {id, x, y} or nil
@@ -97,6 +112,33 @@ remote.add_interface("hostile-territory-debug", {
     return name
   end,
   crusade_cancel = function() return crusade.finish("Crusade cancelled (debug).") end,
+  -- one challenge check of waves for the territory at x, y against entity target, without a player or a real
+  -- challenge (fake record in storage.debug_waves, challenge-feel-plan.md E1-8).
+  -- options (optional): phase = first phase of a new fake record ("siege" / "wake"), wake = true to call waves.wake.
+  -- Returns {id, ring, text, spawned = {[unit_number] = {x, y}}}
+  waves_step = function(x, y, target, options)
+    options = options or {}
+    local surface = game.surfaces[territories.surface_name]
+    local record = territories.get_at(surface, {x = x, y = y})
+    if not (record and record.territory.valid) then return nil end
+    local id = record.id
+    storage.debug_waves = storage.debug_waves or {}
+    local fake = storage.debug_waves[id]
+    if not fake then
+      local unit = record.territory.get_segmented_units()[1]
+      if not (unit and unit.segments[1]) then return nil end
+      fake = {territory_id = id, players = {}}
+      waves.init(fake, surface, unit.segments[1].position, options.phase)
+      storage.debug_waves[id] = fake
+    end
+    if options.wake then waves.wake(fake) end
+    waves.update(fake, surface, {{entity = target}})
+    local spawned = {}
+    for number, entity in pairs(fake.spawned) do
+      if entity.valid then spawned[number] = {x = entity.position.x, y = entity.position.y} end
+    end
+    return {id = id, ring = fake.ring, text = waves.describe(fake), spawned = spawned}
+  end,
   -- reroute one territory now (runs again even if done); returns its stats
   reroute = function(id)
     local record = storage.territories[id]
@@ -170,7 +212,7 @@ end)
 
 commands.add_command("ht-brains", "Show how many brains were placed on their base and how many territories started claimed (water).", function(command)
   local player = game.get_player(command.player_index)
-  if player then player.print(brain.describe() .. " " .. regrow.describe()) end
+  if player then player.print(brain.describe() .. " " .. regrow.describe() .. " " .. oil.describe()) end
 end)
 
 commands.add_command("ht-crusade-cancel", "End the active crusade: army removed, target back to claimed.", function(command)

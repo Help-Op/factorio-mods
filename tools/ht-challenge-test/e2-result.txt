@@ -1,0 +1,48 @@
+damage_modifier: pistol 3, submachine-gun 3, gun-turret 1
+hf-brain-small: max_health 750, healing_per_tick 0, revenge attack (fissures) none
+hf-brain-medium: max_health 100000, healing_per_tick 130, revenge attack (fissures) yes
+small biter after 15 physical: dead
+biter spawner after 15 physical: lost 11.05 of 350
+resource tiles < 150: coal 373, copper-ore 436, iron-ore 636, stone 249
+resource tiles 150–700: coal 2478, copper-ore 2497, crude-oil 25, iron-ore 1239, stone 941, uranium-ore 548
+nearest territory chunk centre: 138 tiles from spawn
+first territory tile per 15° (deg:tiles): 0:160 15:168 30:188 45:184 60:188 75:168 90:160 105:168 120:148 135:136 150:148 165:136 180:132 195:136 210:128 225:136 240:128 255:136 270:132 285:136 300:148 315:136 330:148 345:168
+  min 128, median 148, max 188
+brain distances from spawn (nearest 8): 214 273 313 351 445 485 519 574
+nearest brain: hf-brain-small at (-87.5, -195.5), 214 tiles from spawn, health 750 / 750
+nests within 25 of the brain: 5
+target character at (-52.5, -195.5), 35 tiles from the brain
+territory id 1
+t=  0.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 0, next group in 2s
+t=  2.0s ring 0: +10 new (10 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase wake, brain 100%, alive 10, next group in 8s
+t=  5.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 10, next group in 5s
+-- destroyed 2 of 5 nests
+t= 10.0s ring 0: +5 new (5 within 12 of a nest/brain, 3 more than 20 from the target), ring 0, phase wake, brain 100%, alive 15, next group in 8s
+t= 15.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 15, next group in 3s
+t= 18.0s ring 0: +6 new (6 within 12 of a nest/brain, 4 more than 20 from the target), ring 0, phase wake, brain 100%, alive 21, next group in 8s
+t= 20.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 21, next group in 6s
+-- brain set to 40 % health (300)
+t= 25.0s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 31, swarm left 190
+t= 25.5s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 41, swarm left 180
+t= 26.0s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 51, swarm left 170
+t= 26.5s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 61, swarm left 160
+t= 27.0s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 71, swarm left 150
+t= 27.5s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 81, swarm left 140
+t= 28.0s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 91, swarm left 130
+t= 28.5s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 101, swarm left 120
+t= 29.0s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 111, swarm left 110
+t= 29.5s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 121, swarm left 100
+t= 30.0s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 131, swarm left 90
+t= 30.5s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 141, swarm left 80
+t= 31.0s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 151, swarm left 70
+t= 31.5s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 161, swarm left 60
+t= 32.0s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 171, swarm left 50
+t= 32.5s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 181, swarm left 40
+t= 33.0s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 191, swarm left 30
+t= 33.5s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase climax, brain 40%, alive 201, swarm left 20
+t= 34.0s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 211, swarm left 10
+t= 34.5s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 221, swarm left 0
+t= 35.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase climax, brain 40%, alive 221, swarm left 0
+t= 40.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase climax, brain 40%, alive 221, swarm left 0
+total spawned: 221. Target alive: true
+climax units within 6 tiles of a flank point (most at once): left 11, right 11, behind 12

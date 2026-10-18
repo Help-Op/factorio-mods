@@ -21,10 +21,11 @@ local expressions =
   hostile_base_dx = "floor(x) - hostile_point_own_x",
   hostile_base_dy = "floor(y) - hostile_point_own_y",
   hostile_base_distance = "sqrt(hostile_point_own_x * hostile_point_own_x + hostile_point_own_y * hostile_point_own_y)",
-  -- 0 at the starting area edge, 1 at FAR and beyond
+  -- 0 up to hostile_point_start_radius (420), 1 at FAR and beyond
   hostile_base_far = string.format(
     "clamp((hostile_base_distance - hostile_point_start_radius) / (%d - hostile_point_start_radius), 0, 1)", FAR),
-  hostile_base_exists = "(hostile_base_distance >= hostile_point_start_radius) * (1 - no_enemies_mode)",
+  -- every point is outside the safe zone since E2 (pushed out, nauvis-territory.lua), so every cell has a base
+  hostile_base_exists = "1 - no_enemies_mode",
   hostile_base_rotation = string.format(
     "voronoi_cell_id{x = %s, y = %s, seed0 = map_seed, seed1 = 104, grid_size = %d, distance_type = 'chebyshev', jitter = 0} * %g",
     cell_centre_x, cell_centre_y, G, TWO_PI),

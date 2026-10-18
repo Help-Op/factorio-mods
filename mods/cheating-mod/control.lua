@@ -117,6 +117,7 @@ local tier_kits =
 {
   {name = "pistol",       gun = "pistol",          ammo = {{"firearm-magazine", 200}}},
   {name = "smg-yellow",   gun = "submachine-gun",  ammo = {{"firearm-magazine", 400}}},
+  {name = "ring0",        gun = "submachine-gun",  ammo = {{"firearm-magazine", 100}}}, -- challenge-feel CF-D3: 1 stack
   {name = "smg-red",      gun = "submachine-gun",  ammo = {{"piercing-rounds-magazine", 400}}},
   {name = "smg-uranium",  gun = "submachine-gun",  ammo = {{"uranium-rounds-magazine", 200}}},
   {name = "shotgun",      gun = "shotgun",         ammo = {{"shotgun-shell", 200}}},

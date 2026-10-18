@@ -1,5 +1,8 @@
 -- Challenges: started when a guardian is engaged and a player is nearby; won when the territory is claimed;
 -- lost when for LOSE_GRACE ticks no guardian is engaged or no participant is near a guardian.
+-- Siege (challenge-feel-plan.md E9, ring 0 only): a player damaging a nest or worm of a brain base starts the
+-- challenge before the brain is engaged (so the base stops regrowing). The brain is left alone until it engages
+-- by itself; then the siege turns into wake. During siege only the "participant near" part of the lose rule counts.
 -- While a participant is near, guardians are kept enraged at the nearest participant (so a challenge
 -- started by building doesn't end when the building is destroyed).
 -- storage.challenges[territory_id] = {territory_id, players = {[player_index] = true}, started_tick, lose_since_tick}
@@ -14,6 +17,7 @@ challenge.CHECK_INTERVAL = 30
 local RANGE = 100
 local LOSE_GRACE = 5 * 60
 local RAGE_REFRESH_BELOW = 15 * 60 -- refresh last_damage_time when less rage than this is left
+local BASE_REACH = 30 -- a nest or worm this close to the brain belongs to its base (radius 25 + margin)
 
 local ENGAGED = {
   [defines.segmented_unit_ai_state.attacking] = true,
@@ -117,9 +121,9 @@ local function join(record, player)
   player.print(string.format("Challenge started: territory %d.", record.territory_id))
 end
 
-local function start(territory_record, surface, origin)
+local function start(territory_record, surface, origin, phase)
   local record = {territory_id = territory_record.id, players = {}, started_tick = game.tick}
-  waves.init(record, surface, origin)
+  waves.init(record, surface, origin, phase)
   storage.challenges[territory_record.id] = record
   territories.set_state(territory_record, "challenge")
   return record
@@ -148,6 +152,47 @@ local function lose(record)
   end
   waves.clear(record)
   finish(record, string.format("Challenge lost: territory %d. The guardian recovers.", record.territory_id))
+end
+
+-- The player behind a damage cause: their character, or the driver of their car / spidertron.
+local function player_of(cause)
+  if not (cause and cause.valid) then return nil end
+  if cause.type == "character" then return cause.player end
+  if cause.type == "car" or cause.type == "spider-vehicle" then
+    local driver = cause.get_driver()
+    if driver and driver.object_name == "LuaPlayer" then return driver end
+    if driver and driver.valid and driver.type == "character" then return driver.player end
+  end
+  return nil
+end
+
+-- on_entity_damaged for enemy nests and worms: starts a siege (E9), or adds the player to a running challenge.
+function challenge.on_base_damaged(event)
+  init_storage()
+  local entity = event.entity
+  if entity.force.name ~= "enemy" or entity.surface.name ~= territories.surface_name then return end
+  local player = player_of(event.cause)
+  if not (player and player.connected and player.character) then return end
+  local record = territories.get_at(entity.surface, entity.position)
+  if not record then return end
+  local running = storage.challenges[record.id]
+  if running then
+    join(running, player)
+    return
+  end
+  if record.state ~= "hostile" then return end
+  local head
+  for _, unit in pairs(record.territory.get_segmented_units()) do
+    if unit.valid and unit.segments[1] then
+      head = unit.segments[1].position
+      break
+    end
+  end
+  if not head then return end
+  local p = entity.position
+  if (p.x - head.x) ^ 2 + (p.y - head.y) ^ 2 > BASE_REACH ^ 2 then return end
+  if waves.ring_at(entity.surface, head) ~= 0 then return end
+  join(start(record, entity.surface, head, "siege"), player)
 end
 
 function challenge.on_won(territory_id)
@@ -191,15 +236,18 @@ function challenge.on_tick()
         record = start(territory_record, surface, heads[id][1])
       end
       if record then
+        waves.wake(record)
         for _, player in pairs(nearby) do join(record, player) end
       end
     end
   end
 
-  -- Keep guardians engaged with nearby participants.
+  -- Keep guardians engaged with nearby participants (not during a siege: the brain joins in by itself).
   for id, record in pairs(storage.challenges) do
-    for _, unit in pairs(units[id] or {}) do
-      if keep_engaged(record, surface, unit) then engaged[id] = true end
+    if record.phase ~= "siege" then
+      for _, unit in pairs(units[id] or {}) do
+        if keep_engaged(record, surface, unit) then engaged[id] = true end
+      end
     end
   end
 
@@ -218,7 +266,7 @@ function challenge.on_tick()
     if not storage.territories[id] then
       waves.clear(record)
       finish(record, string.format("Challenge ended: territory %d is gone.", id))
-    elseif engaged[id] and participant_near(record, surface, heads[id]) then
+    elseif (engaged[id] or record.phase == "siege") and participant_near(record, surface, heads[id]) then
       record.lose_since_tick = nil
     else
       record.lose_since_tick = record.lose_since_tick or game.tick

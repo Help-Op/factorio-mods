@@ -1,0 +1,81 @@
+damage_modifier: pistol 3, submachine-gun 3, gun-turret 1
+hf-brain-small: max_health 1125, healing_per_tick 0, revenge attack (fissures) none
+hf-brain-medium: max_health 100000, healing_per_tick 130, revenge attack (fissures) yes
+small biter after 15 physical: dead
+biter spawner after 15 physical: lost 11.05 of 350
+resource tiles < 150: coal 373, copper-ore 436, iron-ore 636, stone 249
+resource tiles 150–700: coal 2478, copper-ore 2497, crude-oil 25, iron-ore 1239, stone 941, uranium-ore 548
+nearest territory chunk centre: 138 tiles from spawn
+first territory tile per 15° (deg:tiles): 0:160 15:168 30:188 45:184 60:188 75:168 90:160 105:168 120:148 135:136 150:148 165:136 180:132 195:136 210:128 225:136 240:128 255:136 270:132 285:136 300:148 315:136 330:148 345:168
+  min 128, median 148, max 188
+brain distances from spawn (nearest 8): 214 273 313 351 445 485 519 574
+nearest brain: hf-brain-small at (-87.5, -195.5), 214 tiles from spawn, health 1125 / 1125
+nests within 25 of the brain: 5
+target character at (-52.5, -195.5), 35 tiles from the brain
+territory id 1
+t=  0.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 0, next group in 2s
+t=  2.0s ring 0: +17 new (17 within 12 of a nest/brain, 14 more than 20 from the target), ring 0, phase wake, brain 100%, alive 17, next group in 8s
+t=  5.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 17, next group in 5s
+-- destroyed 2 of 5 nests
+t= 10.0s ring 0: +8 new (8 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase wake, brain 100%, alive 25, next group in 8s
+t= 15.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 25, next group in 3s
+t= 18.0s ring 0: +8 new (8 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase wake, brain 100%, alive 33, next group in 8s
+t= 20.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 33, next group in 6s
+-- brain set to 40 % health (450), enraged at the target
+t= 25.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 45, swarm left 238
+t= 25.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 57, swarm left 226
+t= 26.0s first biters with hf-ash-sticker-ally: 3 of 84 small biters within 80
+  climax + 1s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 2 9 14 4 0 0 | within 8 tiles: 16 | in front of the brain: 3
+t= 26.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 69, swarm left 214
+t= 26.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 81, swarm left 202
+  climax + 2s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 4 2 21 4 0 0 | within 8 tiles: 18 | in front of the brain: 10
+t= 27.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 93, swarm left 190
+t= 27.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 105, swarm left 178
+  climax + 3s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 4 3 29 2 0 0 | within 8 tiles: 18 | in front of the brain: 12
+t= 28.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 117, swarm left 166
+t= 28.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 129, swarm left 154
+  climax + 4s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 2 5 30 5 0 0 | within 8 tiles: 19 | in front of the brain: 18
+t= 29.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 141, swarm left 142
+t= 29.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 153, swarm left 130
+  climax + 5s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 1 12 35 7 0 0 | within 8 tiles: 23 | in front of the brain: 17
+t= 30.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 165, swarm left 118
+t= 30.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 177, swarm left 106
+  climax + 6s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 4 17 39 6 1 0 | within 8 tiles: 28 | in front of the brain: 19
+t= 31.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 189, swarm left 94
+t= 31.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 201, swarm left 82
+  climax + 7s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 9 18 32 5 2 0 | within 8 tiles: 35 | in front of the brain: 28
+t= 32.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 213, swarm left 70
+t= 32.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 225, swarm left 58
+  climax + 8s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 13 15 32 9 1 2 | within 8 tiles: 40 | in front of the brain: 31
+t= 33.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 237, swarm left 46
+t= 33.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 249, swarm left 34
+  climax + 9s: per sector 8–22 tiles (0 back … 4 front … 7): 0 2 11 16 34 15 2 2 | within 8 tiles: 45 | in front of the brain: 29
+t= 34.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 261, swarm left 22
+t= 34.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase climax, brain 40%, alive 273, swarm left 10
+  climax +10s: per sector 8–22 tiles (0 back … 4 front … 7): 2 1 12 13 48 17 0 1 | within 8 tiles: 49 | in front of the brain: 21
+t= 35.0s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase climax, brain 40%, alive 283, last stand, next group in 4s
+  climax +11s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 11 20 40 12 0 1 | within 8 tiles: 62 | in front of the brain: 16
+  climax +12s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 13 28 38 9 2 0 | within 8 tiles: 71 | in front of the brain: 11
+  climax +13s: per sector 8–22 tiles (0 back … 4 front … 7): 0 4 13 27 30 8 3 0 | within 8 tiles: 83 | in front of the brain: 12
+  climax +14s: per sector 8–22 tiles (0 back … 4 front … 7): 0 6 16 21 18 9 4 1 | within 8 tiles: 95 | in front of the brain: 13
+-- cleared 298 small biters (as if the player killed the swarm)
+  climax +15s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 40.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase climax, brain 40%, alive 0, last stand, next group in 3s
+  climax +16s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  climax +17s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  climax +18s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 2 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 43.0s ring 0: +6 new (6 within 12 of a nest/brain, 4 more than 20 from the target), ring 0, phase climax, brain 40%, alive 6, last stand, next group in 4s
+  climax +19s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 2 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  climax +20s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 2 0 0 | within 8 tiles: 0 | in front of the brain: 2
+t= 45.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase climax, brain 40%, alive 6, last stand, next group in 2s
+  climax +21s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 2 0 0 | within 8 tiles: 0 | in front of the brain: 2
+  climax +22s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 3 1 0 0 | within 8 tiles: 0 | in front of the brain: 2
+t= 47.0s ring 0: +6 new (6 within 12 of a nest/brain, 4 more than 20 from the target), ring 0, phase climax, brain 40%, alive 12, last stand, next group in 4s
+  climax +23s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 2 0 0 0 | within 8 tiles: 0 | in front of the brain: 2
+  climax +24s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 3 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+  climax +25s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 2 3 0 0 0 | within 8 tiles: 1 | in front of the brain: 0
+t= 50.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase climax, brain 40%, alive 12, last stand, next group in 1s
+total spawned: 295. Target alive: true
+ash cloud: most biters slowed at once 283; target got demolisher-ash-sticker: true
+surround: most 45° sectors holding 2+ climax units 8–22 tiles from the target at once: 7 of 8
+  t=34.0s sectors back→ (0 back, 2/6 sides, 4 front): 0 2 11 16 34 15 2 2

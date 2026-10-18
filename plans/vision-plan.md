@@ -133,7 +133,7 @@ Everything about challenge mode is a **POC description** and will evolve. Direct
 |------|--------|
 | `LuaTerritory.regenerate_segmented_units()` respawns the guardian and makes a cleared territory hostile again. | `territory-recapture-plan.md`, tested 2026-10-11, 2.0.77 |
 | Per-territory colour works with `rendering.draw_rectangle{render_mode = "chart"}` per chunk. Force colour does not change the overlay. | `territory-recapture-plan.md`, tested 2026-10-11 |
-| Territories already generate on Nauvis via map gen, with a safe starting area (384 tiles). | `territory-mapgen-plan.md` steps 1–6 |
+| Territories already generate on Nauvis via map gen, with a safe starting area (384 tiles; 150 since 2026-10-18, challenge-feel P6). | `territory-mapgen-plan.md` steps 1–6 |
 | "A territory with no units will not appear on player's maps." A claimed territory loses the red overlay by itself. | `LuaTerritory` docs, 2.0.77 |
 | `LuaTerritory` has no id, but it is a `RegistrationTarget`: `script.register_on_object_destroyed(territory)` returns a registration number we can use as a key. | `runtime-api.json`, 2.0.77 |
 | `LuaSegmentedUnit.get_ai_state()` returns `{type = defines.segmented_unit_ai_state.*}`: `patrolling`, `investigating`, `attacking` (+ `target`), `enraged_at_target` (+ `target`, `attacked_me`), `enraged_at_nothing` (+ `remaining_time`). `set_ai_state()` also exists. | `runtime-api.json`, 2.0.77 |
@@ -765,7 +765,7 @@ Status: **decided (2026-10-15)**, next step AR1.
 | AR-c | Turrets | **(a) Accept** that turrets in the arena profit from the slow. |
 | AR-d | Edge | **The arena edge is the lose line.** The arena is **fixed** at the challenge start; it doesn't follow the player. |
 | PP-a | Player punch method | **(b) Gun `damage_modifier`** first. (a) per-ammo later, for player-only effects. |
-| PP-b | Strength | **2×** per bullet to start. |
+| PP-b | Strength | ~~**2×** per bullet to start.~~ **Replaced 2026-10-18 by ×3 for pistol + SMG** (one-shot small biter with yellow ammo), see [challenge-feel-plan.md](challenge-feel-plan.md) CF-D8. |
 | PP-c | When | **Always**, not only in the arena. |
 
 POC defaults (proposed with the decisions, change freely): centre = the triggering participant's position at challenge start; radius **80 tiles** (waves spawn 40–50 tiles from the player, so mostly inside); outside the arena for `LOSE_GRACE` (5 s) = lose, on top of today's rules (guardian not engaged, nobody within 100 tiles of a guardian).

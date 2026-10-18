@@ -2,19 +2,25 @@
 -- tested as L4 in hive-layout-plan.md).
 -- One point per grid cell of G tiles, moved inside the cell by per-cell random values. The offset is capped at
 -- ±J * G / 2, so every point keeps (1 - J) * G / 2 tiles (38 for G = 384, J = 0.8) from its cell edge.
+-- Safe zone (challenge-feel-plan.md P6/E2): only SAFE tiles around spawn (the starting resources) have no territory.
+-- A point closer than PUSH is pushed out to PUSH along its direction from spawn, so territories start right at the
+-- safe edge in every direction and every cell keeps its brain. Only the 4 cells touching spawn can have such a point;
+-- pushed outward it stays in its own cell and at least 38 tiles from the cell edge.
 -- Territory index (per chunk) = id of the nearest point (Manhattan) among the 3x3 surrounding cells.
 -- Map gen can compute every point exactly, so brain-bases.lua builds each territory's base around its point.
 -- Point names: hostile_point_* (shared with brain-bases.lua and scripts).
 
 local G = 384             -- grid cell, tiles
 local J = 0.8             -- point offset: up to ±J * G / 2 inside the cell
-local POINT_START = 420   -- points closer to spawn join the starting area (384 + margin for the base)
+local SAFE = 150          -- safe zone radius: the starting patches end at ~100 tiles (P6, measured 2026-10-18)
+local PUSH = 200          -- points closer than this are pushed out to it (SAFE + base radius 25 + margin)
+local FAR_START = 420     -- distance where bases start to grow (brain-bases.lua; was the start-area join radius)
 
 local expressions = {}
 local function def(name, expression) expressions[name] = expression end
 
 def("hostile_territory_radius", G)
-def("hostile_starting_area_radius", 384) -- tiles around each starting position kept free of territories
+def("hostile_starting_area_radius", SAFE) -- tiles around each starting position kept free of territories
 def("hostile_starting_area", "distance < hostile_starting_area_radius")
 
 -- random value per cell, evaluated at the cell centre so it's constant over the cell
@@ -36,14 +42,25 @@ local function point(di, dj)
   return px, py, id
 end
 
+-- a raw point closer than PUSH to spawn, moved out to PUSH (rounded, then never closer than PUSH - 1)
+local function pushed(k, axis)
+  return string.format(
+    "if(hostile_point_r%d < %d, floor(hostile_point_raw_%s%d * %d / max(hostile_point_r%d, 1) + 0.5), hostile_point_raw_%s%d)",
+    k, PUSH, axis, k, PUSH, k, axis, k)
+end
+
 -- 9-way nearest point, as a chain of named expressions (k = 5 is the tile's own cell)
 local k = 0
 for di = -1, 1 do
   for dj = -1, 1 do
     k = k + 1
     local px, py, id = point(di, dj)
-    def("hostile_point_x" .. k, px)
-    def("hostile_point_y" .. k, py)
+    def("hostile_point_raw_x" .. k, px)
+    def("hostile_point_raw_y" .. k, py)
+    def("hostile_point_r" .. k, string.format(
+      "sqrt(hostile_point_raw_x%d * hostile_point_raw_x%d + hostile_point_raw_y%d * hostile_point_raw_y%d)", k, k, k, k))
+    def("hostile_point_x" .. k, pushed(k, "x"))
+    def("hostile_point_y" .. k, pushed(k, "y"))
     def("hostile_point_id" .. k, id)
     def("hostile_point_d" .. k, string.format("abs(x - hostile_point_x%d) + abs(y - hostile_point_y%d)", k, k))
     if k == 1 then
@@ -65,16 +82,22 @@ end
 def("hostile_point_nearest_x", "hostile_point_best_x9")
 def("hostile_point_nearest_y", "hostile_point_best_y9")
 def("hostile_point_nearest_id", "hostile_point_best_id9")
-def("hostile_point_start_radius", POINT_START)
-def("hostile_point_near_start",
-  "(hostile_point_nearest_x * hostile_point_nearest_x + hostile_point_nearest_y * hostile_point_nearest_y)\
-    < (hostile_point_start_radius * hostile_point_start_radius)")
+def("hostile_point_start_radius", FAR_START) -- brain-bases.lua: bases grow from here out
 -- the tile's own cell point (where a base is built)
 def("hostile_point_own_x", "hostile_point_x5")
 def("hostile_point_own_y", "hostile_point_y5")
 
--- territory index: the starting area (by distance, and every chunk whose point is near spawn) is -1
-def("hostile_territory_expression", "if((hostile_starting_area + hostile_point_near_start) > 0, -1, hostile_point_nearest_id)")
+-- territory index: the safe zone is -1
+def("hostile_territory_expression", "if(hostile_starting_area > 0, -1, hostile_point_nearest_id)")
+
+-- ring of the tile's territory (ring-layout-plan.md R1): the grid layer of its point's cell, counted from the 4 cells
+-- that meet at the map origin (ring 0 = those 4, the territories touching the safe zone; ring 1 = the next 12, ...).
+-- Same formula as waves.ring_at.
+local function layer(axis)
+  local i = string.format("floor(hostile_point_nearest_%s / %d)", axis, G)
+  return string.format("if(%s >= 0, %s, -%s - 1)", i, i, i)
+end
+def("hostile_point_ring", string.format("max(%s, %s)", layer("x"), layer("y")))
 
 -- index into `units` (0 = small, 1 = medium, 2 = big), stepping up every 576 tiles from 720 tiles out;
 -- negative means no brain: used for the starting-area territory and no-enemies mode
@@ -94,3 +117,13 @@ data.raw.planet.nauvis.map_gen_settings.territory_settings =
   territory_variation_expression = "hostile_territory_variation",
   minimum_territory_size = 10
 }
+
+-- R1-2 (ring-layout-plan.md RL-D2): crude oil only in ring-1-and-beyond territories. A Nauvis-only override of the
+-- oil probability (like Space Age does for Aquilo), so the crude-oil prototype itself stays as it is.
+local oil_probability = data.raw.resource["crude-oil"].autoplace.probability_expression
+assert(type(oil_probability) == "string", "crude-oil probability_expression is not a string")
+data:extend({{type = "noise-expression", name = "hostile_crude_oil_probability",
+  expression = "(" .. oil_probability .. ") * (hostile_point_ring >= 1)"}})
+local settings = data.raw.planet.nauvis.map_gen_settings
+settings.property_expression_names = settings.property_expression_names or {}
+settings.property_expression_names["entity:crude-oil:probability"] = "hostile_crude_oil_probability"

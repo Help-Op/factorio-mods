@@ -113,10 +113,44 @@ Move its whole body 30 tiles east (`set_body_nodes`, a jump):
 | Command | What it does |
 |---------|--------------|
 | `/cheat-kit` | Demolisher kit: mech armor, railgun, rockets, tesla, spidertron |
-| `/cheat-kit <name>` | Tier kit, no armor: `pistol`, `smg-yellow`, `smg-red`, `smg-uranium`, `shotgun`, `flamethrower`, `rockets` |
+| `/cheat-kit <name>` | Tier kit, no armor: `pistol`, `smg-yellow`, `ring0` (SMG + 100 yellow magazines = 1 stack, challenge-feel CF-D3), `smg-red`, `smg-uranium`, `shotgun`, `flamethrower`, `rockets` |
 | `/cheat-clear` | Bare character: no armor, guns, ammo, items or health bonus |
 
 Map setting **Give the demolisher kit on spawn** (Settings → Mod settings → Map), default off.
+
+## Challenge feel: first-ring test (challenge-feel-plan.md E1)
+
+Ring 0 = the 4 territories right outside the 150-tile safe zone (brains ~200–390 tiles from spawn); ring 1 = the next 12 (ring-layout R1). No crude oil in ring 0 or the safe zone; `/ht-brains` shows a GPS link to the guaranteed ring-1 oil patch. Shooting a nest or worm of a brain base starts the challenge in phase "siege" (4–7 every 10 s, the base doesn't regrow); the brain engaging starts "wake" (E9). Wake: groups of 11–17 small biters out of the nests every 8 s, a swarm of 250 once the brain (1125 HP, ~150 bullets) is below 60 % (phase "swarm", was "climax"); each swarm biter takes a wide detour (35 tiles out) to its own point on a ring around your sides and back before attacking (E4/E5). Every 3rd swarm biter guards the brain's front for 10 s instead (E7). After the swarm, a last-stand group of 5 every 2 s until the brain dies (E6/E9). The small brain has no fissures, and its ash cloud ("shockwave") slows its own biters ×0.45 too (E3/E4). Start a fresh map, then:
+
+Kit (bare character, SMG, 1 stack of yellow ammo):
+
+```
+/cheat-kit ring0
+```
+
+GPS link to the nearest brain base (needs the `ht-map-check` mod, see "Territory brains and bases"):
+
+```
+/ht-map-nearest
+```
+
+Teleport 60 tiles east of the nearest brain (close enough for a challenge, not yet in it):
+
+```
+/c local p=game.player local b,bd for _,u in pairs(p.surface.get_segmented_units()) do local h=u.segments[1] if h then local d=(h.position.x-p.position.x)^2+(h.position.y-p.position.y)^2 if not bd or d<bd then b,bd=h.position,d end end end if b then p.teleport(p.surface.find_non_colliding_position("character",{b.x+60,b.y},20,1)) end
+```
+
+Challenge status (ring, phase, brain %, alive, next group or swarm left):
+
+```
+/ht-challenges
+```
+
+Yellow magazines left (ammo slot + inventory; the magazine in the gun counts as a whole one):
+
+```
+/c local c=game.player.character local n=c.get_inventory(defines.inventory.character_ammo).get_item_count("firearm-magazine")+c.get_main_inventory().get_item_count("firearm-magazine") game.player.print(n.." magazines left")
+```
 
 ## Enemies: spawn and test
 

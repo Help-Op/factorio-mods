@@ -7,6 +7,9 @@
 ## New
 
 - 2026-10-17 · Long run: enemies should feel like a hive society (Starship Troopers bugs, 40k Tyranids), not separate nests.
+- 2026-10-18 . Challenges should feel like a "survivors"-like game
+- 2026-10-18 . Survivors-like needs sea of slow enemies
+- 2026-10-18 . Basic enemies should probably have 1 health, or the equivalent where 1 shot of the most basic ammo kills them
 
 ## Parked
 

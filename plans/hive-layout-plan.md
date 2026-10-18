@@ -168,7 +168,7 @@ Harness without a server: `--create l1.zip --map-gen-seed 12345`, then `--benchm
   |---|---|
   | Vanilla nests and worms | Off: only our pattern places enemies |
   | Grid `G` | 192 tiles; a base in 50 % of cells near spawn, rising to 80 % far out |
-  | Starting area | No bases within 384 tiles of spawn (same as `hostile_starting_area_radius`) |
+  | Starting area | No bases within 384 tiles of spawn (same as `hostile_starting_area_radius`). **Since 2026-10-18:** safe zone 150, points closer than 200 pushed out to 200, every cell has a base ([challenge-feel-plan.md](challenge-feel-plan.md) E2) |
   | Core | 1 worm, plus 0–3 more at radius 6 the farther out the base is |
   | Worm tier by distance | small < 700 tiles < medium < 1400 < big < 2400 < behemoth |
   | Ring | Radius 18, 6 nests near spawn up to 10 far out, biter and spitter spawners alternating |

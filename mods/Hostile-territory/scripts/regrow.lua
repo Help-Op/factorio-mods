@@ -16,7 +16,7 @@ regrow.INTERVAL = 60 * 60
 
 -- layout, as in brain-bases.lua and nauvis-territory.lua
 local G = 384
-local POINT_START = 420
+local FAR_START = 420 -- hostile_point_start_radius in nauvis-territory.lua: bases grow from here out
 local FAR = 2400
 local RING_R = 18
 local CORE_R = 6
@@ -44,7 +44,7 @@ local function round(v) return math.floor(v + 0.5) end
 local function slots(surface, base)
   local rotation = surface.calculate_tile_properties({"hostile_base_rotation"}, {{base.x, base.y}}).hostile_base_rotation[1]
   local distance = math.sqrt(base.x * base.x + base.y * base.y)
-  local far = math.max(0, math.min(1, (distance - POINT_START) / (FAR - POINT_START)))
+  local far = math.max(0, math.min(1, (distance - FAR_START) / (FAR - FAR_START)))
   local list = {}
   -- core: 4 slots, those with (index + 100) % 4 < 1 + M (index as map gen computes it from the tile offset)
   local m = math.floor(3 * far + 0.5)

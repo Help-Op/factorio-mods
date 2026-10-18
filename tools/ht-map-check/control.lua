@@ -108,7 +108,7 @@ local function check(surface, x1, y1, x2, y2)
       if pt.base and (e.position.x - pt.x) ^ 2 + (e.position.y - pt.y) ^ 2 < 25 ^ 2 then near = true break end
     end
     if not near then stray = stray + 1 end
-    if (e.position.x ^ 2 + e.position.y ^ 2) < 384 ^ 2 then in_start = in_start + 1 end
+    if (e.position.x ^ 2 + e.position.y ^ 2) < 150 ^ 2 then in_start = in_start + 1 end
   end
   table.insert(out, 1, string.format(
     "territories=%d fully generated=%d | bases per full territory: 1=%d 0=%d 2+=%d | base point is its territory's point=%d | core worms (radius 8)=%d | points with water within 3 tiles=%d | no unit + base area clean=%d, not clean=%d | points with a base but no territory=%d | territory size (chunks) min=%s avg=%.0f max=%s | territories without unit=%d | units that are not a brain=%d | brain distance from point min=%s max=%s | enemies=%d stray=%d in starting area=%d",
