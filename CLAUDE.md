@@ -10,6 +10,23 @@ Monorepo for my Factorio mods (`E:\dev\factorio`). Main mod: **Hostile Territory
 4. **Never commit.** I do all commits myself. You may stage changes (`git add`).
 5. **One step at a time.** Do steps in order and verify each one before moving on. I often test in game myself and report back. Write my results into the plan.
 
+## Side sessions
+
+Offer a separate session (with a full brief, starting from the plan file) for work that stands on its own (tried 2026-10-23, the ring-1 brainstorm):
+
+- **Brainstorm / design** when a question goes open-ended.
+- **Playtest analysis**: read the telemetry, write the PT step into the plan.
+- **Parallel roadmap threads** that don't touch the same files.
+- **Review** of a finished build step before I playtest it.
+- **Test sweeps** (seeds, parameter variants): each headless run gets its own write-data folder.
+
+Rules:
+
+- Side sessions share this checkout and **never commit**.
+- Each session edits only **its own plan file and code area**.
+- **One session at a time** edits `plans/roadmap.md` (and other shared files like `docs/commands.md`).
+- A session that needs another's changes waits until I've reviewed them.
+
 ## Writing style
 
 - Clear structure, short and to the point. Use headings, bullets and tables. No filler.
