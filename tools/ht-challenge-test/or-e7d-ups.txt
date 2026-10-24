@@ -1,0 +1,8 @@
+baseline (no challenge), enemy units alive 83: Duration: 1.874902ms per tick
+hf-brain-small swarm, enemy units alive 843: Duration: 1.050838ms per tick
+hf-brain-ring1 (director off) swarm, enemy units alive 1372: Duration: 2.891427ms per tick
+hf-brain-ring1 swarm, enemy units alive 1330: Duration: 2.377371ms per tick
+hf-brain-ring1 (target kills) swarm, enemy units alive 1028: Duration: 1.979671ms per tick
+hf-brain-ring1 (kites) swarm, enemy units alive 1327: Duration: 2.389956ms per tick
+hf-brain-ring1 (kites) (anti-kite off) swarm, enemy units alive 1355: Duration: 2.901081ms per tick
+hf-brain-ring1 (kites) swarm, enemy units alive 1384: Duration: 2.681857ms per tick

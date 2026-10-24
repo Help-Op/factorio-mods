@@ -20,6 +20,10 @@ end
 
 -- CF-D2/CF-D8 (challenge-feel-plan.md): one yellow bullet (5 physical) kills a small biter (15 HP) when the player
 -- fires it. The modifier sits on the player's guns, so gun turrets keep the vanilla balance. Replaces PP-b (2×).
+-- Turrets and the car gun stay vanilla (OR-D10, oil-ring-challenge-plan.md).
 for _, name in pairs({"pistol", "submachine-gun"}) do
   data.raw.gun[name].attack_parameters.damage_modifier = 3
 end
+-- OR-D21 (oil-ring-challenge-plan.md, PT2): the shotgun ×2, vanilla reload (40). One pellet (16) still kills a small
+-- biter; with ×3 and reload 20 (OR-D10, OR-D16) the whole cone on the brain killed it in ~3 s.
+data.raw.gun["shotgun"].attack_parameters.damage_modifier = 2

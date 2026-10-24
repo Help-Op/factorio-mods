@@ -9,6 +9,9 @@ local brain = require("scripts.brain")
 local regrow = require("scripts.regrow")
 local staging = require("scripts.staging")
 local oil = require("scripts.oil")
+local director = require("scripts.director")
+local telemetry = require("scripts.telemetry")
+local brain_fight = require("scripts.brain-fight")
 
 script.on_init(function()
   territories.scan()
@@ -65,22 +68,79 @@ every(crusade.MIGRATION_INTERVAL, crusade.on_migration_tick)
 every(patrol.INTERVAL, patrol.on_tick)
 every(regrow.INTERVAL, regrow.on_tick)
 every(patrol.LIVE_INTERVAL, patrol.on_live_tick)
+every(waves.PULSE_STEP, waves.on_pulse_tick) -- frenzy shockwave stages (oil-ring-challenge-plan.md OR-D28)
 script.on_event(defines.events.on_ai_command_completed, function(event)
   waves.on_ai_command_completed(event)
   crusade.on_ai_command_completed(event)
+  director.on_ai_command_completed(event)
+  brain_fight.on_ai_command_completed(event)
 end)
--- rallies (crusade defence) and enemy nests / worms (siege, challenge-feel-plan.md E9)
-local damage_filters = {{filter = "type", type = "unit-spawner"}, {filter = "type", type = "turret"}}
+-- rallies (crusade defence), enemy nests / worms (siege, challenge-feel-plan.md E9) and characters (pressure
+-- director, oil-ring-challenge-plan.md OR-E2)
+local damage_filters = {{filter = "type", type = "unit-spawner"}, {filter = "type", type = "turret"},
+  {filter = "type", type = "character"}}
 for _, name in pairs(rally.NAMES) do damage_filters[#damage_filters + 1] = {filter = "name", name = name} end
 script.on_event(defines.events.on_entity_damaged, function(event)
   local type = event.entity.type
   if type == "unit-spawner" or type == "turret" then
     challenge.on_base_damaged(event)
+  elseif type == "character" then
+    director.on_character_damaged(event)
   else
     crusade.on_entity_damaged(event)
   end
 end, damage_filters)
 script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
+script.on_event(defines.events.on_entity_died, function(event)
+  if event.entity.type == "unit-spawner" then
+    challenge.on_nest_died(event)
+  else
+    telemetry.on_entity_died(event)
+    director.on_unit_died(event) -- OR-E9 kill zone
+  end
+end, {{filter = "type", type = "unit"}, {filter = "type", type = "unit-spawner"}})
+script.on_event(defines.events.on_player_died, telemetry.on_player_died)
+-- brain shield + guard rush trigger (oil-ring-challenge-plan.md OR-E6)
+script.on_event(defines.events.on_segmented_unit_damaged, brain_fight.on_damaged)
+
+-- Test helper (oil-ring-challenge-plan.md PT2: the /c teleport 60 tiles east could land in a ring-0 territory).
+-- Picks brains by the ring of their position (waves.ring_at), and returns a spot GOTO_DISTANCES tiles from the brain
+-- towards spawn: outside its base (radius 25), inside its territory (the first distance that still is).
+-- Generates chunks out to 12 × (ring + 1) chunks first. Returns spot, brain position, or nil and a reason.
+local GOTO_DISTANCES = {45, 38, 32}
+local function goto_spot(surface, from, ring)
+  surface.request_to_generate_chunks({0, 0}, 12 * (ring + 1))
+  surface.force_generate_chunk_requests()
+  local best, best_distance, territory
+  for _, unit in pairs(surface.get_segmented_units()) do
+    local head = unit.valid and unit.segments[1]
+    if head and waves.ring_at(surface, head.position) == ring then
+      local d = (head.position.x - from.x) ^ 2 + (head.position.y - from.y) ^ 2
+      if not best_distance or d < best_distance then best, best_distance, territory = head.position, d, unit.territory end
+    end
+  end
+  if not best then return nil, string.format("No ring-%d brain found.", ring) end
+  local length = math.max(math.sqrt(best.x ^ 2 + best.y ^ 2), 1)
+  for _, distance in ipairs(GOTO_DISTANCES) do
+    local wanted = {x = best.x - best.x / length * distance, y = best.y - best.y / length * distance}
+    local found = surface.find_non_colliding_position("character", wanted, 10, 1)
+    if found and surface.get_territory_for_chunk({x = math.floor(found.x / 32), y = math.floor(found.y / 32)}) == territory then
+      return found, best
+    end
+  end
+  return nil, "No free spot next to that brain."
+end
+
+-- OR-E6 / OR-E7 rocks of a (debug) challenge: {{x, y, wall, arena}, ...}
+local function rock_list(record)
+  local list = {}
+  for i, wall in pairs(record.fight and record.fight.walls or {}) do
+    for _, rock in pairs(wall.rocks) do
+      if rock.valid then list[#list + 1] = {x = rock.position.x, y = rock.position.y, wall = i, arena = wall.arena or false} end
+    end
+  end
+  return list
+end
 
 -- Debug interface (headless harness): /c remote.call("hostile-territory-debug", "set_state", id, "warning")
 remote.add_interface("hostile-territory-debug", {
@@ -112,10 +172,22 @@ remote.add_interface("hostile-territory-debug", {
     return name
   end,
   crusade_cancel = function() return crusade.finish("Crusade cancelled (debug).") end,
+  -- /ht-goto-ring without a player: {spot, brain, spot_territory, brain_territory} (territory ids) or {reason}
+  goto_spot = function(ring, x, y)
+    local surface = game.surfaces[territories.surface_name]
+    local spot, brain_or_reason = goto_spot(surface, {x = x or 0, y = y or 0}, ring)
+    if not spot then return {reason = brain_or_reason} end
+    local at_spot, at_brain = territories.get_at(surface, spot), territories.get_at(surface, brain_or_reason)
+    return {spot = spot, brain = brain_or_reason, spot_territory = at_spot and at_spot.id,
+      brain_territory = at_brain and at_brain.id}
+  end,
   -- one challenge check of waves for the territory at x, y against entity target, without a player or a real
   -- challenge (fake record in storage.debug_waves, challenge-feel-plan.md E1-8).
-  -- options (optional): phase = first phase of a new fake record ("siege" / "wake"), wake = true to call waves.wake.
-  -- Returns {id, ring, text, spawned = {[unit_number] = {x, y}}}
+  -- options (optional): phase = first phase of a new fake record ("siege" / "wake"), wake = true to call waves.wake,
+  -- reset = true to drop the fake record first, director = false to measure without acting (OR-E2),
+  -- antikite = false to keep squad slots where they were first placed (OR-E6; was: no follow / rebuild / intercept).
+  -- Also runs the director and telemetry (script-output/ht-telemetry/). Returns {id, ring, text,
+  -- spawned = {[unit_number] = {x, y}}, held, director = record.director}
   waves_step = function(x, y, target, options)
     options = options or {}
     local surface = game.surfaces[territories.surface_name]
@@ -123,21 +195,38 @@ remote.add_interface("hostile-territory-debug", {
     if not (record and record.territory.valid) then return nil end
     local id = record.id
     storage.debug_waves = storage.debug_waves or {}
+    storage.director_debug = options.debug or nil -- director.describe lists the commands of held units next to you
+    if options.reset and storage.debug_waves[id] then
+      brain_fight.clear(storage.debug_waves[id])
+      director.disband(storage.debug_waves[id])
+      waves.clear(storage.debug_waves[id])
+      storage.debug_waves[id] = nil
+    end
     local fake = storage.debug_waves[id]
     if not fake then
       local unit = record.territory.get_segmented_units()[1]
       if not (unit and unit.segments[1]) then return nil end
-      fake = {territory_id = id, players = {}}
+      fake = {territory_id = id, players = {}, started_tick = game.tick}
       waves.init(fake, surface, unit.segments[1].position, options.phase)
       storage.debug_waves[id] = fake
     end
     if options.wake then waves.wake(fake) end
     waves.update(fake, surface, {{entity = target}})
+    director.update(fake, surface, {{entity = target}}, options.director == false, options.antikite == false)
+    brain_fight.update(fake, surface, {{entity = target}})
+    telemetry.sample(fake, surface, {{entity = target}})
     local spawned = {}
     for number, entity in pairs(fake.spawned) do
       if entity.valid then spawned[number] = {x = entity.position.x, y = entity.position.y} end
     end
-    return {id = id, ring = fake.ring, text = waves.describe(fake), spawned = spawned}
+    return {id = id, ring = fake.ring, phase = fake.phase, text = waves.describe(fake) .. brain_fight.describe(fake) .. director.describe(fake),
+      spawned = spawned, held = director.held_count(fake), director = fake.director, surge = fake.surge,
+      pulse = fake.pulse_tick ~= nil, shield = fake.fight and fake.fight.shield, stats = fake.stats,
+      squads = director.squad_counts(fake, target.unit_number), closing = fake.closing and {radius = fake.closing.radius,
+        state = fake.closing.state, n = table_size(fake.closing.members), centre = fake.closing.centre},
+      slot_error = director.slot_error(fake, target), rocks = rock_list(fake),
+      bearers = brain_fight.bearers_alive(fake), regroup = fake.regroup and table_size(fake.regroup.units) or nil,
+      choke = director.choke(fake, target.unit_number), blocked = select(2, director.choke(fake, target.unit_number))}
   end,
   -- reroute one territory now (runs again even if done); returns its stats
   reroute = function(id)
@@ -213,6 +302,28 @@ end)
 commands.add_command("ht-brains", "Show how many brains were placed on their base and how many territories started claimed (water).", function(command)
   local player = game.get_player(command.player_index)
   if player then player.print(brain.describe() .. " " .. regrow.describe() .. " " .. oil.describe()) end
+end)
+
+-- A/B (oil-ring-challenge-plan.md OR-E4, OR-E6): off = squad slots stay where they were first placed (stale points).
+commands.add_command("ht-antikite", "[on|off] Switch whether the director's squads follow you (off: slots stay where first placed); no parameter shows it.", function(command)
+  local player = game.get_player(command.player_index)
+  if not player then return end
+  if command.parameter == "off" then storage.antikite_off = true elseif command.parameter == "on" then storage.antikite_off = nil end
+  player.print("Anti-kite: " .. (storage.antikite_off and "off" or "on"))
+end)
+
+commands.add_command("ht-goto-ring", "[ring] Teleport next to the nearest brain of that ring (default 1), on its spawn side. Generates chunks first (a few seconds).", function(command)
+  local player = game.get_player(command.player_index)
+  if not (player and player.character) then return end
+  local ring = tonumber(command.parameter) or 1
+  local spot, brain_or_reason = goto_spot(player.surface, player.position, ring)
+  if not spot then
+    player.print(brain_or_reason)
+    return
+  end
+  player.teleport(spot, player.surface)
+  local b = brain_or_reason
+  player.print(string.format("Ring-%d brain [gps=%d,%d], %d tiles from spawn.", ring, b.x, b.y, math.sqrt(b.x ^ 2 + b.y ^ 2)))
 end)
 
 commands.add_command("ht-crusade-cancel", "End the active crusade: army removed, target back to claimed.", function(command)

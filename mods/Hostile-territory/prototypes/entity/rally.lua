@@ -3,7 +3,7 @@
 -- healing_per_tick = 0: on 2.0 simple-entity-with-force didn't heal (H0), on 2.1 it does (2026-10-15), and the rally must not regen (H-6).
 -- Placeholder look: a white square, 6×6 tiles (white-square.png is 10×10 px: 10 × 19.2 = 192 px = 6 tiles).
 
-local SIZES = {"small", "medium", "big"}
+local SIZES = {"small", "medium", "big", "ring1"} -- ring1: oil-ring-challenge-plan.md OR-D4
 
 for _, size in pairs(SIZES) do
   local guardian = data.raw["segmented-unit"]["hf-brain-" .. size]

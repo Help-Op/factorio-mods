@@ -99,10 +99,12 @@ local function layer(axis)
 end
 def("hostile_point_ring", string.format("max(%s, %s)", layer("x"), layer("y")))
 
--- index into `units` (0 = small, 1 = medium, 2 = big), stepping up every 576 tiles from 720 tiles out;
--- negative means no brain: used for the starting-area territory and no-enemies mode
+-- index into `units`: one brain per challenge ring (oil-ring-challenge-plan.md OR-D4): ring 0 → 0 (small),
+-- ring 1 → 3 (ring-1 brain); ring 2+ by distance as before (0 = small, 1 = medium, 2 = big, stepping up every
+-- 576 tiles from 720 tiles out). Negative means no brain: used for the starting-area territory and no-enemies mode
 def("hostile_territory_variation",
-  "floor(clamp(distance / (18 * 32) - 0.25, 0, 2)) + (-99 * no_enemies_mode) + (-99 * hostile_starting_area)")
+  "if(hostile_point_ring == 0, 0, if(hostile_point_ring == 1, 3, floor(clamp(distance / (18 * 32) - 0.25, 0, 2))))"
+  .. " + (-99 * no_enemies_mode) + (-99 * hostile_starting_area)")
 
 for name, expression in pairs(expressions) do
   data:extend({{type = "noise-expression", name = name, expression = expression}})
@@ -112,7 +114,7 @@ end
 -- (units must be segmented-unit prototypes: the brains from Hostile-fauna, territory-brain-plan.md B-D1)
 data.raw.planet.nauvis.map_gen_settings.territory_settings =
 {
-  units = {"hf-brain-small", "hf-brain-medium", "hf-brain-big"},
+  units = {"hf-brain-small", "hf-brain-medium", "hf-brain-big", "hf-brain-ring1"},
   territory_index_expression = "hostile_territory_expression",
   territory_variation_expression = "hostile_territory_variation",
   minimum_territory_size = 10

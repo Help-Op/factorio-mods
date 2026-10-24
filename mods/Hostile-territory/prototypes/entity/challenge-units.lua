@@ -25,3 +25,20 @@ for _, effect in pairs(effects) do
 end
 
 data:extend({tiny})
+
+-- OR-E7 (oil-ring-challenge-plan.md OR-D47): the shield bearer. While one of a surge's bearers lives, the ring-1 brain
+-- is shielded (scripts/brain-fight.lua). A big biter (its health and resistances), slower, tinted shield blue.
+local bearer_tint1 = {0.3, 0.9, 1, 1} -- the big biter is already blue-violet: cyan to stand out
+local bearer_tint2 = {0.9, 1, 1, 0.9}
+
+local bearer = table.deepcopy(data.raw.unit["big-biter"])
+bearer.name = "ht-shield-bearer"
+bearer.order = "b-a-z"
+bearer.factoriopedia_simulation = nil
+bearer.movement_speed = bearer.movement_speed * 0.6
+bearer.run_animation = biterrunanimation(big_biter_scale, bearer_tint1, bearer_tint2)
+bearer.attack_parameters.animation = biterattackanimation(big_biter_scale, bearer_tint1, bearer_tint2)
+bearer.icons = {{icon = bearer.icon or "__base__/graphics/icons/big-biter.png", tint = bearer_tint1}}
+bearer.icon = nil
+
+data:extend({bearer})

@@ -8,4 +8,5 @@ return {
   {name = "hf-brain-small", art = "tinted vanilla", source = "hf-earth-wyrm-small head (small demolisher)"},
   {name = "hf-brain-medium", art = "tinted vanilla", source = "hf-earth-wyrm-medium head (medium demolisher)"},
   {name = "hf-brain-big", art = "tinted vanilla", source = "hf-earth-wyrm-big head (big demolisher)"},
+  {name = "hf-brain-ring1", art = "tinted vanilla", source = "hf-brain-small, retinted"},
 }

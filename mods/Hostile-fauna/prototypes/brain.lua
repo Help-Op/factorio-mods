@@ -14,12 +14,18 @@ local SEGMENTS = 0
 local SMALL_HEALTH = 1125
 local TINT = {0.75, 0.45, 0.7, 1}
 
+-- OR-D4 (oil-ring-challenge-plan.md): one brain per challenge ring. Ring 1 (the oil ring): the small brain with more
+-- health, no regen, no fissures. Own tint to tell it apart. OR-D19 (PT2): 2250 → 5000, it died before the swarm did
+-- anything (SMG + research level 2: ~187 HP/s on the brain).
+local RING1_HEALTH = 5000
+local RING1_TINT = {0.5, 0.4, 0.85, 1}
+
 -- Retints every sprite layer (the wyrm's are already tinted earth-brown).
-local function retint(t, seen)
+local function retint(t, seen, tint)
   if type(t) ~= "table" or seen[t] then return end
   seen[t] = true
-  if (t.filename or t.filenames or t.stripes) and t.volume == nil and not t.draw_as_shadow then t.tint = TINT end
-  for _, value in pairs(t) do retint(value, seen) end
+  if (t.filename or t.filenames or t.stripes) and t.volume == nil and not t.draw_as_shadow then t.tint = tint end
+  for _, value in pairs(t) do retint(value, seen, tint) end
 end
 
 for _, size in pairs({"small", "medium", "big"}) do
@@ -37,10 +43,17 @@ for _, size in pairs({"small", "medium", "big"}) do
   local segments = {}
   for i = 1, SEGMENTS do segments[i] = brain.segment_engine.segments[i] end
   brain.segment_engine.segments = segments
-  retint(brain, {})
+  retint(brain, {}, TINT)
   for _, icon in pairs(brain.icons or {}) do icon.tint = TINT end
   data:extend({brain})
 end
+
+local ring1 = table.deepcopy(data.raw["segmented-unit"]["hf-brain-small"])
+ring1.name = "hf-brain-ring1"
+ring1.max_health = RING1_HEALTH
+retint(ring1, {}, RING1_TINT)
+for _, icon in pairs(ring1.icons or {}) do icon.tint = RING1_TINT end
+data:extend({ring1})
 
 -- E3 (challenge-feel-plan.md P9, PT2 2026-10-18): the ash cloud ("shockwave") of an enraged brain caps its enemies'
 -- speed (demolisher-ash-sticker: max 0.15, the player runs 0.25) but leaves the biters alone, so the climax swarm
@@ -52,7 +65,15 @@ local ally_sticker = table.deepcopy(data.raw.sticker["demolisher-ash-sticker"])
 ally_sticker.name = "hf-ash-sticker-ally"
 ally_sticker.target_movement_max = nil
 ally_sticker.target_movement_modifier = ALLY_SLOW
-data:extend({ally_sticker})
+-- OR-D27 (oil-ring-challenge-plan.md, Q21): the slowdown is there to give you time to shoot, but OR-D22's −20 % made
+-- the swarm half your speed in the cloud (0.081 vs the 0.15 cap), so kiting was trivial. The player gets the same
+-- ×ALLY_SLOW instead of the cap (0.25 → 0.1125), so the challenge biter : player ratio stays 72 % in the cloud as
+-- outside (0.18 : 0.25). Only the small family's clouds (rings 0–1); demolishers elsewhere keep the vanilla sticker.
+local enemy_sticker = table.deepcopy(data.raw.sticker["demolisher-ash-sticker"])
+enemy_sticker.name = "hf-ash-sticker-enemy"
+enemy_sticker.target_movement_max = nil
+enemy_sticker.target_movement_modifier = ALLY_SLOW
+data:extend({ally_sticker, enemy_sticker})
 
 -- a nested-result with an area action that puts demolisher-ash-sticker on what it hits
 local function gives_ash_sticker(item)
@@ -85,6 +106,63 @@ end
 
 for _, prototypes in pairs(data.raw) do
   for name, prototype in pairs(prototypes) do
-    if name:sub(1, 19) == "hf-earth-wyrm-small" or name == "hf-brain-small" then add_ally_slow(prototype, {}) end
+    if name:sub(1, 19) == "hf-earth-wyrm-small" or name == "hf-brain-small" or name == "hf-brain-ring1" then
+      add_ally_slow(prototype, {})
+    end
   end
+end
+
+-- OR-D27: in the small family's effects (after add_ally_slow, which looks for demolisher-ash-sticker), the sticker on
+-- enemies becomes hf-ash-sticker-enemy.
+local function use_enemy_sticker(t, seen)
+  if type(t) ~= "table" or seen[t] then return end
+  seen[t] = true
+  if t.type == "create-sticker" and t.sticker == "demolisher-ash-sticker" then t.sticker = enemy_sticker.name end
+  for _, value in pairs(t) do use_enemy_sticker(value, seen) end
+end
+for _, prototypes in pairs(data.raw) do
+  for name, prototype in pairs(prototypes) do
+    if name:sub(1, 19) == "hf-earth-wyrm-small" or name == "hf-brain-small" or name == "hf-brain-ring1" then
+      use_enemy_sticker(prototype, {})
+    end
+  end
+end
+
+-- OR-D26 (oil-ring-challenge-plan.md, PT3): the shockwave's outer edge stays (demolisher-ash-cloud-expanding-boundary),
+-- the lingering ash clouds it leaves inside the ring go (demolisher-ash-cloud-visual-dummy, 3 per stage, distracting).
+-- Only the small family (small and ring-1 brains); the slow stickers are in another action and stay.
+for name, smoke in pairs(data.raw["smoke-with-trigger"]) do
+  if name:sub(1, 39) == "hf-earth-wyrm-small-expanding-ash-cloud" and type(smoke.action) == "table" then
+    local kept = {}
+    for _, action in ipairs(smoke.action) do
+      local inner = false
+      local delivery = action.action_delivery
+      for _, effect in pairs(delivery and (delivery.target_effects or {}) or {}) do
+        if effect.entity_name == "demolisher-ash-cloud-visual-dummy" then inner = true end
+      end
+      if not inner then kept[#kept + 1] = action end
+      -- OR-D31 (PT4: still too many clouds): half the edge puffs (12 → 6 per stage)
+      if action.type == "cluster" and action.cluster_count and action.action_delivery
+        and action.action_delivery.target_effects and action.action_delivery.target_effects[1]
+        and action.action_delivery.target_effects[1].smoke_name == "demolisher-ash-cloud-expanding-boundary" then
+        action.cluster_count = math.max(1, math.floor(action.cluster_count / 2))
+      end
+    end
+    smoke.action = kept
+  end
+end
+
+-- OR-D31: no idle ash trail cloud around the small-family brains (hf-earth-wyrm-small-ash-cloud-trail, made while not
+-- enraged; the brain never moves, so it piles up on the spot). Its ash slow near an idle brain goes with it.
+for _, name in pairs({"hf-brain-small", "hf-brain-ring1"}) do
+  local brain = data.raw["segmented-unit"][name]
+  local kept = {}
+  for _, update in ipairs(brain.update_effects or {}) do
+    local trail = false
+    for _, effect in pairs(update.effect and (update.effect.type and {update.effect} or update.effect) or {}) do
+      if effect.entity_name == "hf-earth-wyrm-small-ash-cloud-trail" then trail = true end
+    end
+    if not trail then kept[#kept + 1] = update end
+  end
+  brain.update_effects = kept
 end

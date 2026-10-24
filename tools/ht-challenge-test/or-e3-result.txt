@@ -1,0 +1,354 @@
+damage_modifier: pistol 3, submachine-gun 3, shotgun 2, gun-turret 1
+hf-brain-small: max_health 1125, healing_per_tick 0, revenge attack (fissures) none
+hf-brain-ring1: max_health 5000, healing_per_tick 0, revenge attack (fissures) none
+hf-brain-medium: max_health 100000, healing_per_tick 130, revenge attack (fissures) yes
+small biter after 15 physical: dead
+biter spawner after 15 physical: lost 11.05 of 350
+resource tiles < 150: coal 373, copper-ore 436, iron-ore 636, stone 249
+resource tiles 150–700: coal 2478, copper-ore 2497, crude-oil 29, iron-ore 1239, stone 941, uranium-ore 548
+nearest territory chunk centre: 138 tiles from spawn
+first territory tile per 15° (deg:tiles): 0:160 15:168 30:188 45:184 60:188 75:168 90:160 105:168 120:148 135:136 150:148 165:136 180:132 195:136 210:128 225:136 240:128 255:136 270:132 285:136 300:148 315:136 330:148 345:168
+  min 128, median 148, max 188
+brain distances from spawn (nearest 8): 214 273 313 351 445 485 519 574
+== run hf-brain-small
+nearest brain: hf-brain-small at (-87.5, -195.5), 214 tiles from spawn, health 1125 / 1125
+nests within 25 of the brain: 5
+target character at (-52.5, -195.5), 35 tiles from the brain
+director: on
+territory id 1
+t=  0.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase siege, brain 100%, alive 0, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  2.0s ring 0: +6 new (6 within 12 of a nest/brain, 5 more than 20 from the target), ring 0, phase siege, brain 100%, alive 6, next group in 10s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  5.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase siege, brain 100%, alive 6, next group in 7s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 1 (+0 not ours), touching 1, ring 3, held 0 [held within 3: ]
+-- destroyed 2 of 5 nests
+t= 10.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase siege, brain 100%, alive 6, next group in 2s, director off: 1.6 / 8.3 HP/s (1.6 from units), slots 27, biting 6 (+0 not ours), touching 6, ring 0, held 0 [held within 3: ]
+t= 12.0s ring 0: +4 new (4 within 12 of a nest/brain, 2 more than 20 from the target), ring 0, phase siege, brain 100%, alive 10, next group in 10s, director off: 3.7 / 8.3 HP/s (3.7 from units), slots 15, biting 5 (+0 not ours), touching 5, ring 1, held 0 [held within 3: ]
+-- brain engages: siege → wake
+t= 15.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 10, next group in 2s, director off: 6.1 / 8.3 HP/s (6.1 from units), slots 8, biting 5 (+0 not ours), touching 5, ring 3, held 0 [held within 3: ]
+t= 17.0s ring 0: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 0, phase wake, brain 100%, alive 20, next group in 8s, director off: 5.8 / 8.3 HP/s (5.8 from units), slots 7, biting 5 (+0 not ours), touching 5, ring 2, held 0 [held within 3: ]
+t= 20.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase wake, brain 100%, alive 20, next group in 5s, director off: 5.6 / 8.3 HP/s (5.6 from units), slots 9, biting 8 (+0 not ours), touching 8, ring 6, held 0 [held within 3: ]
+-- brain set to 55 % health (618), enraged at the target
+t= 25.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 32, swarm left 238, director off: 7.5 / 8.3 HP/s (7.5 from units), slots 7, biting 7 (+0 not ours), touching 7, ring 9, held 0 [held within 3: ]
+t= 25.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 44, swarm left 226, director off: 6.8 / 8.3 HP/s (6.8 from units), slots 7, biting 7 (+0 not ours), touching 7, ring 9, held 0 [held within 3: ]
+t= 26.0s first biters with hf-ash-sticker-ally: 2 of 79 small biters within 80
+  swarm + 1s: per sector 8–22 tiles (0 back … 4 front … 7): 1 2 0 3 10 3 1 0 | within 8 tiles: 12 | in front of the brain: 0
+t= 26.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 56, swarm left 214, director off: 5.8 / 8.3 HP/s (5.8 from units), slots 8, biting 8 (+0 not ours), touching 8, ring 6, held 0 [held within 3: ]
+t= 26.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 68, swarm left 202, director off: 5.8 / 8.3 HP/s (5.8 from units), slots 9, biting 8 (+0 not ours), touching 8, ring 9, held 0 [held within 3: ]
+  swarm + 2s: per sector 8–22 tiles (0 back … 4 front … 7): 1 2 1 6 14 2 0 0 | within 8 tiles: 12 | in front of the brain: 8
+t= 27.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 80, swarm left 190, director off: 6.1 / 8.3 HP/s (6.1 from units), slots 10, biting 10 (+0 not ours), touching 10, ring 6, held 0 [held within 3: ]
+t= 27.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 92, swarm left 178, director off: 7.0 / 8.3 HP/s (7.0 from units), slots 10, biting 10 (+0 not ours), touching 10, ring 6, held 0 [held within 3: ]
+  swarm + 3s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 3 3 18 2 0 0 | within 8 tiles: 14 | in front of the brain: 14
+t= 28.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 104, swarm left 166, director off: 7.9 / 8.3 HP/s (7.9 from units), slots 10, biting 10 (+0 not ours), touching 10, ring 7, held 0 [held within 3: ]
+t= 28.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 116, swarm left 154, director off: 8.4 / 8.3 HP/s (8.4 from units), slots 10, biting 11 (+1 not ours), touching 11, ring 7, held 0 [held within 3: ]
+  swarm + 4s: per sector 8–22 tiles (0 back … 4 front … 7): 1 0 1 4 27 2 0 0 | within 8 tiles: 15 | in front of the brain: 15
+t= 29.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 128, swarm left 142, director off: 8.9 / 8.3 HP/s (8.9 from units), slots 10, biting 9 (+0 not ours), touching 9, ring 9, held 0 [held within 3: ]
+t= 29.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 140, swarm left 130, director off: 9.6 / 8.3 HP/s (9.6 from units), slots 9, biting 9 (+0 not ours), touching 9, ring 11, held 0 [held within 3: ]
+  swarm + 5s: per sector 8–22 tiles (0 back … 4 front … 7): 1 0 2 9 32 7 1 0 | within 8 tiles: 16 | in front of the brain: 11
+t= 30.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 152, swarm left 118, director off: 9.8 / 8.3 HP/s (9.8 from units), slots 9, biting 11 (+0 not ours), touching 11, ring 8, held 0 [held within 3: ]
+t= 30.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 164, swarm left 106, director off: 9.3 / 8.3 HP/s (9.3 from units), slots 7, biting 10 (+2 not ours), touching 10, ring 10, held 0 [held within 3: ]
+  swarm + 6s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 6 16 34 10 1 0 | within 8 tiles: 17 | in front of the brain: 13
+t= 31.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 176, swarm left 94, director off: 9.6 / 8.3 HP/s (9.6 from units), slots 6, biting 10 (+4 not ours), touching 10, ring 13, held 0 [held within 3: ]
+t= 31.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 188, swarm left 82, director off: 9.8 / 8.3 HP/s (9.8 from units), slots 7, biting 11 (+3 not ours), touching 11, ring 17, held 0 [held within 3: ]
+  swarm + 7s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 10 17 35 8 1 0 | within 8 tiles: 23 | in front of the brain: 18
+t= 32.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 200, swarm left 70, director off: 10.3 / 8.3 HP/s (10.3 from units), slots 8, biting 11 (+2 not ours), touching 11, ring 19, held 0 [held within 3: ]
+t= 32.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 212, swarm left 58, director off: 10.7 / 8.3 HP/s (10.7 from units), slots 9, biting 14 (+2 not ours), touching 14, ring 19, held 0 [held within 3: ]
+  swarm + 8s: per sector 8–22 tiles (0 back … 4 front … 7): 0 3 9 15 37 7 1 0 | within 8 tiles: 29 | in front of the brain: 25
+t= 33.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 224, swarm left 46, director off: 11.4 / 8.3 HP/s (11.4 from units), slots 8, biting 15 (+3 not ours), touching 15, ring 21, held 0 [held within 3: ]
+t= 33.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 236, swarm left 34, director off: 11.9 / 8.3 HP/s (11.9 from units), slots 9, biting 19 (+3 not ours), touching 19, ring 19, held 0 [held within 3: ]
+  swarm + 9s: per sector 8–22 tiles (0 back … 4 front … 7): 1 2 8 13 40 12 0 0 | within 8 tiles: 35 | in front of the brain: 28
+t= 34.0s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 248, swarm left 22, director off: 12.1 / 8.3 HP/s (12.1 from units), slots 8, biting 21 (+5 not ours), touching 21, ring 21, held 0 [held within 3: ]
+t= 34.5s ring 0: +12 new (12 within 12 of a nest/brain, 8 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 260, swarm left 10, director off: 12.6 / 8.3 HP/s (12.6 from units), slots 9, biting 24 (+6 not ours), touching 24, ring 19, held 0 [held within 3: ]
+  swarm +10s: per sector 8–22 tiles (0 back … 4 front … 7): 2 2 8 11 37 20 0 0 | within 8 tiles: 41 | in front of the brain: 28
+t= 35.0s ring 0: +10 new (10 within 12 of a nest/brain, 7 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 270, last stand, next group in 2s, director off: 12.8 / 8.3 HP/s (12.8 from units), slots 11, biting 27 (+5 not ours), touching 27, ring 19, held 0 [held within 3: ]
+  swarm +11s: per sector 8–22 tiles (0 back … 4 front … 7): 3 0 8 12 37 14 0 1 | within 8 tiles: 49 | in front of the brain: 21
+  swarm +12s: per sector 8–22 tiles (0 back … 4 front … 7): 1 0 10 12 38 10 4 0 | within 8 tiles: 59 | in front of the brain: 16
+  swarm +13s: per sector 8–22 tiles (0 back … 4 front … 7): 1 4 6 19 33 6 5 0 | within 8 tiles: 70 | in front of the brain: 14
+  swarm +14s: per sector 8–22 tiles (0 back … 4 front … 7): 2 9 10 20 26 9 6 2 | within 8 tiles: 78 | in front of the brain: 11
+  swarm +15s: per sector 8–22 tiles (0 back … 4 front … 7): 7 9 14 15 23 8 7 2 | within 8 tiles: 92 | in front of the brain: 5
+t= 40.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 270, last stand, next group in 1s, director off: 16.6 / 8.3 HP/s (16.6 from units), slots 18, biting 64 (+9 not ours), touching 64, ring 41, held 0 [held within 3: ]
+  swarm +16s: per sector 8–22 tiles (0 back … 4 front … 7): 7 8 15 9 13 9 14 2 | within 8 tiles: 109 | in front of the brain: 3
+  swarm +17s: per sector 8–22 tiles (0 back … 4 front … 7): 8 4 9 8 10 5 12 7 | within 8 tiles: 125 | in front of the brain: 2
+  swarm +18s: per sector 8–22 tiles (0 back … 4 front … 7): 8 6 8 3 8 5 14 8 | within 8 tiles: 135 | in front of the brain: 0
+  swarm +19s: per sector 8–22 tiles (0 back … 4 front … 7): 9 5 6 4 3 4 11 5 | within 8 tiles: 160 | in front of the brain: 0
+-- cleared 294 small biters (as if the player killed the swarm)
+  swarm +20s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 1 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 45.0s ring 0: +3 new (3 within 12 of a nest/brain, 2 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 3, last stand, next group in 2s, director off: 18.2 / 8.3 HP/s (18.2 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +21s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+  swarm +22s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 3 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 47.0s ring 0: +3 new (3 within 12 of a nest/brain, 2 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 6, last stand, next group in 2s, director off: 6.3 / 8.3 HP/s (6.3 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +23s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 3 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+  swarm +24s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 2 1 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 49.0s ring 0: +3 new (3 within 12 of a nest/brain, 2 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 9, last stand, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +25s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 2 1 0 0 | within 8 tiles: 1 | in front of the brain: 0
+t= 50.0s ring 0: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 9, last stand, next group in 1s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 1, held 0 [held within 3: ]
+t= 51.0s ring 0: +3 new (3 within 12 of a nest/brain, 2 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 12, last stand, next group in 2s, director off: 0.2 / 8.3 HP/s (0.2 from units), slots 27, biting 1 (+0 not ours), touching 1, ring 0, held 0 [held within 3: ]
+t= 53.0s ring 0: +3 new (3 within 12 of a nest/brain, 2 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 15, last stand, next group in 2s, director off: 0.9 / 8.3 HP/s (0.9 from units), slots 13, biting 1 (+0 not ours), touching 1, ring 0, held 0 [held within 3: ]
+t= 55.0s ring 0: +4 new (4 within 12 of a nest/brain, 3 more than 20 from the target), ring 0, phase swarm, brain 55%, alive 19, last stand, next group in 2s, director off: 1.4 / 8.3 HP/s (1.4 from units), slots 7, biting 1 (+0 not ours), touching 1, ring 0, held 0 [held within 3: ]
+total spawned: 289. Target alive: true
+ash cloud: most biters slowed at once 279; target got demolisher-ash-sticker: true
+damage taken in the swarm (until the clear): avg 12.7 HP/s, max 19.1 (rolling 3 s), budget 8.3; over budget in 34 of 40 checks; most held at once 0; most slots 27; killed by the target 0
+surround: most 45° sectors holding 2+ swarm units 8–22 tiles from the target at once: 8 of 8
+  t=39.0s sectors back→ (0 back, 2/6 sides, 4 front): 2 9 10 20 26 9 6 2
+== run hf-brain-ring1
+nearest brain: hf-brain-ring1 at (-129.5, -426.5), 446 tiles from spawn, health 5000 / 5000
+nests within 25 of the brain: 4
+target character at (-94.5, -426.5), 35 tiles from the brain
+director: off (measures only)
+territory id 3
+t=  0.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 0, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  2.0s ring 1: +10 new (10 within 12 of a nest/brain, 8 more than 20 from the target), ring 1, phase siege, brain 100%, alive 10, next group in 10s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  5.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 10, next group in 7s, director off: 1.2 / 8.3 HP/s (1.2 from units), slots 13, biting 3 (+0 not ours), touching 3, ring 1, held 0 [held within 3: ]
+-- destroyed 2 of 4 nests
+t= 10.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 10, next group in 2s, director off: 5.8 / 8.3 HP/s (5.8 from units), slots 7, biting 5 (+0 not ours), touching 5, ring 1, held 0 [held within 3: ]
+t= 12.0s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase siege, brain 100%, alive 17, next group in 10s, director off: 5.1 / 8.3 HP/s (5.1 from units), slots 6, biting 4 (+0 not ours), touching 4, ring 1, held 0 [held within 3: ]
+-- brain engages: siege → wake
+t= 15.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase wake, brain 100%, alive 17, next group in 2s, director off: 7.0 / 8.3 HP/s (7.0 from units), slots 8, biting 8 (+0 not ours), touching 8, ring 3, held 0 [held within 3: ]
+t= 17.0s ring 1: +15 new (15 within 12 of a nest/brain, 15 more than 20 from the target), ring 1, phase wake, brain 100%, alive 32, next group in 8s, director off: 9.1 / 8.3 HP/s (9.1 from units), slots 8, biting 9 (+0 not ours), touching 9, ring 3, held 0 [held within 3: ]
+t= 20.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase wake, brain 100%, alive 32, next group in 5s, director off: 7.9 / 8.3 HP/s (7.9 from units), slots 7, biting 7 (+0 not ours), touching 7, ring 9, held 0 [held within 3: ]
+-- brain set to 55 % health (2750), enraged at the target
+t= 25.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 57, swarm left 725, director off: 11.2 / 8.3 HP/s (11.2 from units), slots 6, biting 7 (+0 not ours), touching 7, ring 16, held 0 [held within 3: ]
+t= 25.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 82, swarm left 700, director off: 10.5 / 8.3 HP/s (10.5 from units), slots 6, biting 7 (+0 not ours), touching 7, ring 17, held 0 [held within 3: ]
+  swarm + 1s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 2 5 3 3 1 0 | within 8 tiles: 17 | in front of the brain: 1
+t= 26.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 107, swarm left 675, director off: 10.5 / 8.3 HP/s (10.5 from units), slots 5, biting 7 (+0 not ours), touching 7, ring 19, held 0 [held within 3: ]
+t= 26.5s first biters with hf-ash-sticker-ally: 21 of 160 small biters within 80
+t= 26.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 132, swarm left 650, director off: 8.9 / 8.3 HP/s (8.9 from units), slots 6, biting 8 (+0 not ours), touching 8, ring 16, held 0 [held within 3: ]
+  swarm + 2s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 3 11 4 2 0 0 | within 8 tiles: 15 | in front of the brain: 5
+t= 27.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 157, swarm left 625, director off: 8.4 / 8.3 HP/s (8.4 from units), slots 6, biting 8 (+0 not ours), touching 8, ring 12, held 0 [held within 3: ]
+t= 27.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 182, swarm left 600, director off: 7.9 / 8.3 HP/s (7.9 from units), slots 7, biting 9 (+0 not ours), touching 9, ring 17, held 0 [held within 3: ]
+  swarm + 3s: per sector 8–22 tiles (0 back … 4 front … 7): 0 3 5 4 3 0 0 0 | within 8 tiles: 26 | in front of the brain: 9
+t= 28.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 207, swarm left 575, director off: 9.6 / 8.3 HP/s (9.6 from units), slots 8, biting 21 (+0 not ours), touching 21, ring 9, held 0 [held within 3: ]
+t= 28.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 232, swarm left 550, director off: 11.9 / 8.3 HP/s (11.9 from units), slots 10, biting 20 (+0 not ours), touching 20, ring 10, held 0 [held within 3: ]
+  swarm + 4s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 5 9 5 1 0 2 | within 8 tiles: 24 | in front of the brain: 18
+t= 29.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 257, swarm left 525, director off: 14.2 / 8.3 HP/s (14.2 from units), slots 10, biting 19 (+0 not ours), touching 19, ring 8, held 0 [held within 3: ]
+t= 29.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 282, swarm left 500, director off: 16.3 / 8.3 HP/s (16.3 from units), slots 9, biting 19 (+1 not ours), touching 19, ring 7, held 0 [held within 3: ]
+  swarm + 5s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 5 12 10 0 1 1 | within 8 tiles: 24 | in front of the brain: 33
+t= 30.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 307, swarm left 475, director off: 17.5 / 8.3 HP/s (17.5 from units), slots 7, biting 20 (+3 not ours), touching 20, ring 7, held 0 [held within 3: ]
+t= 30.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 332, swarm left 450, director off: 18.9 / 8.3 HP/s (18.9 from units), slots 5, biting 22 (+5 not ours), touching 22, ring 7, held 0 [held within 3: ]
+  swarm + 6s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 8 17 15 0 1 0 | within 8 tiles: 27 | in front of the brain: 38
+t= 31.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 357, swarm left 425, director off: 18.2 / 8.3 HP/s (18.2 from units), slots 4, biting 22 (+7 not ours), touching 22, ring 8, held 0 [held within 3: ]
+t= 31.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 382, swarm left 400, director off: 17.5 / 8.3 HP/s (17.5 from units), slots 5, biting 23 (+7 not ours), touching 23, ring 8, held 0 [held within 3: ]
+  swarm + 7s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 13 15 27 0 1 0 | within 8 tiles: 30 | in front of the brain: 42
+t= 32.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 407, swarm left 375, director off: 16.1 / 8.3 HP/s (16.1 from units), slots 7, biting 24 (+6 not ours), touching 24, ring 10, held 0 [held within 3: ]
+t= 32.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 432, swarm left 350, director off: 15.9 / 8.3 HP/s (15.9 from units), slots 8, biting 27 (+5 not ours), touching 27, ring 8, held 0 [held within 3: ]
+  swarm + 8s: per sector 8–22 tiles (0 back … 4 front … 7): 0 2 15 20 36 0 1 0 | within 8 tiles: 34 | in front of the brain: 37
+t= 33.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 457, swarm left 325, director off: 15.6 / 8.3 HP/s (15.6 from units), slots 10, biting 29 (+5 not ours), touching 29, ring 10, held 0 [held within 3: ]
+t= 33.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 482, swarm left 300, director off: 15.2 / 8.3 HP/s (15.2 from units), slots 10, biting 29 (+5 not ours), touching 29, ring 17, held 0 [held within 3: ]
+  swarm + 9s: per sector 8–22 tiles (0 back … 4 front … 7): 0 4 17 22 37 2 0 0 | within 8 tiles: 47 | in front of the brain: 35
+t= 34.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 507, swarm left 275, director off: 14.5 / 8.3 HP/s (14.5 from units), slots 12, biting 33 (+5 not ours), touching 33, ring 20, held 0 [held within 3: ]
+t= 34.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 532, swarm left 250, director off: 14.2 / 8.3 HP/s (14.2 from units), slots 14, biting 39 (+5 not ours), touching 39, ring 23, held 0 [held within 3: ]
+  swarm +10s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 20 23 33 2 0 1 | within 8 tiles: 66 | in front of the brain: 37
+t= 35.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 557, swarm left 225, director off: 14.2 / 8.3 HP/s (14.2 from units), slots 16, biting 47 (+5 not ours), touching 47, ring 23, held 0 [held within 3: ]
+t= 35.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 582, swarm left 200, director off: 14.2 / 8.3 HP/s (14.2 from units), slots 20, biting 55 (+4 not ours), touching 55, ring 24, held 0 [held within 3: ]
+  swarm +11s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 22 27 37 2 0 1 | within 8 tiles: 80 | in front of the brain: 32
+t= 36.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 607, swarm left 175, director off: 14.7 / 8.3 HP/s (14.7 from units), slots 24, biting 62 (+3 not ours), touching 62, ring 24, held 0 [held within 3: ]
+t= 36.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 632, swarm left 150, director off: 15.9 / 8.3 HP/s (15.9 from units), slots 22, biting 71 (+5 not ours), touching 71, ring 21, held 0 [held within 3: ]
+  swarm +12s: per sector 8–22 tiles (0 back … 4 front … 7): 0 3 27 32 34 1 1 2 | within 8 tiles: 94 | in front of the brain: 35
+t= 37.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 657, swarm left 125, director off: 16.3 / 8.3 HP/s (16.3 from units), slots 22, biting 78 (+5 not ours), touching 78, ring 25, held 0 [held within 3: ]
+t= 37.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 682, swarm left 100, director off: 15.9 / 8.3 HP/s (15.9 from units), slots 22, biting 85 (+5 not ours), touching 85, ring 29, held 0 [held within 3: ]
+  swarm +13s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 32 37 30 0 1 1 | within 8 tiles: 116 | in front of the brain: 37
+t= 38.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 707, swarm left 75, director off: 17.0 / 8.3 HP/s (17.0 from units), slots 21, biting 93 (+6 not ours), touching 93, ring 32, held 0 [held within 3: ]
+t= 38.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 732, swarm left 50, director off: 18.0 / 8.3 HP/s (18.0 from units), slots 22, biting 102 (+5 not ours), touching 102, ring 32, held 0 [held within 3: ]
+  swarm +14s: per sector 8–22 tiles (0 back … 4 front … 7): 2 1 31 45 29 4 3 1 | within 8 tiles: 129 | in front of the brain: 43
+t= 39.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 757, swarm left 25, director off: 18.4 / 8.3 HP/s (18.4 from units), slots 21, biting 106 (+6 not ours), touching 106, ring 32, held 0 [held within 3: ]
+t= 39.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 782, last stand, next group in 2s, director off: 19.1 / 8.3 HP/s (19.1 from units), slots 21, biting 114 (+6 not ours), touching 114, ring 33, held 0 [held within 3: ]
+  swarm +15s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 34 44 34 5 4 1 | within 8 tiles: 148 | in front of the brain: 44
+t= 40.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 782, last stand, next group in 2s, director off: 20.1 / 8.3 HP/s (20.1 from units), slots 21, biting 113 (+6 not ours), touching 113, ring 44, held 0 [held within 3: ]
+  swarm +16s: per sector 8–22 tiles (0 back … 4 front … 7): 2 1 39 45 39 7 6 1 | within 8 tiles: 157 | in front of the brain: 49
+  swarm +17s: per sector 8–22 tiles (0 back … 4 front … 7): 2 6 44 44 46 8 7 2 | within 8 tiles: 171 | in front of the brain: 38
+  swarm +18s: per sector 8–22 tiles (0 back … 4 front … 7): 4 6 44 43 44 10 8 4 | within 8 tiles: 190 | in front of the brain: 35
+  swarm +19s: per sector 8–22 tiles (0 back … 4 front … 7): 4 4 48 48 39 10 10 5 | within 8 tiles: 212 | in front of the brain: 27
+-- cleared 810 small biters (as if the player killed the swarm)
+  swarm +20s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 45.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 0, last stand, next group in 1s, director off: 28.2 / 8.3 HP/s (28.2 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 45.5s ring 1: +5 new (5 within 12 of a nest/brain, 5 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 5, last stand, next group in 2s, director off: 23.6 / 8.3 HP/s (23.6 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +21s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  swarm +22s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 1 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 47.5s ring 1: +5 new (5 within 12 of a nest/brain, 5 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 10, last stand, next group in 2s, director off: 4.9 / 8.3 HP/s (4.9 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +23s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 1 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+  swarm +24s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 1 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+t= 49.5s ring 1: +5 new (5 within 12 of a nest/brain, 5 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 15, last stand, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +25s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 1 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 2
+t= 50.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 15, last stand, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 51.5s ring 1: +5 new (5 within 12 of a nest/brain, 5 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 20, last stand, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 27, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 53.5s ring 1: +8 new (8 within 12 of a nest/brain, 5 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 28, last stand, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 27, biting 1 (+0 not ours), touching 1, ring 0, held 0 [held within 3: ]
+t= 55.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 28, last stand, next group in 1s, director off: 0.7 / 8.3 HP/s (0.7 from units), slots 23, biting 2 (+0 not ours), touching 2, ring 1, held 0 [held within 3: ]
+total spawned: 810. Target alive: true
+ash cloud: most biters slowed at once 776; target got demolisher-ash-sticker: true
+damage taken in the swarm (until the clear): avg 17.5 HP/s, max 28.2 (rolling 3 s), budget 8.3; over budget in 39 of 40 checks; most held at once 0; most slots 27; killed by the target 0
+surround: most 45° sectors holding 2+ swarm units 8–22 tiles from the target at once: 8 of 8
+  t=41.5s sectors back→ (0 back, 2/6 sides, 4 front): 2 4 39 44 42 7 7 2
+== run hf-brain-ring1
+nearest brain: hf-brain-ring1 at (-129.5, -426.5), 446 tiles from spawn, health 2750 / 5000
+nests within 25 of the brain: 3
+target character at (-94.5, -426.5), 35 tiles from the brain
+director: on
+territory id 3
+t=  0.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 0, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  2.0s ring 1: +8 new (8 within 12 of a nest/brain, 5 more than 20 from the target), ring 1, phase siege, brain 100%, alive 8, next group in 10s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  5.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 8, next group in 7s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 1 (+0 not ours), touching 1, ring 2, held 0 [held within 3: ]
+-- destroyed 1 of 3 nests
+t= 10.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 8, next group in 2s, director off: 4.9 / 8.3 HP/s (4.9 from units), slots 10, biting 7 (+0 not ours), touching 7, ring 1, held 0 [held within 3: ]
+t= 12.0s ring 1: +8 new (8 within 12 of a nest/brain, 8 more than 20 from the target), ring 1, phase siege, brain 100%, alive 16, next group in 10s, director off: 7.2 / 8.3 HP/s (7.2 from units), slots 8, biting 6 (+0 not ours), touching 6, ring 1, held 0 [held within 3: ]
+-- brain engages: siege → wake
+t= 15.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase wake, brain 100%, alive 16, next group in 2s, director off: 7.0 / 8.3 HP/s (7.0 from units), slots 7, biting 7 (+0 not ours), touching 7, ring 1, held 0 [held within 3: ]
+t= 17.0s ring 1: +17 new (17 within 12 of a nest/brain, 17 more than 20 from the target), ring 1, phase wake, brain 100%, alive 33, next group in 8s, director off: 8.4 / 8.3 HP/s (8.4 from units), slots 8, biting 8 (+0 not ours), touching 8, ring 6, held 0 [held within 3: ]
+t= 20.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase wake, brain 100%, alive 33, next group in 5s, director off: 5.8 / 8.3 HP/s (5.8 from units), slots 6, biting 5 (+0 not ours), touching 5, ring 6, held 0 [held within 3: ]
+-- brain set to 55 % health (2750), enraged at the target
+t= 25.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 58, swarm left 725, director full: 11.2 / 8.3 HP/s (11.2 from units), slots 7, biting 8 (+0 not ours), touching 8, ring 13, held 3 [held within 3: ]
+t= 25.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 83, swarm left 700, director full: 10.7 / 8.3 HP/s (10.7 from units), slots 6, biting 7 (+0 not ours), touching 8, ring 11, held 7 [held within 3: compound 1]
+t= 26.0s first biters with hf-ash-sticker-ally: 2 of 120 small biters within 80
+  swarm + 1s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 2 10 6 0 0 0 | within 8 tiles: 16 | in front of the brain: 1
+t= 26.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 108, swarm left 675, director full: 10.3 / 8.3 HP/s (10.3 from units), slots 5, biting 6 (+0 not ours), touching 8, ring 12, held 9 [held within 3: compound 2]
+t= 26.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 133, swarm left 650, director full: 8.6 / 8.3 HP/s (8.6 from units), slots 5, biting 5 (+0 not ours), touching 6, ring 14, held 9 [held within 3: compound 1]
+  swarm + 2s: per sector 8–22 tiles (0 back … 4 front … 7): 0 2 1 12 4 1 0 0 | within 8 tiles: 16 | in front of the brain: 8
+t= 27.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 158, swarm left 625, director busy: 7.7 / 8.3 HP/s (7.7 from units), slots 5, biting 6 (+0 not ours), touching 6, ring 15, held 17 [held within 3: ]
+t= 27.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 183, swarm left 600, director busy: 7.2 / 8.3 HP/s (7.2 from units), slots 6, biting 6 (+0 not ours), touching 6, ring 19, held 20 [held within 3: ]
+  swarm + 3s: per sector 8–22 tiles (0 back … 4 front … 7): 0 2 6 10 8 3 0 0 | within 8 tiles: 12 | in front of the brain: 15
+t= 28.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 208, swarm left 575, director busy: 6.5 / 8.3 HP/s (6.5 from units), slots 6, biting 8 (+0 not ours), touching 8, ring 17, held 22 [held within 3: ]
+t= 28.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 233, swarm left 550, director calm: 6.1 / 8.3 HP/s (6.1 from units), slots 7, biting 6 (+0 not ours), touching 6, ring 15, held 21 [held within 3: ]
+  swarm + 4s: per sector 8–22 tiles (0 back … 4 front … 7): 0 2 6 16 13 3 0 0 | within 8 tiles: 9 | in front of the brain: 24
+t= 29.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 258, swarm left 525, director busy: 6.3 / 8.3 HP/s (6.3 from units), slots 7, biting 6 (+0 not ours), touching 6, ring 15, held 21 [held within 3: ]
+t= 29.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 283, swarm left 500, director busy: 7.0 / 8.3 HP/s (7.0 from units), slots 7, biting 7 (+1 not ours), touching 7, ring 14, held 21 [held within 3: ]
+  swarm + 5s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 6 22 17 3 0 0 | within 8 tiles: 13 | in front of the brain: 29
+t= 30.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 308, swarm left 475, director busy: 7.2 / 8.3 HP/s (7.2 from units), slots 7, biting 7 (+2 not ours), touching 7, ring 19, held 22 [held within 3: ]
+t= 30.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 333, swarm left 450, director busy: 7.7 / 8.3 HP/s (7.7 from units), slots 7, biting 7 (+1 not ours), touching 7, ring 22, held 23 [held within 3: ]
+  swarm + 6s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 10 23 26 1 0 0 | within 8 tiles: 22 | in front of the brain: 28
+t= 31.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 358, swarm left 425, director full: 8.4 / 8.3 HP/s (8.4 from units), slots 6, biting 7 (+2 not ours), touching 7, ring 25, held 29 [held within 3: ]
+t= 31.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 383, swarm left 400, director full: 9.1 / 8.3 HP/s (9.1 from units), slots 6, biting 6 (+2 not ours), touching 7, ring 31, held 31 [held within 3: compound 1]
+  swarm + 7s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 14 27 29 0 0 0 | within 8 tiles: 31 | in front of the brain: 32
+t= 32.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 408, swarm left 375, director full: 9.6 / 8.3 HP/s (9.6 from units), slots 5, biting 6 (+4 not ours), touching 6, ring 37, held 35 [held within 3: ]
+t= 32.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 433, swarm left 350, director full: 9.3 / 8.3 HP/s (9.3 from units), slots 4, biting 5 (+4 not ours), touching 6, ring 41, held 41 [held within 3: compound 1]
+  swarm + 8s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 18 29 34 0 0 0 | within 8 tiles: 39 | in front of the brain: 33
+t= 33.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 458, swarm left 325, director full: 9.1 / 8.3 HP/s (9.1 from units), slots 4, biting 4 (+3 not ours), touching 5, ring 50, held 48 [held within 3: compound 1]
+t= 33.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 483, swarm left 300, director full: 8.6 / 8.3 HP/s (8.6 from units), slots 4, biting 4 (+3 not ours), touching 4, ring 57, held 53 [held within 3: ]
+  swarm + 9s: per sector 8–22 tiles (0 back … 4 front … 7): 0 4 22 31 38 0 0 0 | within 8 tiles: 45 | in front of the brain: 38
+t= 34.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 508, swarm left 275, director full: 8.4 / 8.3 HP/s (8.4 from units), slots 3, biting 4 (+4 not ours), touching 4, ring 63, held 61 [held within 3: ]
+t= 34.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 533, swarm left 250, director busy: 7.7 / 8.3 HP/s (7.7 from units), slots 3, biting 3 (+5 not ours), touching 3, ring 68, held 66 [held within 3: ]
+  swarm +10s: per sector 8–22 tiles (0 back … 4 front … 7): 0 5 28 35 46 2 1 0 | within 8 tiles: 46 | in front of the brain: 39
+t= 35.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 558, swarm left 225, director busy: 7.5 / 8.3 HP/s (7.5 from units), slots 3, biting 3 (+4 not ours), touching 3, ring 76, held 73 [held within 3: ]
+t= 35.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 583, swarm left 200, director busy: 7.5 / 8.3 HP/s (7.5 from units), slots 3, biting 3 (+5 not ours), touching 3, ring 79, held 79 [held within 3: ]
+  swarm +11s: per sector 8–22 tiles (0 back … 4 front … 7): 0 2 33 39 57 3 1 0 | within 8 tiles: 51 | in front of the brain: 41
+t= 36.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 608, swarm left 175, director busy: 7.2 / 8.3 HP/s (7.2 from units), slots 3, biting 3 (+5 not ours), touching 3, ring 84, held 88 [held within 3: ]
+t= 36.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 633, swarm left 150, director busy: 7.5 / 8.3 HP/s (7.5 from units), slots 4, biting 3 (+4 not ours), touching 4, ring 88, held 95 [held within 3: compound 1]
+  swarm +12s: per sector 8–22 tiles (0 back … 4 front … 7): 0 2 35 38 65 5 1 0 | within 8 tiles: 55 | in front of the brain: 45
+t= 37.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 658, swarm left 125, director busy: 7.7 / 8.3 HP/s (7.7 from units), slots 4, biting 4 (+4 not ours), touching 4, ring 96, held 102 [held within 3: ]
+t= 37.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 683, swarm left 100, director full: 8.6 / 8.3 HP/s (8.6 from units), slots 4, biting 4 (+4 not ours), touching 4, ring 105, held 109 [held within 3: ]
+  swarm +13s: per sector 8–22 tiles (0 back … 4 front … 7): 1 1 39 44 67 6 0 0 | within 8 tiles: 68 | in front of the brain: 43
+t= 38.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 708, swarm left 75, director full: 8.6 / 8.3 HP/s (8.6 from units), slots 4, biting 4 (+4 not ours), touching 4, ring 112, held 116 [held within 3: ]
+t= 38.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 733, swarm left 50, director full: 9.1 / 8.3 HP/s (9.1 from units), slots 3, biting 4 (+5 not ours), touching 4, ring 118, held 127 [held within 3: ]
+  swarm +14s: per sector 8–22 tiles (0 back … 4 front … 7): 2 4 36 53 75 9 0 0 | within 8 tiles: 76 | in front of the brain: 39
+t= 39.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 758, swarm left 25, director full: 9.8 / 8.3 HP/s (9.8 from units), slots 3, biting 3 (+4 not ours), touching 4, ring 123, held 136 [held within 3: compound 1]
+t= 39.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 783, last stand, next group in 2s, director full: 9.1 / 8.3 HP/s (9.1 from units), slots 3, biting 3 (+4 not ours), touching 3, ring 132, held 145 [held within 3: ]
+  swarm +15s: per sector 8–22 tiles (0 back … 4 front … 7): 0 5 47 58 78 10 3 0 | within 8 tiles: 84 | in front of the brain: 40
+t= 40.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 783, last stand, next group in 2s, director full: 8.9 / 8.3 HP/s (8.9 from units), slots 3, biting 4 (+4 not ours), touching 5, ring 138, held 157 [held within 3: compound 1]
+  swarm +16s: per sector 8–22 tiles (0 back … 4 front … 7): 3 8 48 61 82 9 2 0 | within 8 tiles: 95 | in front of the brain: 42
+  swarm +17s: per sector 8–22 tiles (0 back … 4 front … 7): 2 7 52 66 87 15 0 0 | within 8 tiles: 109 | in front of the brain: 45
+  swarm +18s: per sector 8–22 tiles (0 back … 4 front … 7): 2 9 56 68 93 19 2 0 | within 8 tiles: 116 | in front of the brain: 45
+  swarm +19s: per sector 8–22 tiles (0 back … 4 front … 7): 5 11 55 70 99 22 6 0 | within 8 tiles: 127 | in front of the brain: 35
+-- cleared 795 small biters (as if the player killed the swarm)
+  swarm +20s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 45.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 0, last stand, next group in 1s, director full: 8.9 / 8.3 HP/s (8.9 from units), slots 8, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 45.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 7, last stand, next group in 2s, director busy: 7.7 / 8.3 HP/s (7.7 from units), slots 8, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +21s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  swarm +22s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 1 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+t= 47.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 14, last stand, next group in 2s, director busy: 1.6 / 8.3 HP/s (1.6 from units), slots 12, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +23s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 1 0 1 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  swarm +24s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 1 0 1 0 0 0 | within 8 tiles: 0 | in front of the brain: 2
+t= 49.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 21, last stand, next group in 2s, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 20, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +25s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 2 1 0 0 0 | within 8 tiles: 0 | in front of the brain: 2
+t= 50.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 21, last stand, next group in 2s, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 22, biting 0 (+0 not ours), touching 0, ring 1, held 0 [held within 3: ]
+t= 51.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 28, last stand, next group in 2s, director busy: 0.2 / 8.3 HP/s (0.2 from units), slots 28, biting 1 (+0 not ours), touching 1, ring 0, held 0 [held within 3: ]
+t= 53.5s ring 1: +10 new (10 within 12 of a nest/brain, 6 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 38, last stand, next group in 2s, director busy: 0.9 / 8.3 HP/s (0.9 from units), slots 36, biting 2 (+0 not ours), touching 2, ring 0, held 0 [held within 3: ]
+t= 55.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 38, last stand, next group in 1s, director busy: 1.6 / 8.3 HP/s (1.6 from units), slots 42, biting 3 (+0 not ours), touching 3, ring 2, held 0 [held within 3: ]
+total spawned: 821. Target alive: true
+ash cloud: most biters slowed at once 759; target got demolisher-ash-sticker: true
+damage taken in the swarm (until the clear): avg 8.3 HP/s, max 10.7 (rolling 3 s), budget 8.3; over budget in 24 of 40 checks; most held at once 266; most slots 8; killed by the target 0
+surround: most 45° sectors holding 2+ swarm units 8–22 tiles from the target at once: 7 of 8
+  t=41.0s sectors back→ (0 back, 2/6 sides, 4 front): 3 8 48 61 82 9 2 0
+== run hf-brain-ring1
+nearest brain: hf-brain-ring1 at (-129.5, -426.5), 446 tiles from spawn, health 2750 / 5000
+nests within 25 of the brain: 3
+target character at (-94.5, -426.5), 35 tiles from the brain
+director: on, target kills 4 per check
+territory id 3
+t=  0.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 0, next group in 2s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  2.0s ring 1: +14 new (14 within 12 of a nest/brain, 9 more than 20 from the target), ring 1, phase siege, brain 100%, alive 14, next group in 10s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t=  5.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 14, next group in 7s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 1 (+0 not ours), touching 1, ring 4, held 0 [held within 3: ]
+-- destroyed 1 of 3 nests
+t= 10.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase siege, brain 100%, alive 14, next group in 2s, director off: 7.0 / 8.3 HP/s (7.0 from units), slots 10, biting 7 (+0 not ours), touching 7, ring 4, held 0 [held within 3: ]
+t= 12.0s ring 1: +9 new (9 within 12 of a nest/brain, 9 more than 20 from the target), ring 1, phase siege, brain 100%, alive 23, next group in 10s, director off: 8.6 / 8.3 HP/s (8.6 from units), slots 7, biting 7 (+0 not ours), touching 7, ring 3, held 0 [held within 3: ]
+-- brain engages: siege → wake
+t= 15.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase wake, brain 100%, alive 23, next group in 2s, director off: 5.4 / 8.3 HP/s (5.4 from units), slots 6, biting 4 (+0 not ours), touching 4, ring 7, held 0 [held within 3: ]
+t= 17.0s ring 1: +15 new (15 within 12 of a nest/brain, 15 more than 20 from the target), ring 1, phase wake, brain 100%, alive 22, next group in 8s, director off: 4.0 / 8.3 HP/s (4.0 from units), slots 4, biting 0 (+0 not ours), touching 0, ring 2, held 0 [held within 3: ]
+t= 20.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase wake, brain 100%, alive 11, next group in 5s, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 4, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+-- brain set to 55 % health (2750), enraged at the target
+t= 25.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 26, swarm left 725, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 25.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 51, swarm left 700, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 8, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 1s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 1 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 2
+t= 26.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 76, swarm left 675, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 10, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 26.5s first biters with hf-ash-sticker-ally: 32 of 113 small biters within 80
+t= 26.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 101, swarm left 650, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 12, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 2s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 3 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 5
+t= 27.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 123, swarm left 625, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 14, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 27.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 146, swarm left 600, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 16, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 3s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 2 0 0 0 | within 8 tiles: 0 | in front of the brain: 12
+t= 28.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 169, swarm left 575, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 18, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 28.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 194, swarm left 550, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 20, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 4s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 3 4 0 0 0 | within 8 tiles: 0 | in front of the brain: 21
+t= 29.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 217, swarm left 525, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 22, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 29.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 241, swarm left 500, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 24, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 5s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 1 9 5 0 0 0 | within 8 tiles: 0 | in front of the brain: 28
+t= 30.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 262, swarm left 475, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 26, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 30.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 284, swarm left 450, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 28, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 6s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 1 12 14 0 0 0 | within 8 tiles: 0 | in front of the brain: 31
+t= 31.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 305, swarm left 425, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 30, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 31.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 326, swarm left 400, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 32, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 7s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 4 15 22 0 0 0 | within 8 tiles: 0 | in front of the brain: 32
+t= 32.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 349, swarm left 375, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 34, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 32.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 370, swarm left 350, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 36, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm + 8s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 11 17 25 0 0 0 | within 8 tiles: 0 | in front of the brain: 40
+t= 33.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 392, swarm left 325, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 38, biting 0 (+0 not ours), touching 0, ring 2, held 0 [held within 3: ]
+t= 33.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 413, swarm left 300, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 40, biting 0 (+0 not ours), touching 0, ring 6, held 0 [held within 3: ]
+  swarm + 9s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 18 20 24 0 0 0 | within 8 tiles: 3 | in front of the brain: 38
+t= 34.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 434, swarm left 275, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 42, biting 0 (+0 not ours), touching 0, ring 6, held 0 [held within 3: ]
+t= 34.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 455, swarm left 250, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 44, biting 0 (+0 not ours), touching 0, ring 7, held 0 [held within 3: ]
+  swarm +10s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 21 21 33 0 0 0 | within 8 tiles: 7 | in front of the brain: 45
+t= 35.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 478, swarm left 225, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 46, biting 0 (+0 not ours), touching 0, ring 11, held 0 [held within 3: ]
+t= 35.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 499, swarm left 200, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 48, biting 0 (+0 not ours), touching 0, ring 15, held 0 [held within 3: ]
+  swarm +11s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 24 23 41 0 0 0 | within 8 tiles: 11 | in front of the brain: 40
+t= 36.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 521, swarm left 175, director busy: 0.2 / 8.3 HP/s (0.2 from units), slots 50, biting 1 (+1 not ours), touching 1, ring 16, held 0 [held within 3: ]
+t= 36.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 543, swarm left 150, director busy: 1.2 / 8.3 HP/s (1.2 from units), slots 52, biting 4 (+0 not ours), touching 4, ring 18, held 0 [held within 3: ]
+  swarm +12s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 24 28 36 0 0 0 | within 8 tiles: 20 | in front of the brain: 43
+t= 37.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 564, swarm left 125, director busy: 2.3 / 8.3 HP/s (2.3 from units), slots 54, biting 7 (+0 not ours), touching 7, ring 21, held 0 [held within 3: ]
+t= 37.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 585, swarm left 100, director busy: 3.5 / 8.3 HP/s (3.5 from units), slots 56, biting 10 (+0 not ours), touching 10, ring 26, held 0 [held within 3: ]
+  swarm +13s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 28 27 34 0 0 0 | within 8 tiles: 32 | in front of the brain: 49
+t= 38.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 606, swarm left 75, director busy: 5.4 / 8.3 HP/s (5.4 from units), slots 56, biting 15 (+0 not ours), touching 15, ring 24, held 0 [held within 3: ]
+t= 38.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 627, swarm left 50, director busy: 7.7 / 8.3 HP/s (7.7 from units), slots 56, biting 23 (+0 not ours), touching 23, ring 19, held 0 [held within 3: ]
+  swarm +14s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 36 32 37 0 0 0 | within 8 tiles: 38 | in front of the brain: 44
+t= 39.0s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 648, swarm left 25, director full: 9.6 / 8.3 HP/s (9.6 from units), slots 48, biting 28 (+0 not ours), touching 28, ring 18, held 0 [held within 3: ]
+t= 39.5s ring 1: +25 new (25 within 12 of a nest/brain, 25 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 669, last stand, next group in 2s, director full: 10.5 / 8.3 HP/s (10.5 from units), slots 38, biting 28 (+0 not ours), touching 28, ring 23, held 0 [held within 3: ]
+  swarm +15s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 37 35 39 0 0 0 | within 8 tiles: 49 | in front of the brain: 46
+t= 40.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 665, last stand, next group in 2s, director full: 12.1 / 8.3 HP/s (12.1 from units), slots 26, biting 32 (+0 not ours), touching 32, ring 23, held 17 [held within 3: ]
+  swarm +16s: per sector 8–22 tiles (0 back … 4 front … 7): 0 1 39 35 45 0 0 0 | within 8 tiles: 62 | in front of the brain: 38
+  swarm +17s: per sector 8–22 tiles (0 back … 4 front … 7): 2 5 41 43 46 2 1 0 | within 8 tiles: 62 | in front of the brain: 40
+  swarm +18s: per sector 8–22 tiles (0 back … 4 front … 7): 3 3 51 44 51 6 2 0 | within 8 tiles: 62 | in front of the brain: 32
+  swarm +19s: per sector 8–22 tiles (0 back … 4 front … 7): 6 4 58 48 50 7 3 0 | within 8 tiles: 60 | in front of the brain: 25
+-- cleared 629 small biters (as if the player killed the swarm)
+  swarm +20s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 45.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 0, last stand, next group in 1s, director busy: 3.3 / 8.3 HP/s (3.3 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 45.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 7, last stand, next group in 2s, director busy: 2.3 / 8.3 HP/s (2.3 from units), slots 8, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +21s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 0 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  swarm +22s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 1 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+t= 47.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 13, last stand, next group in 2s, director busy: 0.7 / 8.3 HP/s (0.7 from units), slots 16, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +23s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 1 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 0
+  swarm +24s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 2 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+t= 49.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 19, last stand, next group in 2s, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 24, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+  swarm +25s: per sector 8–22 tiles (0 back … 4 front … 7): 0 0 0 2 0 0 0 0 | within 8 tiles: 0 | in front of the brain: 1
+t= 50.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 19, last stand, next group in 2s, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 26, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 51.5s ring 1: +7 new (7 within 12 of a nest/brain, 7 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 24, last stand, next group in 2s, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 32, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 53.5s ring 1: +10 new (10 within 12 of a nest/brain, 10 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 32, last stand, next group in 2s, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 40, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+t= 55.0s ring 1: +0 new (0 within 12 of a nest/brain, 0 more than 20 from the target), ring 1, phase swarm, brain 55%, alive 28, last stand, next group in 1s, director busy: 0.0 / 8.3 HP/s (0.0 from units), slots 46, biting 0 (+0 not ours), touching 0, ring 0, held 0 [held within 3: ]
+total spawned: 826. Target alive: true
+ash cloud: most biters slowed at once 640; target got demolisher-ash-sticker: true
+damage taken in the swarm (until the clear): avg 3.7 HP/s, max 13.8 (rolling 3 s), budget 8.3; over budget in 9 of 40 checks; most held at once 110; most slots 56; killed by the target 181
+surround: most 45° sectors holding 2+ swarm units 8–22 tiles from the target at once: 7 of 8
+  t=43.0s sectors back→ (0 back, 2/6 sides, 4 front): 3 3 51 44 51 6 2 0

@@ -1,8 +1,8 @@
 -- Challenges: started when a guardian is engaged and a player is nearby; won when the territory is claimed;
 -- lost when for LOSE_GRACE ticks no guardian is engaged or no participant is near a guardian.
--- Siege (challenge-feel-plan.md E9, ring 0 only): a player damaging a nest or worm of a brain base starts the
--- challenge before the brain is engaged (so the base stops regrowing). The brain is left alone until it engages
--- by itself; then the siege turns into wake. During siege only the "participant near" part of the lose rule counts.
+-- Siege (challenge-feel-plan.md E9; every ring in waves.PHASES, oil-ring-challenge-plan.md OR-D7): a player
+-- damaging a nest or worm of a brain base starts the challenge before the brain is engaged (so the base stops
+-- regrowing). The brain is left alone until it engages by itself; then the siege turns into wake. During siege only the "participant near" part of the lose rule counts.
 -- While a participant is near, guardians are kept enraged at the nearest participant (so a challenge
 -- started by building doesn't end when the building is destroyed).
 -- storage.challenges[territory_id] = {territory_id, players = {[player_index] = true}, started_tick, lose_since_tick}
@@ -10,6 +10,9 @@
 
 local territories = require("scripts.territories")
 local waves = require("scripts.waves")
+local director = require("scripts.director")
+local telemetry = require("scripts.telemetry")
+local brain_fight = require("scripts.brain-fight")
 
 local challenge = {}
 
@@ -129,7 +132,10 @@ local function start(territory_record, surface, origin, phase)
   return record
 end
 
-local function finish(record, message)
+-- outcome for telemetry: "won" / "lost" / "ended"
+local function finish(record, message, outcome)
+  telemetry.finish(record, outcome)
+  brain_fight.clear(record)
   notify(record, message)
   for index in pairs(record.players) do
     storage.player_challenge[index] = nil
@@ -150,8 +156,9 @@ local function lose(record)
     end
     territories.set_state(territory_record, "hostile")
   end
+  director.disband(record)
   waves.clear(record)
-  finish(record, string.format("Challenge lost: territory %d. The guardian recovers.", record.territory_id))
+  finish(record, string.format("Challenge lost: territory %d. The guardian recovers.", record.territory_id), "lost")
 end
 
 -- The player behind a damage cause: their character, or the driver of their car / spidertron.
@@ -191,16 +198,34 @@ function challenge.on_base_damaged(event)
   if not head then return end
   local p = entity.position
   if (p.x - head.x) ^ 2 + (p.y - head.y) ^ 2 > BASE_REACH ^ 2 then return end
-  if waves.ring_at(entity.surface, head) ~= 0 then return end
+  if not waves.PHASES[waves.ring_at(entity.surface, head)] then return end -- OR-D7: every phased ring
   join(start(record, entity.surface, head, "siege"), player)
+end
+
+-- on_entity_died for nests (OR-D55, PT7): in a ring with P.wake_on_nest, the first nest of the brain base destroyed in
+-- the siege wakes the brain (wake phase; keep_engaged then enrages it, so its shockwave starts). Also the headless
+-- debug records (storage.debug_waves).
+function challenge.on_nest_died(event)
+  init_storage()
+  local entity = event.entity
+  if entity.force.name ~= "enemy" or entity.surface.name ~= territories.surface_name then return end
+  local territory_record = territories.get_at(entity.surface, entity.position)
+  if not territory_record then return end
+  local id = territory_record.id
+  local record = storage.challenges[id] or (storage.debug_waves and storage.debug_waves[id])
+  if not (record and record.phase == "siege" and record.origin) then return end
+  local P = waves.PHASES[record.ring]
+  local p, o = entity.position, record.origin
+  if P and P.wake_on_nest and (p.x - o.x) ^ 2 + (p.y - o.y) ^ 2 <= BASE_REACH ^ 2 then waves.wake(record) end
 end
 
 function challenge.on_won(territory_id)
   init_storage()
   local record = storage.challenges[territory_id]
   if record then
+    director.disband(record)
     waves.flee(record)
-    finish(record, string.format("Challenge won: territory %d claimed.", territory_id))
+    finish(record, string.format("Challenge won: territory %d claimed.", territory_id), "won")
   end
 end
 
@@ -258,6 +283,9 @@ function challenge.on_tick()
       if record.players[index] then targets[#targets + 1] = {player = player, entity = chase_target(player)} end
     end
     waves.update(record, surface, targets)
+    director.update(record, surface, targets, false, storage.antikite_off)
+    brain_fight.update(record, surface, targets)
+    telemetry.sample(record, surface, targets)
   end
   waves.update_fleeing()
 
@@ -265,7 +293,7 @@ function challenge.on_tick()
   for id, record in pairs(storage.challenges) do
     if not storage.territories[id] then
       waves.clear(record)
-      finish(record, string.format("Challenge ended: territory %d is gone.", id))
+      finish(record, string.format("Challenge ended: territory %d is gone.", id), "ended")
     elseif (engaged[id] or record.phase == "siege") and participant_near(record, surface, heads[id]) then
       record.lose_since_tick = nil
     else
@@ -285,7 +313,8 @@ function challenge.describe()
       names[#names + 1] = player and player.name or tostring(index)
     end
     lines[#lines + 1] = string.format("Territory %d: %ds, players: %s%s", id, math.floor((game.tick - record.started_tick) / 60),
-      table.concat(names, ", "), waves.describe(record) .. (record.lose_since_tick and " (losing)" or ""))
+      table.concat(names, ", "), waves.describe(record) .. brain_fight.describe(record) .. director.describe(record) ..
+      (record.lose_since_tick and " (losing)" or ""))
   end
   if #lines == 0 then return "No running challenges." end
   return table.concat(lines, "\n")

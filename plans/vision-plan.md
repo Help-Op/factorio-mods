@@ -746,6 +746,18 @@ The POC AI is easy to fool: a squad chases one target, so the player can use a c
 - **Ignore decoys:** don't chase fast vehicles they can't catch; give up after a timeout without damage dealt.
 - **Retreat / regroup:** pull back to the rally when a squad drops below half strength.
 
+**Prior work to explore (found 2026-10-23).** Nothing decided; read when this becomes a plan.
+
+| Source | What it gives us | Covers ideas |
+|--------|------------------|--------------|
+| Influence maps: Dave Mark, [Modular Tactical Influence Maps](https://www.gameaipro.com/GameAIPro2/GameAIPro2_Chapter30_Modular_Tactical_Influence_Maps.pdf) (Game AI Pro 2, free) and GDC 2018 [Spatial Knowledge Representation through Modular Scalable Influence Maps](https://gdcvault.com/play/1025243/Spatial-Knowledge-Representation-through-Modular) (login) | Grid of threat/value per cell. A chunk is a natural cell; feed it from `on_entity_damaged` / `on_entity_died` instead of scanning | Threat first, leash, several squads |
+| Stanescu, Barriga, Buro, "Combat Outcome Prediction for RTS Games" ([Game AI Pro 3](https://gameaipro.com/), free) | Predict a fight before committing (Lanchester: strength ≈ count² × DPS) | Squad sizing, ignore decoys, retreat |
+| Three-layer RTS AI, e.g. AI War's strategic / intermediate / per-unit tiers ([Wikipedia](https://en.wikipedia.org/wiki/AI_War:_Fleet_Command)) | Structure: strategic = `crusade.lua`, operational = `rally.lua` squads (where the smarter AI goes), tactical = Factorio unit groups | All |
+| [Game AI Pro](https://gameaipro.com/) other chapters, e.g. "Guide to Effective Auto-Generated Spatial Queries" (GAP 3) | Picking positions (rally spot, guard spots) | Keep a minimum guard |
+| [NTNU thesis: AI Techniques in RTS Games](https://ntnuopen.ntnu.no/ntnu-xmlui/handle/11250/251139), [UNR potential fields paper](https://www.cse.unr.edu/~sushil/class/gas/papers/ppf.pdf), Ontañón et al. 2013 StarCraft AI survey | Academic background, mostly unit micro | — |
+
+**Not used:** the Rampant mod (Factorio). Decided 2026-10-23 not to look at it: we'd adapt a lot, and that's too close to copying someone's work. See roadmap Out of scope.
+
 ### Later: challenge and army templates (idea, 2026-10-12)
 
 Not planned yet. Challenges and crusades will mix `Hostile-fauna` units with vanilla ones (`enemy-balancing-plan.md` D18). Idea: **templates** that define a mix-up (which units, which waves, which combination of challenge types) and **when** each template is used (distance, evolution, territory, maybe random weight). Today the mix is hard-coded in `waves.lua` and `army.lua`.

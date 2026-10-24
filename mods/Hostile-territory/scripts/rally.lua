@@ -1,7 +1,8 @@
 -- Crusade rally (phase H): what to build, how long it takes and where.
 -- Guardian = a brain (Hostile-fauna, territory-brain-plan.md B1) of the size of the one last seen in the territory
--- (territories.lua; older wyrm or demolisher guardians map to the same size), else the map gen rule on the territory centre:
--- floor(clamp(distance / 576 - 0.25, 0, 2)) → small / medium / big (prototypes/planet/nauvis-territory.lua).
+-- (territories.lua; older wyrm or demolisher guardians map to the same size), else the map gen rule on the territory centre
+-- (prototypes/planet/nauvis-territory.lua): ring 0 → small, ring 1 → ring1 (OR-D4), further out
+-- floor(clamp(distance / 576 - 0.25, 0, 2)) → small / medium / big.
 -- Rally prototype ht-rally-<size> and build time follow the guardian size (H-c).
 -- Spot = a random patrol path point inside the target territory, moved to free space for the rally;
 -- the moved spot must still be inside the target.
@@ -10,18 +11,20 @@
 
 local territories = require("scripts.territories")
 local tags = require("scripts.tags")
+local waves = require("scripts.waves")
 
 local rally = {}
 
 local GUARDIANS = {"hf-brain-small", "hf-brain-medium", "hf-brain-big"} -- Hostile-fauna (territory-brain-plan.md B1)
 -- older guardians map to the brain of the same size, so a lost territory always gets a brain
 local SIZE = {["hf-brain-small"] = "small", ["hf-brain-medium"] = "medium", ["hf-brain-big"] = "big",
+  ["hf-brain-ring1"] = "ring1",
   ["hf-earth-wyrm-small"] = "small", ["hf-earth-wyrm-medium"] = "medium", ["hf-earth-wyrm-big"] = "big",
   ["small-demolisher"] = "small", ["medium-demolisher"] = "medium", ["big-demolisher"] = "big"}
-local BUILD_TIME = {small = 5 * 60 * 60, medium = 15 * 60 * 60, big = 30 * 60 * 60}
+local BUILD_TIME = {small = 5 * 60 * 60, ring1 = 10 * 60 * 60, medium = 15 * 60 * 60, big = 30 * 60 * 60}
 local SPOT_SEARCH_RADIUS = 20
 local TAG_TEXT = "Crusade rally"
-rally.NAMES = {"ht-rally-small", "ht-rally-medium", "ht-rally-big"}
+rally.NAMES = {"ht-rally-small", "ht-rally-medium", "ht-rally-big", "ht-rally-ring1"}
 
 local function in_territory(surface, record, position)
   return surface.get_territory_for_chunk({x = math.floor(position.x / 32), y = math.floor(position.y / 32)}) == record.territory
@@ -31,6 +34,9 @@ function rally.guardian_for(record, surface)
   if record.guardian and SIZE[record.guardian] then return "hf-brain-" .. SIZE[record.guardian] end
   local centre = territories.centre(record)
   if not centre then return GUARDIANS[1] end
+  local ring = waves.ring_at(surface, centre)
+  if ring == 0 then return "hf-brain-small" end
+  if ring == 1 then return "hf-brain-ring1" end
   local spawn = game.forces.player.get_spawn_position(surface)
   local distance = math.sqrt((centre.x - spawn.x) ^ 2 + (centre.y - spawn.y) ^ 2)
   return GUARDIANS[math.floor(math.max(0, math.min(2, distance / 576 - 0.25))) + 1]

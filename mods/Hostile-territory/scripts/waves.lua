@@ -1,11 +1,12 @@
 -- Challenge waves: enemies spawned around participants, scaled by ring (distance from spawn) and evolution.
--- Ring 0 (challenge-feel-plan.md E1) is different: enemies come out of the brain base's nests, in phases.
+-- Rings with an entry in PHASES (ring 0: challenge-feel-plan.md E1, ring 1: oil-ring-challenge-plan.md OR-E1) are
+-- different: enemies come out of the brain base's nests, in phases. P below = PHASES[ring].
 --   siege (E9): the challenge started because the player attacked the base, not the brain yet. Small groups every
---   RING0.siege_interval, shrinking with the share of nests alive. Ends when the brain is engaged (waves.wake).
---   wake: from the start, a group every RING0.interval, split over the living nests. The group shrinks with the
+--   P.siege_interval, shrinking with the share of nests alive. Ends when the brain is engaged (waves.wake).
+--   wake: from the start, a group every P.interval, split over the living nests. The group shrinks with the
 --   share of nests still alive (all nests dead = no more groups).
---   swarm (was "climax" until E8): once the brain is below RING0.swarm_at of its health, RING0.swarm_total units,
---   RING0.swarm_per_check per challenge check. No nest left → they come out at the brain. Only small biters:
+--   swarm (was "climax" until E8): once the brain is below P.swarm_at of its health, P.swarm_total units,
+--   P.swarm_per_check per challenge check. No nest left → they come out at the brain. Only P.unit:
 --   no evolution upgrade, no slow.
 --   Surround (E4/E5): every swarm unit has its own point on a ring around the target (flank_min..flank_max tiles;
 --   angles spread over the target's sides and back, seen from the brain). It gets there on a wide detour at
@@ -15,10 +16,12 @@
 --   Guards (E7): every guard_every-th of those units is a guard instead: it runs to a spot between the brain and the
 --   target and holds there for guard_hold (attacking if the target comes close), then attacks. They can't block
 --   bullets, but they put bodies in the line of fire, so auto-targeting picks them before the brain.
---   last stand (E6): once the swarm is out, a surround group every RING0.last_stand_interval until the brain dies,
+--   last stand (E6): once the swarm is out, a surround group every P.last_stand_interval until the brain dies,
 --   shrinking with the share of nests still alive like the wake groups.
 -- Per challenge record: ring, origin (guardian head at start), next_wave_tick, spawned = {[unit_number] = entity};
--- ring 0 also: phase ("siege" / "wake" / "swarm"), swarm_left, swarm_index, next_last_stand_tick, nests_start.
+-- phased rings also: phase ("siege" / "wake" / "swarm"), swarm_left, swarm_index, next_last_stand_tick, nests_start;
+-- with surges also surge, surge_mode, ring_units = {[unit_number] = entity} (encircle units for the director's
+-- closing ring, OR-E6).
 -- storage.fleeing[unit_number] = {entity, until_tick}: leftovers of a won challenge running to another territory.
 -- storage.flankers[unit_number] = {entity, target}: swarm units on their way to a flank point.
 
@@ -35,7 +38,6 @@ local RINGS = {
   [3] = {units = {"small-biter", "medium-biter", "small-spitter"}, slow = 20, wave = 12, interval = 6 * 60, max_alive = 60},
 }
 
--- One tier up, with chance = evolution factor.
 local RING0 = {
   unit = "small-biter",
   siege_min = 4, siege_max = 7, siege_interval = 10 * 60, siege_max_alive = 30, -- E9 (PT8)
@@ -49,7 +51,58 @@ local RING0 = {
   guard_hold = 10 * 60,
   last_stand_group = 5, last_stand_interval = 2 * 60, last_stand_max_alive = 120, -- E9 (PT8): steadier; was 12 / 4 s (E8), 10 / 4 s (E6)
   nest_radius = 25, -- brain.lua BASE_RADIUS: reach of a brain base
+  slow = 20, -- OR-D22 (oil-ring-challenge-plan.md, PT3): every unit the phases spawn is 20 % slower (ht-challenge-slow-*)
 }
+
+-- base with the given fields replaced
+local function with(base, changes)
+  local copy = {}
+  for key, value in pairs(base) do copy[key] = value end
+  for key, value in pairs(changes) do copy[key] = value end
+  return copy
+end
+
+-- Rings whose challenge runs in phases from the nests. Other rings use RINGS.
+local PHASES = {
+  [0] = RING0,
+  -- oil-ring-challenge-plan.md OR-E1 (OR-D5): swarm ×3, siege / wake / last stand ×2; small biters only (OR-D6)
+  [1] = with(RING0, {
+    siege_min = 8, siege_max = 14, siege_max_alive = 60,
+    wave_min = 22, wave_max = 34, max_alive = 140,
+    swarm_per_check = 25,
+    -- OR-D28 (PT4: the end was one long kite-and-shoot): three surges instead of one swarm, still 750 in total.
+    -- surround: from the nests, flank routes + guards (as ring 0); encircle: from the nests to a full ring around you
+    -- (ENCIRCLE_MIN..MAX tiles), then attack; frenzy: from then on the last stand is ×frenzy_last_stand and the
+    -- brain's shockwave gets an extra pulse every FRENZY_PULSE ticks.
+    surges = {
+      {at = 0.8, total = 350, mode = "surround", message = "The hive swarms!"},
+      {at = 0.55, total = 250, mode = "encircle", message = "The hive encircles you!"},
+      {at = 0.3, total = 150, mode = "surround", frenzy = true, message = "The brain goes into a frenzy!"},
+    },
+    frenzy_last_stand = 2,
+    last_stand_group = 10, last_stand_max_alive = 240,
+    last_stand_from_brain = true, -- OR-D30: no nest share; with the nests dead they come out of the brain
+    director = true, -- OR-E2 pressure director (director.lua); ring 0 open (Q6)
+    -- OR-E6 (OR-D33–D38): squads instead of the holding ring (director.lua), the closing ring for encircle units,
+    -- the brain's shield + openings, guard rush, stand-still punish, rocks (brain-fight.lua)
+    squads = true,
+    shield = 0.9, -- share of each hit refunded while the brain is shielded
+    rock_walls = false, -- OR-D54 (PT7): one parameter too many for now; the arena (surge 2) stays
+    wake_on_nest = true, -- OR-D55 (PT7): the first nest destroyed in the siege wakes the brain (its shockwave starts)
+  }),
+}
+waves.PHASES = PHASES
+
+-- Surges of a phased ring: its own list, or one swarm from swarm_at / swarm_total (ring 0).
+local function surges(P)
+  return P.surges or {{at = P.swarm_at, total = P.swarm_total, mode = "surround", message = "The hive swarms!"}}
+end
+
+local ENCIRCLE_MIN, ENCIRCLE_MAX = 16, 20
+local FRENZY_PULSE = 20 * 60 -- the brain's own shockwave: every 20 s (update_effects_while_enraged)
+local PULSE_STAGES, PULSE_STEP = 30, 10 -- hf-earth-wyrm-small-expanding-ash-cloud-1..30, one every 10 ticks
+
+-- One tier up, with chance = evolution factor.
 
 local UPGRADE = {
   ["ht-tiny-biter"] = "small-biter",
@@ -78,15 +131,15 @@ function waves.ring_at(surface, position)
   return math.max(layer(math.floor(position.x / G)), layer(math.floor(position.y / G)))
 end
 
--- phase: ring 0's first phase, "siege" or "wake" (default)
+-- phase: first phase of a phased ring, "siege" or "wake" (default)
 function waves.init(record, surface, origin, phase)
   record.ring = waves.ring_at(surface, origin)
   record.origin = {x = origin.x, y = origin.y}
   record.next_wave_tick = game.tick + FIRST_WAVE_DELAY
   record.spawned = {}
-  if record.ring == 0 then
+  if PHASES[record.ring] then
     record.phase = phase or "wake"
-    record.nests_start = #surface.find_entities_filtered{position = record.origin, radius = RING0.nest_radius,
+    record.nests_start = #surface.find_entities_filtered{position = record.origin, radius = PHASES[record.ring].nest_radius,
       type = "unit-spawner", force = "enemy"}
   end
 end
@@ -130,10 +183,14 @@ local function brain_health(record)
   return share
 end
 
+waves.brain_health = brain_health
+waves.count_alive = count_alive
+
 local function living_nests(record, surface)
-  return surface.find_entities_filtered{position = record.origin, radius = RING0.nest_radius,
+  return surface.find_entities_filtered{position = record.origin, radius = PHASES[record.ring].nest_radius,
     type = "unit-spawner", force = "enemy"}
 end
+waves.living_nests = living_nests
 
 local function attack_command(target)
   return {type = defines.command.attack, target = target, distraction = defines.distraction.by_enemy}
@@ -144,73 +201,109 @@ end
 -- from the brain). Waypoints that don't fit (water, cliffs) are left out.
 local GOLDEN = 0.6180339887
 local function flank_route(record, surface, target, index)
+  local P = PHASES[record.ring]
   local t = target.position
   local back = math.atan2(t.y - record.origin.y, t.x - record.origin.x)
-  local offset = math.rad(RING0.flank_arc) * ((index * GOLDEN) % 1 - 0.5)
+  local offset = math.rad(P.flank_arc) * ((index * GOLDEN) % 1 - 0.5)
   local function at(angle, radius)
-    return surface.find_non_colliding_position(RING0.unit,
+    return surface.find_non_colliding_position(P.unit,
       {t.x + math.cos(back + angle) * radius, t.y + math.sin(back + angle) * radius}, 6, 1)
   end
   local route = {}
   if math.abs(offset) < math.pi / 2 then
-    route[#route + 1] = at(offset < 0 and -math.pi / 2 or math.pi / 2, RING0.detour_radius)
+    route[#route + 1] = at(offset < 0 and -math.pi / 2 or math.pi / 2, P.detour_radius)
   end
-  route[#route + 1] = at(offset, RING0.detour_radius)
-  route[#route + 1] = at(offset, RING0.flank_min + math.random() * (RING0.flank_max - RING0.flank_min))
+  route[#route + 1] = at(offset, P.detour_radius)
+  route[#route + 1] = at(offset, P.flank_min + math.random() * (P.flank_max - P.flank_min))
   return route
 end
 
 -- Commands of a guard: a spot between the brain and the target, hold there, then attack.
 local function guard_commands(record, surface, target)
+  local P = PHASES[record.ring]
   local t = target.position
   local dx, dy = t.x - record.origin.x, t.y - record.origin.y
   local length = math.max(math.sqrt(dx * dx + dy * dy), 1)
   dx, dy = dx / length, dy / length
-  local ahead = RING0.guard_min + math.random() * (RING0.guard_max - RING0.guard_min)
-  local side = (math.random() * 2 - 1) * RING0.guard_spread
-  local spot = surface.find_non_colliding_position(RING0.unit,
+  local ahead = P.guard_min + math.random() * (P.guard_max - P.guard_min)
+  local side = (math.random() * 2 - 1) * P.guard_spread
+  local spot = surface.find_non_colliding_position(P.unit,
     {record.origin.x + dx * ahead - dy * side, record.origin.y + dy * ahead + dx * side}, 6, 1)
   if not spot then return {} end
   return {
     {type = defines.command.go_to_location, destination = spot, radius = 2, distraction = defines.distraction.none},
-    {type = defines.command.wander, radius = 3, ticks_to_wait = RING0.guard_hold, distraction = defines.distraction.by_enemy},
+    {type = defines.command.wander, radius = 3, ticks_to_wait = P.guard_hold, distraction = defines.distraction.by_enemy},
   }
+end
+
+-- Commands of the next surround unit: a flank route (E4/E5) or, every guard_every-th, a guard (E7).
+local function surround_commands(record, surface, target)
+  local P = PHASES[record.ring]
+  record.swarm_index = (record.swarm_index or 0) + 1
+  if record.swarm_index % P.guard_every == 0 then return guard_commands(record, surface, target) end
+  local commands = {}
+  for _, waypoint in ipairs(flank_route(record, surface, target, record.swarm_index)) do
+    commands[#commands + 1] = {type = defines.command.go_to_location, destination = waypoint, radius = 4,
+      distraction = defines.distraction.none}
+  end
+  return commands
+end
+
+-- commands, then attack the target (a flanker until then); no commands: attack straight away.
+local function send(unit, commands, target)
+  if #commands > 0 then
+    commands[#commands + 1] = attack_command(target)
+    unit.commandable.set_command{type = defines.command.compound, structure_type = defines.compound_command.return_last,
+      commands = commands}
+    storage.flankers = storage.flankers or {}
+    storage.flankers[unit.unit_number] = {entity = unit, target = target}
+  else
+    unit.commandable.set_command(attack_command(target))
+  end
 end
 
 -- Spawns count biters out of the given nests (round robin), at the brain if there are none.
 -- With surround, each runs its own flank route first (no distractions) or guards the brain (E7), then attacks.
-local function spawn_from_nests(record, surface, nests, count, target, surround)
+-- mode: nil (straight attack), "surround" (flank route or guard, E4/E7) or "encircle" (OR-D28: a point on a full ring
+-- around the target, then attack). With P.squads (OR-E6) encircle units are left to the director's closing ring
+-- (record.ring_units). Returns the spawned units.
+local function spawn_from_nests(record, surface, nests, count, target, mode)
+  local P = PHASES[record.ring]
   local first = math.random(math.max(#nests, 1))
+  local spawned = {}
   for i = 1, count do
     local nest = nests[(first + i - 2) % math.max(#nests, 1) + 1]
     local from = nest and nest.position or record.origin
-    local position = surface.find_non_colliding_position(RING0.unit, from, 10, 0.5)
-    local unit = position and surface.create_entity{name = RING0.unit, position = position, force = "enemy"}
+    local position = surface.find_non_colliding_position(P.unit, from, 10, 0.5)
+    local unit = position and surface.create_entity{name = P.unit, position = position, force = "enemy"}
+    if unit and P.slow then
+      surface.create_entity{name = "ht-challenge-slow-" .. P.slow, position = position, target = unit}
+    end
     local commands = {}
-    if unit and surround then
+    if unit and mode == "encircle" and P.squads then
+      record.ring_units = record.ring_units or {}
+      record.ring_units[unit.unit_number] = unit
+    elseif unit and mode == "encircle" then
       record.swarm_index = (record.swarm_index or 0) + 1
-      if record.swarm_index % RING0.guard_every == 0 then
-        commands = guard_commands(record, surface, target)
-      else
-        for _, waypoint in ipairs(flank_route(record, surface, target, record.swarm_index)) do
-          commands[#commands + 1] = {type = defines.command.go_to_location, destination = waypoint, radius = 4,
-            distraction = defines.distraction.none}
-        end
+      local t = target.position
+      local angle = 2 * math.pi * ((record.swarm_index * GOLDEN) % 1)
+      local radius = ENCIRCLE_MIN + math.random() * (ENCIRCLE_MAX - ENCIRCLE_MIN)
+      local spot = surface.find_non_colliding_position(P.unit,
+        {t.x + math.cos(angle) * radius, t.y + math.sin(angle) * radius}, 6, 1)
+      if spot then
+        commands = {{type = defines.command.go_to_location, destination = spot, radius = 3,
+          distraction = defines.distraction.none}}
       end
+    elseif unit and mode == "surround" then
+      commands = surround_commands(record, surface, target)
     end
     if unit then
-      if #commands > 0 then
-        commands[#commands + 1] = attack_command(target)
-        unit.commandable.set_command{type = defines.command.compound, structure_type = defines.compound_command.return_last,
-          commands = commands}
-        storage.flankers = storage.flankers or {}
-        storage.flankers[unit.unit_number] = {entity = unit, target = target}
-      else
-        unit.commandable.set_command(attack_command(target))
-      end
+      send(unit, commands, target)
       record.spawned[unit.unit_number] = unit
+      spawned[#spawned + 1] = unit
     end
   end
+  return spawned
 end
 
 -- Siege -> wake: the brain is engaged now.
@@ -221,39 +314,55 @@ function waves.wake(record)
   notify(record, "The brain wakes!")
 end
 
-local function update_ring0(record, surface, targets, alive)
+local function update_phased(record, surface, targets, alive)
+  local P = PHASES[record.ring]
   if record.phase == "climax" then -- before E8
     record.phase, record.swarm_left, record.swarm_index = "swarm", record.climax_left, record.climax_index
   end
-  if record.phase ~= "swarm" and brain_health(record) < RING0.swarm_at then
+  -- next surge (OR-D28): the brain fell below its threshold
+  local list = surges(P)
+  if record.phase == "swarm" and not record.surge then record.surge = 1 end -- swarm from before OR-E5
+  local next_surge = list[(record.surge or 0) + 1]
+  if next_surge and brain_health(record) < next_surge.at then
     record.phase = "swarm"
-    record.swarm_left = RING0.swarm_total
-    notify(record, "The hive swarms!")
+    record.surge = (record.surge or 0) + 1
+    record.surge_mode = next_surge.mode
+    record.swarm_left = (record.swarm_left or 0) + next_surge.total
+    if next_surge.frenzy then
+      record.frenzy = true
+      record.next_pulse_tick = game.tick + FRENZY_PULSE / 2
+    end
+    notify(record, next_surge.message)
   end
   if #targets == 0 then return end
   local target = targets[math.random(#targets)].entity
   if record.phase == "swarm" then
+    if record.frenzy and game.tick >= (record.next_pulse_tick or 0) then
+      record.next_pulse_tick = game.tick + FRENZY_PULSE
+      record.pulse_tick = game.tick -- waves.on_pulse_tick plays the stages
+    end
     if record.swarm_left > 0 then
-      local count = math.min(RING0.swarm_per_check, record.swarm_left)
+      local count = math.min(P.swarm_per_check, record.swarm_left)
       record.swarm_left = record.swarm_left - count
-      spawn_from_nests(record, surface, living_nests(record, surface), count, target, true)
-      if record.swarm_left == 0 then record.next_last_stand_tick = game.tick + RING0.last_stand_interval end
+      spawn_from_nests(record, surface, living_nests(record, surface), count, target, record.surge_mode or "surround")
+      if record.swarm_left == 0 then record.next_last_stand_tick = game.tick + P.last_stand_interval end
     elseif game.tick >= (record.next_last_stand_tick or 0) then
-      record.next_last_stand_tick = game.tick + RING0.last_stand_interval
+      record.next_last_stand_tick = game.tick + P.last_stand_interval
       local nests = living_nests(record, surface)
-      local share = #nests / math.max(record.nests_start or #nests, 1)
-      local group = math.min(math.floor(RING0.last_stand_group * share + 0.5), RING0.last_stand_max_alive - alive)
-      if group > 0 then spawn_from_nests(record, surface, nests, group, target, true) end
+      local share = P.last_stand_from_brain and 1 or #nests / math.max(record.nests_start or #nests, 1)
+      local size = P.last_stand_group * (record.frenzy and P.frenzy_last_stand or 1)
+      local group = math.min(math.floor(size * share + 0.5), P.last_stand_max_alive - alive)
+      if group > 0 then spawn_from_nests(record, surface, nests, group, target, "surround") end
     end
     return
   end
   if game.tick < record.next_wave_tick then return end
   local siege = record.phase == "siege"
-  record.next_wave_tick = game.tick + (siege and RING0.siege_interval or RING0.interval)
+  record.next_wave_tick = game.tick + (siege and P.siege_interval or P.interval)
   local nests = living_nests(record, surface)
   local share = #nests / math.max(record.nests_start or #nests, 1)
-  local size = siege and math.random(RING0.siege_min, RING0.siege_max) or math.random(RING0.wave_min, RING0.wave_max)
-  local cap = siege and RING0.siege_max_alive or RING0.max_alive
+  local size = siege and math.random(P.siege_min, P.siege_max) or math.random(P.wave_min, P.wave_max)
+  local cap = siege and P.siege_max_alive or P.max_alive
   local count = math.min(math.floor(size * share + 0.5), cap - alive)
   if count > 0 then spawn_from_nests(record, surface, nests, count, target) end
 end
@@ -262,9 +371,9 @@ end
 function waves.update(record, surface, targets)
   if not record.ring then return end -- challenge from before phase C
   local alive = count_alive(record)
-  if record.ring == 0 then
+  if PHASES[record.ring] then
     record.phase = record.phase or "wake" -- ring-0 challenge from before E1
-    return update_ring0(record, surface, targets, alive)
+    return update_phased(record, surface, targets, alive)
   end
   if #targets == 0 or game.tick < record.next_wave_tick then return end
   local settings = ring_settings(record)
@@ -356,9 +465,33 @@ function waves.update_fleeing()
   end
 end
 
+-- OR-D28 frenzy: plays the brain's expanding shockwave (the same stages its own pulse makes, one every PULSE_STEP
+-- ticks) from the brain, with the brain as source (the stages' sticker areas need a valid origin). Every PULSE_STEP.
+waves.PULSE_STEP = PULSE_STEP
+function waves.on_pulse_tick()
+  for _, records in pairs({storage.challenges or {}, storage.debug_waves or {}}) do
+    for _, record in pairs(records) do
+      if record.pulse_tick then
+        local stage = math.floor((game.tick - record.pulse_tick) / PULSE_STEP) + 1
+        if stage > PULSE_STAGES then
+          record.pulse_tick = nil
+        else
+          local territory_record = storage.territories[record.territory_id]
+          local unit = territory_record and territory_record.territory.valid and territory_record.territory.get_segmented_units()[1]
+          local head = unit and unit.valid and unit.segments[1]
+          if head then
+            unit.surface.create_entity{name = "hf-earth-wyrm-small-expanding-ash-cloud-" .. stage,
+              position = head.position, source = head.entity, force = "enemy"}
+          end
+        end
+      end
+    end
+  end
+end
+
 function waves.describe(record)
   if not record.ring then return "" end
-  if record.ring == 0 then
+  if PHASES[record.ring] then
     local function seconds(tick) return math.max(0, math.ceil(((tick or game.tick) - game.tick) / 60)) end
     local extra
     if record.phase ~= "swarm" then
@@ -368,7 +501,8 @@ function waves.describe(record)
     else
       extra = string.format(", last stand, next group in %ds", seconds(record.next_last_stand_tick))
     end
-    return string.format(", ring 0, phase %s, brain %d%%, alive %d%s", record.phase or "wake",
+    local surge = record.surge and string.format(" (surge %d%s)", record.surge, record.frenzy and ", frenzy" or "") or ""
+    return string.format(", ring %d, phase %s%s, brain %d%%, alive %d%s", record.ring, record.phase or "wake", surge,
       math.floor(brain_health(record) * 100), count_alive(record), extra)
   end
   return string.format(", ring %d, alive %d, next wave in %ds", record.ring, count_alive(record),

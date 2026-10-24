@@ -113,11 +113,19 @@ end
 
 -- Tiered kits for weapon-checkpoint tests (Hostile-territory enemy-balancing-plan D19–D23):
 -- a plain character (no armor, normal quality) with one gun and its ammo.
+-- Optional: extra_guns = {{gun, ammo, count}} in the next gun slots, armor, items = {{name, count}} in the main
+-- inventory, research = technologies set to researched for the player's force (stays after /cheat-clear).
 local tier_kits =
 {
   {name = "pistol",       gun = "pistol",          ammo = {{"firearm-magazine", 200}}},
   {name = "smg-yellow",   gun = "submachine-gun",  ammo = {{"firearm-magazine", 400}}},
   {name = "ring0",        gun = "submachine-gun",  ammo = {{"firearm-magazine", 100}}}, -- challenge-feel CF-D3: 1 stack
+  -- oil-ring-challenge-plan.md OR-D8 (budget), OR-D9 (research level 2), OR-D12 (heavy armor); OR-D46: 2 stacks of red
+  {name = "ring1",        gun = "submachine-gun",  ammo = {{"piercing-rounds-magazine", 200}},
+    extra_guns = {{"shotgun", "shotgun-shell", 100}}, armor = "heavy-armor",
+    items = {{"grenade", 20}},
+    research = {"physical-projectile-damage-1", "physical-projectile-damage-2", "weapon-shooting-speed-1",
+      "weapon-shooting-speed-2", "stronger-explosives-1", "stronger-explosives-2"}},
   {name = "smg-red",      gun = "submachine-gun",  ammo = {{"piercing-rounds-magazine", 400}}},
   {name = "smg-uranium",  gun = "submachine-gun",  ammo = {{"uranium-rounds-magazine", 200}}},
   {name = "shotgun",      gun = "shotgun",         ammo = {{"shotgun-shell", 200}}},
@@ -159,7 +167,18 @@ local function give_tier_kit(player, kit)
   -- the ammo slot holds one stack; the rest of the first ammo goes in the main inventory
   local rest = kit.ammo[1][2] - ammo_slot.count
   if rest > 0 then main.insert{name = kit.ammo[1][1], count = rest} end
-  player.print("[cheating-mod] Kit '" .. kit.name .. "' delivered (no armor).")
+  for i, extra in ipairs(kit.extra_guns or {}) do
+    character.get_inventory(defines.inventory.character_guns)[i + 1].set_stack{name = extra[1]}
+    character.get_inventory(defines.inventory.character_ammo)[i + 1].set_stack{name = extra[2], count = extra[3]}
+  end
+  if kit.armor then character.get_inventory(defines.inventory.character_armor).insert{name = kit.armor} end
+  -- items from other mods are skipped when that mod isn't loaded
+  for _, item in ipairs(kit.items or {}) do
+    if prototypes.item[item[1]] then main.insert{name = item[1], count = item[2]} end
+  end
+  for _, name in ipairs(kit.research or {}) do player.force.technologies[name].researched = true end
+  player.print("[cheating-mod] Kit '" .. kit.name .. "' delivered (" .. (kit.armor or "no armor") ..
+    (kit.research and ", " .. #kit.research .. " techs researched" or "") .. ").")
   return true
 end
 
