@@ -9,6 +9,11 @@ Monorepo for my Factorio mods (`E:\dev\factorio`). Main mod: **Hostile Territory
 3. **Keep the plan file current.** Update it as we go: decisions, test results (with date and game version), checked-off steps, and new open questions. Anyone should be able to pick up in a new session from the plan alone.
 4. **Never commit.** I do all commits myself. You may stage changes (`git add`).
 5. **One step at a time.** Do steps in order and verify each one before moving on. I often test in game myself and report back. Write my results into the plan.
+6. **Hand over every playtest (PT) in the same shape**, in chat and as the PT's test-plan step in the plan:
+   - **Changed since the last PT:** one line per change, with its decision ID and old → new value.
+   - **Headless:** what the headless run confirmed, and what only the PT can show.
+   - **Test in this PT:** one question per change, plus the setup commands. If changes are bundled, say which question belongs to which.
+   - **Send:** the telemetry CSV name and feel notes.
 
 ## Side sessions
 
