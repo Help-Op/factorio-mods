@@ -39,12 +39,13 @@ local CLEAR = SWARM + 80 * STEP -- E6: the player "clears" the swarm (and, OR-E5
 -- OR-E5 surges (ring 1: at 80 / 55 / 30 %): the brain is set to 75 % at SWARM, 50 % at SURGE2, 25 % at SURGE3
 local SURGE2, SURGE3 = SWARM + 16 * STEP, SWARM + 64 * STEP
 local STOP = SWARM + 100 * STEP
--- OR-E6 / OR-E7 shield probes (ring 1): 200 physical from the target on the brain while surge 1's bearers live, after
--- the target kills them (KILL_SURGE), with surge 2's new bearers, and in the frenzy
+-- OR-E6 / OR-E7 / OR-E8 shield probes (ring 1): 200 physical from the target on the brain while the links (anchors)
+-- live, after the target kills the anchors and their bearers (KILL_SURGE), at surge 2 (links broken), in the frenzy
 local SHUT_PROBE, KILL_SURGE, OPEN_PROBE, FRENZY_PROBE = SWARM + 6 * STEP, SWARM + 14 * STEP, SWARM + 15 * STEP, SURGE3 + 2 * STEP
 local SURGE2_PROBE = SURGE2 + 4 * STEP
 local RUN_LENGTH = STOP + 10 * STEP
 local t = {}
+local anchor_spots = {} -- [brain head "x,y"] = {{name, x, y}, ...}
 
 local function nests(s) return s.find_entities_filtered{position = t.head, radius = 25, type = "unit-spawner", force = "enemy"} end
 
@@ -122,6 +123,22 @@ local function setup_run(s, brain_name)
     best.d, best.u.health, best.u.max_health)
   t.nests0 = #nests(s)
   p("nests within 25 of the brain: %d", t.nests0)
+  -- OR-E8 E8-A2: runs reuse brains, so put back the anchors an earlier run killed (spots from the first run)
+  local key = string.format("%.1f,%.1f", t.head.x, t.head.y)
+  if not anchor_spots[key] then
+    anchor_spots[key] = {}
+    for _, a in pairs(s.find_entities_filtered{position = t.head, radius = 36, type = "unit-spawner", force = "enemy"}) do
+      if dist(a.position, t.head) >= 29 then table.insert(anchor_spots[key], {name = a.name, x = a.position.x, y = a.position.y}) end
+    end
+  end
+  local rebuilt = 0
+  for _, a in pairs(anchor_spots[key]) do
+    if s.count_entities_filtered{position = {a.x, a.y}, radius = 0.5, type = "unit-spawner"} == 0 then
+      s.create_entity{name = a.name, position = {a.x, a.y}, force = "enemy"}
+      rebuilt = rebuilt + 1
+    end
+  end
+  p("anchors: %d (%d put back)", #anchor_spots[key], rebuilt)
   local pos = s.find_non_colliding_position("character", {t.head.x + 35, t.head.y}, 20, 1)
   t.target = s.create_entity{name = "character", position = pos, force = "player"}
   t.target.get_inventory(defines.inventory.character_armor).insert{name = "heavy-armor"}
@@ -270,15 +287,17 @@ local function step(s)
       p("t=%5.1fs re-swarm (target %.0f tiles from the brain)", (game.tick - t.start) / 60, dist(t.target.position, t.head))
     end
     if res.regroup and not t.regroup_on then t.regroup_since = game.tick end
-    -- OR-D58: 6 s into a pull-back (the bait time): units 22–38 tiles from the target per 45° sector (0 = towards the brain)
-    if res.regroup and t.regroup_since and game.tick == t.regroup_since + 6 * 60 then
+    -- OR-D58: into a pull-back (the bait time): units 12–40 tiles from the target per 45° sector (0 = towards the brain);
+    -- OR-E13: at 3, 6 and 9 s, with their average distance (the ring should spread and tighten 30 → 20)
+    local into = t.regroup_since and (game.tick - t.regroup_since) / 60
+    if res.regroup and into and (into == 3 or into == 6 or into == 9) then
       local tp = t.target.position
       local to_brain = math.atan2(t.head.y - tp.y, t.head.x - tp.x)
-      local counts, ring_n = {}, 0
+      local counts, ring_n, d_sum = {}, 0, 0
       for _, pos in pairs(res.spawned) do
         local d = dist(pos, tp)
-        if d >= 22 and d <= 38 then
-          ring_n = ring_n + 1
+        if d >= 12 and d <= 40 then
+          ring_n, d_sum = ring_n + 1, d_sum + d
           local a = (math.atan2(pos.y - tp.y, pos.x - tp.x) - to_brain) % (2 * math.pi)
           local k = math.floor((a + math.pi / 8) / (math.pi / 4)) % 8
           counts[k] = (counts[k] or 0) + 1
@@ -289,8 +308,8 @@ local function step(s)
         l[#l + 1] = tostring(counts[k] or 0)
         if (counts[k] or 0) >= 5 then held = held + 1 end
       end
-      p("  trap +6 s: %d of %d units 22–38 tiles from the target; per sector (0 towards the brain): %s; sectors with 5+: %d",
-        ring_n, res.regroup, table.concat(l, " "), held)
+      p("  trap +%d s: %d of %d units 12–40 tiles from the target, avg %.1f tiles; per sector (0 towards the brain): %s; sectors with 5+: %d",
+        into, ring_n, res.regroup, ring_n > 0 and d_sum / ring_n or 0, table.concat(l, " "), held)
     end
     t.regroup_on = res.regroup ~= nil
     t.rocks_now = res.rocks
@@ -459,7 +478,9 @@ script.on_event(defines.events.on_tick, function(e)
   if not t.unit or offset > STOP then return end
   if offset == KILL_NESTS then
     local list, killed = nests(s), 0
-    for i = 1, math.floor(#list / 2) do list[i].die() killed = killed + 1 end -- die: OR-D55 wakes the brain (ring 1)
+    -- OR-E10: ring 1 kills every inner nest (PT13.2: you clear them before surge 1, the wake starved); ring 0 half
+    local n = RUNS[run].brain == "hf-brain-ring1" and #list or math.floor(#list / 2)
+    for i = 1, n do list[i].die() killed = killed + 1 end -- die: OR-D55 wakes the brain (ring 1)
     p("-- destroyed %d of %d nests", killed, #list)
     t.log_phase = killed > 0
   end
@@ -483,18 +504,30 @@ script.on_event(defines.events.on_tick, function(e)
       CLEAR - PROFILE)
   end
   if ring1 and offset == KILL_SURGE then
+    -- OR-E8 E8-A2: the anchors (29-36 tiles) are the shield links; each releases a bearer when it dies
+    local anchors = 0
+    for _, a in pairs(s.find_entities_filtered{position = t.head, radius = 36, type = "unit-spawner", force = "enemy"}) do
+      if dist(a.position, t.head) >= 29 then a.die("player", t.target) anchors = anchors + 1 end
+    end
+    p("-- killed %d anchors", anchors)
     local list = s.find_entities_filtered{position = t.head, radius = 60, name = "ht-shield-bearer"}
     local near = {}
     for _, b in pairs(list) do near[#near + 1] = string.format("%.1f", dist(b.position, t.head)) end
     for _, b in pairs(list) do b.die("player", t.target) end
-    p("-- killed surge 1's %d shield bearers (tiles from the brain: %s)", #list, table.concat(near, " "))
+    p("-- killed the anchors' %d shield bearers (tiles from the brain: %s)", #list, table.concat(near, " "))
   end
   if ring1 and (offset == SHUT_PROBE or offset == OPEN_PROBE or offset == FRENZY_PROBE or offset == SURGE2_PROBE) then
     local before = t.unit.health
     t.unit.damage(200, "player", "physical", t.target, t.target)
-    p("-- probe: 200 physical on the brain (%s): lost %.1f HP", offset == SHUT_PROBE and "surge 1, bearers alive" or
-      offset == OPEN_PROBE and "after killing them" or offset == SURGE2_PROBE and "surge 2, new bearers" or "frenzy",
+    p("-- probe: 200 physical on the brain (%s): lost %.1f HP", offset == SHUT_PROBE and "surge 1, links alive" or
+      offset == OPEN_PROBE and "after killing them" or offset == SURGE2_PROBE and "surge 2, links broken" or "frenzy",
       before - t.unit.health)
+  end
+  -- OR-D111: own-force damage (a grenade at your feet) is logged as "own explosion" (telemetry max_hit_by) and kept out
+  -- of the director's budget
+  if ring1 and offset == SHUT_PROBE then
+    t.target.damage(30, "player", "explosion", t.target)
+    p("-- probe: 30 own explosion on the target (telemetry max_hit_by should say \"own explosion\")")
   end
   if offset == CLEAR then
     local n = 0

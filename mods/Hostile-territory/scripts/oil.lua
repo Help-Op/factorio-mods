@@ -11,7 +11,7 @@ local territories = require("scripts.territories")
 local oil = {}
 
 local G = 384               -- grid cell, tiles (nauvis-territory.lua)
-local SPOT_DISTANCE = 45    -- from the brain: outside its base (radius 25)
+local SPOT_DISTANCE = 56    -- from the brain: outside its base and anchor ring (OR-E8: 45 -> 56, anchors at 32)
 local WELLS = 6
 local WELL_SPREAD = 9       -- tiles around the spot
 local AMOUNT = 450000       -- per well (300000 = 100 % yield)

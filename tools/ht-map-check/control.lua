@@ -105,7 +105,7 @@ local function check(surface, x1, y1, x2, y2)
   for _, e in pairs(enemies) do
     local near = false
     for _, pt in pairs(points) do
-      if pt.base and (e.position.x - pt.x) ^ 2 + (e.position.y - pt.y) ^ 2 < 25 ^ 2 then near = true break end
+      if pt.base and (e.position.x - pt.x) ^ 2 + (e.position.y - pt.y) ^ 2 < 36 ^ 2 then near = true break end -- 36: anchor ring (OR-E8)
     end
     if not near then stray = stray + 1 end
     if (e.position.x ^ 2 + e.position.y ^ 2) < 150 ^ 2 then in_start = in_start + 1 end

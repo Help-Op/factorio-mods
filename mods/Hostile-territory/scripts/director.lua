@@ -1,5 +1,6 @@
 -- Pressure director (oil-ring-challenge-plan.md OR-E2; OR-D13, OR-D17): during the swarm (incl. last stand) of a
--- phased ring with director = true in waves.PHASES (ring 1; ring 0 is open question Q6), keeps the damage a
+-- phased ring with director = true in waves.PHASES (ring 1; ring 0 is open question Q6), and from the wake on with
+-- director_wake (OR-E10, OR-D84; regroup, chokepoint and closing ring stay swarm-only), keeps the damage a
 -- participant takes at max BUDGET_SHARE of their max health per second, measured over WINDOW (~30 s of non-stop
 -- attack before you die). The swarm still surrounds you; the director only decides how many units may come at you.
 --   Attacker slots (OR-D20, PT2): you kill most attackers before they bite, so slots aren't fixed. The floor is what's
@@ -34,12 +35,20 @@
 --   you reset it too easily, headless) and REGROUP_CHASERS enemy units are within REGROUP_CHASE (they're chasing you,
 --   not still on their way) for REGROUP_AFTER (swarm, no closing ring, not in the frenzy, REGROUP_GAP after the last
 --   one), every challenge unit but the shield bearers leaves its squad and joins one of TRAP_GROUPS equal groups that wait
---   TRAP_RADIUS tiles around you (re-placed as you move; units walk round you, not through you), with
---   the directions towards the brain and your heading left open; new units join them too. The brain opens as a lure
+--   on a ring around you (re-placed as you move; units walk round you, not through you), with only the road towards the
+--   brain left open; each group spreads along its part of the ring and the ring tightens from TRAP_RADIUS to TRAP_INNER
+--   over REGROUP_HOLD (OR-E13); new units join them too. The brain opens as a lure
 --   (brain-fight.lua). When you come within REGROUP_LURE tiles of the brain after at least REGROUP_HOLD (free shots:
 --   the bait), or after REGROUP_MAX_TICKS, the trap springs: every group charges you at once from its own side, and
 --   squads leave them alone for RESWARM_TICKS.
---   Shield bearers (record.bearers, brain-fight.lua) are never recruited or pulled back.
+--   Stream (OR-E10, OR-D85, OR-D86; PT13.2: ~0 HP/s for 2 minutes with 200+ alive, each charge died on the way in):
+--   with P.stream, while units dealt you less than STREAM_CALM of the budget on average over the last STREAM_TICKS,
+--   no tell and no waiting for ready squads: every check the STREAM_SQUADS biggest squads that may charge each send
+--   their STREAM_EACH members nearest you straight at you. Out of calm: the rhythm above again. Off since OR-E11.
+--   Queen level (OR-E11, OR-D89; PT14: the squad stream arrived one by one and died on arrival): with P.queens, every
+--   QUEEN_STEP you stay calm raises record.queen_level by 1 (max QUEEN_LEVEL_MAX): each queen spawn brings that many more
+--   biters (brain-fight.lua). Over the budget → level 0.
+--   Shield bearers, queens and their escorts (brain-fight.lua) are never recruited or pulled back.
 --   Chokepoint (OR-E9, OR-D61; PT10: a cliff next to the brain, 160 s of biters fed into your guns): the brain sees a
 --   choke when (kill zone) ZONE_MIN+ challenge units died within ZONE_RADIUS of you in the last KILL_LOG ticks, at
 --   least ZONE_SHARE of them inside one ZONE_ARC arc, (stalemate) you moved less than STALL_MOVE tiles in STALL_TICKS
@@ -56,7 +65,8 @@
 -- Damage is tracked per character entity, so it works headless without players.
 -- storage.damage_taken[character unit_number] = {{tick, amount, by_unit, by}, ...}: enemy-force damage in the last
 -- WINDOW ticks; by_unit: dealt by a unit (biter / spitter), not the brain or a worm; by: the cause's name, else the
--- damage type (telemetry, OR-D59).
+-- damage type (telemetry, OR-D59). OR-D111 (PT22: a death to your own grenades left no hit in the log): damage from
+-- your own force is logged too, by "own <cause>", with own = true; it doesn't count against the budget.
 -- record.squads[character unit_number][role] = {role, members = {[unit_number] = entity}, state, since, slot, issued,
 -- issued_tick, charged_tick, tell_until, tell_count}; storage.squad_units[unit_number] = {entity, squad} (for
 -- on_ai_command_completed); record.charging[unit_number] = until_tick; record.closing = {target, centre, radius,
@@ -101,6 +111,9 @@ local CHARGE_FLOOR = 12        -- a charge sends at least this many in total (6 
 local CHARGE_GAP = 3 * 60
 local STALE_READY = 6 * 60
 local CHARGE_TICKS = 10 * 60
+local STREAM_CALM, STREAM_TICKS = 0.3, 5 * 60 -- OR-D86
+local STREAM_SQUADS, STREAM_EACH = 3, 2       -- 12 units/s at a check every 0.5 s
+local QUEEN_STEP, QUEEN_LEVEL_MAX = 5 * 60, 9  -- OR-D89: +1 biter per queen spawn per 5 s calm, up to 3 + 9 = 12
 local REACTION_MIN, REACTION_COOLDOWN = 8, 6 * 60
 local STILL_RADIUS, STILL_TICKS = 1, 2 * 60
 local RING_START, RING_STEP, RING_EVERY, RING_CHARGE = 16, 2, 3 * 60, 6
@@ -111,17 +124,23 @@ local REGROUP_SPEED, REGROUP_HURT, REGROUP_AFTER = 3, 0.25, 5 * 60
 local REGROUP_CHASERS, REGROUP_CHASE = 20, 25 -- the hive is on you (not still on its way) but can't catch you
 -- OR-D56 (PT8): all of them pull back (was 90 %). OR-D58 (PT9): not to the brain (they crowded around it, and the
 -- trickle spawned right where you went for the bait) but into TRAP_GROUPS groups TRAP_RADIUS tiles around you, the
--- directions towards the brain and your heading left open (within TRAP_OPEN), following you
-local TRAP_GROUPS, TRAP_RADIUS, TRAP_SPREAD, TRAP_OPEN = 8, 30, 4, math.rad(40)
+-- direction towards the brain left open (within TRAP_OPEN; your heading too until OR-E13), following you
+local TRAP_GROUPS, TRAP_RADIUS, TRAP_SPREAD, TRAP_OPEN = 12, 30, 4, math.rad(40) -- OR-E13: 8 → 12 groups
+-- OR-E13 (OR-D94; PT15, PT16: the packs waited in clumps, it never felt like circling you): only the road to the brain
+-- stays open, each pack spreads along its part of the ring (TRAP_FILL of the arc between packs), and the ring tightens
+-- from TRAP_RADIUS to TRAP_INNER over REGROUP_HOLD
+-- BP-2 (OR-D101, PT17 / PT18: the spring from 20 tiles arrived one by one): TRAP_INNER 20 → 12
+local TRAP_INNER, TRAP_FILL, TRAP_TIGHTEN = 12, 0.8, 3
 local TRAP_ARC = math.rad(60) -- waypoints on the way round, so units don't run straight through you
 -- one unit group per direction (one path each); re-sent when you moved TRAP_REPLACE, at most every TRAP_REPLACE_TICKS
 -- (per-unit commands every 2 s while you kite kept 600 units re-pathing: they never got anywhere, headless)
-local TRAP_REPLACE, TRAP_REPLACE_TICKS = 8, 3 * 60
+-- BP-2 (OR-D104): 8 tiles / 3 s → 4 tiles / 1 s, so the ring keeps up when you walk to the bait
+local TRAP_REPLACE, TRAP_REPLACE_TICKS = 4, 60
 -- OR-D53 (PT7: every lure was taken at once, you kite near the brain and shoot it): hold REGROUP_HOLD first, then
 -- re-swarm within REGROUP_LURE of the brain (was 25, or a hit on the brain)
 -- OR-D64 (PT10.2: the lure worked, hold it longer to make it more enticing): hold 6 → 10 s, time out 20 → 25 s
 local REGROUP_LURE, REGROUP_MAX_TICKS, REGROUP_GAP, RESWARM_TICKS = 15, 25 * 60, 30 * 60, 15 * 60
-local REGROUP_HOLD = 10 * 60
+local REGROUP_HOLD = 8 * 60 -- BP-2 (OR-D101): 10 → 8 s
 -- OR-E9 chokepoint
 local KILL_LOG = 15 * 60
 local ZONE_RADIUS, ZONE_MIN, ZONE_SHARE, ZONE_ARC = 20, 20, 0.7, math.rad(60)
@@ -133,13 +152,19 @@ local CHOKE_LEARN, CHOKE_LEARN_SHARE = 5, 0.6 -- a squad whose charging units di
 local CHOKE_ROUND = {pin = 180, flank_left = 120, flank_right = -120, cutoff = 90, back = -90} -- degrees off the choke
 
 function director.on_character_damaged(event)
-  if not (event.force and event.force.name == "enemy") then return end
+  local own = event.force and event.force == event.entity.force
+  if not (event.force and (event.force.name == "enemy" or own)) then return end
   local id = event.entity.unit_number
   storage.damage_taken = storage.damage_taken or {}
   local list = storage.damage_taken[id] or {}
   storage.damage_taken[id] = list
   local cause = event.cause
   local by = cause and cause.valid and cause.name or (event.damage_type and event.damage_type.name) or "?"
+  if own then
+    list[#list + 1] = {game.tick, event.final_damage_amount, false,
+      "own " .. (event.damage_type and event.damage_type.name or by), true}
+    return
+  end
   list[#list + 1] = {game.tick, event.final_damage_amount, cause and cause.valid and cause.type == "unit" or false, by}
 end
 
@@ -153,7 +178,7 @@ function director.on_unit_died(event)
     for _, record in pairs(records) do
       if record.spawned and record.spawned[number] then
         if (record.regroup and record.regroup.units[number]) or (record.closing and record.closing.members[number])
-          or (record.bearers and record.bearers[number]) then
+          or brain_fight.reserved(record, number) then
           return
         end
         local role = record.charged_from and record.charged_from[number]
@@ -195,7 +220,7 @@ function director.hp_per_s(character)
   for _, hit in ipairs(list) do
     if hit[1] > from then
       kept[#kept + 1] = hit
-      sum = sum + hit[2]
+      if not hit[5] then sum = sum + hit[2] end
       if hit[3] then by_units = by_units + hit[2] end
     end
   end
@@ -423,14 +448,20 @@ local function in_ring(record, number) return record.closing and record.closing.
 
 -- Units the squads leave alone: the closing ring, the shield bearers, a pulled-back hive.
 local function reserved(record, number)
-  return in_ring(record, number) or (record.bearers and record.bearers[number])
+  return in_ring(record, number) or brain_fight.reserved(record, number)
     or (record.regroup and record.regroup.units[number])
 end
 
+-- The ring's radius now: TRAP_RADIUS at the pull-back, TRAP_INNER once REGROUP_HOLD is over (OR-E13).
+local function trap_radius(regroup)
+  local t = math.min(1, (game.tick - regroup.since) / REGROUP_HOLD)
+  return TRAP_RADIUS - (TRAP_RADIUS - TRAP_INNER) * t
+end
+
 -- Spot of trap group k (a direction fixed at the pull-back) around p.
-local function trap_spot(regroup, k, p)
+local function trap_spot(regroup, k, p, r)
   local a = regroup.angles[k]
-  return {x = p.x + math.cos(a) * TRAP_RADIUS, y = p.y + math.sin(a) * TRAP_RADIUS}
+  return {x = p.x + math.cos(a) * r, y = p.y + math.sin(a) * r}
 end
 
 local function angle_off(a, b) return (a - b + math.pi) % (2 * math.pi) - math.pi end
@@ -441,27 +472,35 @@ local function trap_walk(regroup, surface, k, p)
   local group = regroup.groups[k]
   if not (group and group.valid) then return end
   local g = group.position
+  local r = trap_radius(regroup)
+  regroup.sent_radius = r
+  -- spread along this pack's part of the ring, not one clump (OR-E13)
+  local spread = math.max(TRAP_SPREAD, r * math.pi / TRAP_GROUPS * TRAP_FILL)
   local from, to = math.atan2(g.y - p.y, g.x - p.x), regroup.angles[k]
   local turn = angle_off(to, from)
   local commands = {}
   local steps = math.floor(math.abs(turn) / TRAP_ARC)
   for i = 1, steps do
     local a = from + turn * i / (steps + 1)
-    local wanted = {x = p.x + math.cos(a) * TRAP_RADIUS, y = p.y + math.sin(a) * TRAP_RADIUS}
+    local wanted = {x = p.x + math.cos(a) * r, y = p.y + math.sin(a) * r}
     commands[#commands + 1] = {type = defines.command.go_to_location, radius = 4, distraction = defines.distraction.none,
       destination = surface.find_non_colliding_position("small-biter", wanted, 6, 1) or wanted}
   end
-  local spot = trap_spot(regroup, k, p)
+  local spot = trap_spot(regroup, k, p, r)
   commands[#commands + 1] = {type = defines.command.go_to_location, radius = TRAP_SPREAD,
     distraction = defines.distraction.none, destination = surface.find_non_colliding_position("small-biter", spot, 6, 1) or spot}
-  commands[#commands + 1] = {type = defines.command.wander, radius = TRAP_SPREAD, ticks_to_wait = REGROUP_MAX_TICKS + 2 * 60,
+  commands[#commands + 1] = {type = defines.command.wander, radius = spread, ticks_to_wait = REGROUP_MAX_TICKS + 2 * 60,
     distraction = defines.distraction.none}
   group.set_command{type = defines.command.compound, structure_type = defines.compound_command.return_last,
     commands = commands}
+  -- no gathering first: members join on the way (OR-E13: the far side of the ring never filled in the hold, headless)
+  group.start_moving()
 end
 
--- A unit joins the trap group nearest its own angle around p that isn't fuller than `share`.
-local function join_trap(record, regroup, surface, unit, p, share)
+-- A unit joins the trap group nearest its own angle around p that isn't fuller than `share`; with `emptiest`, the
+-- group with the fewest members alive (OR-E13, Q39: new biters fill the ring's far side, which the pulled-back hive
+-- can't reach within the hold). Returns k and whether its group is new.
+local function join_trap(record, regroup, surface, unit, p, share, emptiest)
   local number = unit.unit_number
   local entry_of = storage.squad_units and storage.squad_units[number]
   if entry_of then leave(entry_of.squad, number) end
@@ -472,19 +511,27 @@ local function join_trap(record, regroup, surface, unit, p, share)
   local best, best_d, any, any_d
   for k, angle in pairs(regroup.angles) do
     local d = math.abs(angle_off(a, angle))
+    if emptiest then
+      local g = regroup.groups[k]
+      local n = g and g.valid and #g.members or 0
+      d = n * 10 + d -- fewest members first, then the nearest
+    end
     if not any_d or d < any_d then any, any_d = k, d end
-    if (regroup.sizes[k] or 0) < share and (not best_d or d < best_d) then best, best_d = k, d end
+    if (emptiest or (regroup.sizes[k] or 0) < share) and (not best_d or d < best_d) then best, best_d = k, d end
   end
   local k = best or any
   regroup.units[number] = unit
   regroup.sizes[k] = (regroup.sizes[k] or 0) + 1
   local group = regroup.groups[k]
+  local new = false
   if not (group and group.valid) then
     -- the group starts where its first member is; the others gather there, then it walks round you
     group = surface.create_unit_group{position = u, force = unit.force}
     regroup.groups[k] = group
+    new = true
   end
   group.add_member(unit)
+  return k, new
 end
 
 -- Ends the trap: groups gone, members free (their own commands next).
@@ -516,6 +563,7 @@ local function update_regroup(record, surface, target, entry, p)
         end
       end
       record.regroup, record.next_regroup = nil, game.tick + REGROUP_GAP
+      record.trap_sprung_tick = game.tick -- OR-D107: the next surge waits a little (waves.lua)
       notify(record, "The hive swarms!")
       return
     end
@@ -528,10 +576,14 @@ local function update_regroup(record, surface, target, entry, p)
     end
     if #fresh > 0 then
       local share = math.ceil((table_size(regroup.units) + #fresh) / table_size(regroup.angles))
-      for _, unit in ipairs(fresh) do join_trap(record, regroup, surface, unit, p, share) end
+      for _, unit in ipairs(fresh) do
+        local k, new = join_trap(record, regroup, surface, unit, p, share, true)
+        if new then trap_walk(regroup, surface, k, p) end
+      end
     end
     if game.tick - regroup.moved_tick >= TRAP_REPLACE_TICKS
-      and distance_squared(p, regroup.anchor) > TRAP_REPLACE * TRAP_REPLACE then
+      and (distance_squared(p, regroup.anchor) > TRAP_REPLACE * TRAP_REPLACE
+        or (regroup.sent_radius or TRAP_RADIUS) - trap_radius(regroup) >= TRAP_TIGHTEN) then
       regroup.anchor, regroup.moved_tick = {x = p.x, y = p.y}, game.tick
       for k in pairs(regroup.groups) do trap_walk(regroup, surface, k, p) end
     end
@@ -542,23 +594,22 @@ local function update_regroup(record, surface, target, entry, p)
     or game.tick - entry.kite_since < REGROUP_AFTER then
     return
   end
-  -- TRAP_GROUPS directions around you, 0 towards the brain; the ones towards the brain and your heading stay open
+  -- TRAP_GROUPS directions around you, 0 towards the brain; the ones towards the brain stay open (OR-E13: your heading
+  -- no longer does: the ring closes everywhere but the road to the bait)
   local o = record.origin
   local to_brain = math.atan2(o.y - p.y, o.x - p.x)
-  local speed = math.sqrt((entry.vx or 0) ^ 2 + (entry.vy or 0) ^ 2)
-  local heading = speed >= MOVING and math.atan2(entry.vy, entry.vx) or nil
   regroup = {since = game.tick, target = target, units = {}, sizes = {}, angles = {}, groups = {},
     anchor = {x = p.x, y = p.y}, moved_tick = game.tick}
   for k = 0, TRAP_GROUPS - 1 do
     local a = to_brain + k * 2 * math.pi / TRAP_GROUPS
-    if math.abs(angle_off(a, to_brain)) >= TRAP_OPEN and not (heading and math.abs(angle_off(a, heading)) < TRAP_OPEN) then
+    if math.abs(angle_off(a, to_brain)) >= TRAP_OPEN then
       regroup.angles[k] = a
     end
   end
   record.regroup = regroup
   local list = {}
   for number, unit in pairs(record.spawned) do
-    if unit.valid and unit.type == "unit" and not (record.bearers and record.bearers[number]) then list[#list + 1] = unit end
+    if unit.valid and unit.type == "unit" and not brain_fight.reserved(record, number) then list[#list + 1] = unit end
   end
   local share = math.ceil(#list / math.max(table_size(regroup.angles), 1))
   for _, unit in ipairs(list) do join_trap(record, regroup, surface, unit, p, share) end
@@ -785,6 +836,33 @@ local function update_squads(record, surface, target, entry, near, no_antikite)
       return
     end
   end
+  -- OR-E10 stream: while calm, something is always arriving (no tell, no waiting for ready squads)
+  if entry.stream then
+    local list = {}
+    for _, squad in pairs(squads) do
+      if size(squad) > 0 and squad.state ~= "tell" and may_charge(squad) then list[#list + 1] = squad end
+    end
+    table.sort(list, function(a, b) return size(a) > size(b) end)
+    record.charging = record.charging or {}
+    record.charged_from = record.charged_from or {}
+    local sent = 0
+    for i = 1, math.min(STREAM_SQUADS, #list) do
+      local members = {}
+      for number, unit in pairs(list[i].members) do members[#members + 1] = {number = number, unit = unit} end
+      table.sort(members, function(a, b) return distance_squared(a.unit.position, p) < distance_squared(b.unit.position, p) end)
+      for k = 1, math.min(STREAM_EACH, #members) do
+        attack(members[k].unit, target)
+        leave(list[i], members[k].number)
+        record.charging[members[k].number] = game.tick + CHARGE_TICKS
+        record.charged_from[members[k].number] = list[i].role
+        sent = sent + 1
+      end
+    end
+    local s = brain_fight.stats(record)
+    s.streamed = (s.streamed or 0) + sent
+    entry.charged = sent
+    return
+  end
   if telling then return end
   -- rebuild: nothing near you
   if not choke and entry.touching + entry.ring == 0 and total > 0 and game.tick >= (entry.next_rebuild or 0) then
@@ -815,7 +893,9 @@ function director.update(record, surface, targets, off, no_antikite)
   local old = record.director or {}
   record.director = {}
   local phases = waves.PHASES[record.ring]
-  local active = not off and phases and phases.director and record.phase == "swarm"
+  local swarm = record.phase == "swarm"
+  local active = not off and phases and phases.director
+    and (swarm or (phases.director_wake and record.phase == "wake"))
   for _, target in pairs(targets) do
     local character = target.player and target.player.character or target.entity
     if character and character.valid then
@@ -876,18 +956,44 @@ function director.update(record, surface, targets, off, no_antikite)
       end
       -- kiting (regroup): fast, and nothing reaches you
       local speed = math.sqrt((entry.vx or 0) ^ 2 + (entry.vy or 0) ^ 2)
-      if speed > REGROUP_SPEED and by_units < budget * REGROUP_HURT and active and phases.squads and not no_antikite
+      if speed > REGROUP_SPEED and by_units < budget * REGROUP_HURT and active and swarm and phases.squads and not no_antikite
         and surface.count_entities_filtered{position = p, radius = REGROUP_CHASE, type = "unit", force = "enemy"}
           >= REGROUP_CHASERS then
         entry.kite_since = last and last.kite_since or game.tick
+      end
+      -- OR-E10 stream: calm = units' damage averaged over STREAM_TICKS below STREAM_CALM of the budget
+      local calm_hist = last and last.calm_hist or {}
+      calm_hist[#calm_hist + 1] = {game.tick, by_units}
+      while calm_hist[1] and calm_hist[1][1] < game.tick - STREAM_TICKS do table.remove(calm_hist, 1) end
+      entry.calm_hist = calm_hist
+      local sum = 0
+      for _, h in pairs(calm_hist) do sum = sum + h[2] end
+      entry.quiet = active and game.tick - calm_hist[1][1] >= STREAM_TICKS - 60 and sum / #calm_hist < budget * STREAM_CALM
+        or nil
+      entry.stream = entry.quiet and phases.stream or nil
+      -- OR-E11 (OR-D89): every QUEEN_STEP of calm raises the queens' level (biters per spawn); over the budget → 0
+      if active and phases.queens then
+        if measured > budget then
+          record.queen_level, record.queen_calm_since = 0, nil
+        elseif entry.quiet then
+          record.queen_calm_since = record.queen_calm_since or game.tick
+          if game.tick - record.queen_calm_since >= QUEEN_STEP then
+            record.queen_level = math.min(QUEEN_LEVEL_MAX, (record.queen_level or 0) + 1)
+            record.queen_calm_since = game.tick
+          end
+        else
+          record.queen_calm_since = nil
+        end
       end
       if active then
         entry.state = measured > budget and "full" or "busy"
         table.sort(near, function(a, b) return a.d < b.d end)
         if phases.squads then
-          update_choke(record, entry, last, p)
-          update_regroup(record, surface, target.entity, entry, p)
-          update_closing(record, surface, target.entity, p)
+          if swarm then
+            update_choke(record, entry, last, p)
+            update_regroup(record, surface, target.entity, entry, p)
+            update_closing(record, surface, target.entity, p)
+          end
           update_squads(record, surface, target.entity, entry, near, no_antikite)
           if measured < budget and entry.allowed > #near then entry.state = "calm" end
         end

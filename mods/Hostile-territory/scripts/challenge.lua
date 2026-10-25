@@ -21,6 +21,7 @@ local RANGE = 100
 local LOSE_GRACE = 5 * 60
 local RAGE_REFRESH_BELOW = 15 * 60 -- refresh last_damage_time when less rage than this is left
 local BASE_REACH = 30 -- a nest or worm this close to the brain belongs to its base (radius 25 + margin)
+local SIEGE_REACH = 36 -- a hit this close starts the siege: also the anchor ring at 32 (OR-D68); killing one doesn't wake
 
 local ENGAGED = {
   [defines.segmented_unit_ai_state.attacking] = true,
@@ -197,7 +198,7 @@ function challenge.on_base_damaged(event)
   end
   if not head then return end
   local p = entity.position
-  if (p.x - head.x) ^ 2 + (p.y - head.y) ^ 2 > BASE_REACH ^ 2 then return end
+  if (p.x - head.x) ^ 2 + (p.y - head.y) ^ 2 > SIEGE_REACH ^ 2 then return end
   if not waves.PHASES[waves.ring_at(entity.surface, head)] then return end -- OR-D7: every phased ring
   join(start(record, entity.surface, head, "siege"), player)
 end

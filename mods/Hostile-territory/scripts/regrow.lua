@@ -1,6 +1,6 @@
 -- Base regrowth (territory-brain-plan.md B5, B-D6/B-D8).
 -- Every INTERVAL, each hostile territory with a registered base gets back one missing piece: core worms first,
--- then the ring nests. Same layout as map gen (prototypes/planet/brain-bases.lua), computed here in Lua with the
+-- then the ring nests, then (ring 1+) the anchor nests. Same layout as map gen (prototypes/planet/brain-bases.lua), computed here in Lua with the
 -- same formulas on the same integer tile offsets, so a regrown piece lands on the tile map gen used.
 -- A base is registered by its brain's centre tile: by brain.lua when it moves a brain onto its point, and by
 -- crusade.lua when a lost territory gets its new brain at the rally spot (no base there yet: it grows from nothing).
@@ -9,6 +9,7 @@
 -- storage.bases[territory id] = {x, y} centre tile (the brain stands on x + 0.5, y + 0.5).
 
 local territories = require("scripts.territories")
+local waves = require("scripts.waves")
 
 local regrow = {}
 
@@ -20,7 +21,9 @@ local FAR_START = 420 -- hostile_point_start_radius in nauvis-territory.lua: bas
 local FAR = 2400
 local RING_R = 18
 local CORE_R = 6
+local ANCHOR_R, ANCHOR_N = 32, 4
 local TWO_PI = 2 * math.pi
+local ANCHOR_TURN = TWO_PI / 8
 
 function regrow.init()
   storage.bases = storage.bases or {}
@@ -48,7 +51,9 @@ local function slots(surface, base)
   local list = {}
   -- core: 4 slots, those with (index + 100) % 4 < 1 + M (index as map gen computes it from the tile offset)
   local m = math.floor(3 * far + 0.5)
-  for k = 0, 3 do
+  -- OR-D105: no worm core in rings 0 and 1 (map gen leaves it out there too)
+  local core = waves.ring_at(surface, base) >= 2 and 3 or -1
+  for k = 0, core do
     local a = k * TWO_PI / 4 + rotation
     local dx, dy = round(CORE_R * math.cos(a)), round(CORE_R * math.sin(a))
     local index = math.floor((math.atan2(dy, dx) - rotation) * 4 / TWO_PI + 0.5)
@@ -64,6 +69,14 @@ local function slots(surface, base)
     local index = math.floor((math.atan2(dy, dx) - rotation) * n / TWO_PI + 0.5)
     local name = (index + 100) % 2 == 0 and "biter-spawner" or "spitter-spawner"
     list[#list + 1] = {name = name, type = "unit-spawner", x = base.x + dx, y = base.y + dy}
+  end
+  -- anchor ring (OR-D66): ring 1+ bases, ANCHOR_N biter spawners at ANCHOR_R, ANCHOR_TURN off the rotation
+  if waves.ring_at(surface, base) >= 1 then
+    for k = 0, ANCHOR_N - 1 do
+      local a = k * TWO_PI / ANCHOR_N + rotation + ANCHOR_TURN
+      local dx, dy = round(ANCHOR_R * math.cos(a)), round(ANCHOR_R * math.sin(a))
+      list[#list + 1] = {name = "biter-spawner", type = "unit-spawner", x = base.x + dx, y = base.y + dy}
+    end
   end
   return list
 end

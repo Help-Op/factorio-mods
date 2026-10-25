@@ -32,7 +32,15 @@ local function header()
     -- OR-D59 (PT8, PT9: two deaths nobody could explain): the biggest single hit this second and what dealt it
     "max_hit", "max_hit_by",
     -- OR-E9: the brain sees a chokepoint (and its direction, degrees, 0 = east), squads with no way round
-    "choke", "choke_dir", "blocked"}
+    "choke", "choke_dir", "blocked",
+    -- OR-E8 E8-A / A2: anchor nests alive, share of a hit the brain keeps now, shield links alive (anchors + bearers)
+    "anchors", "brain_take", "links",
+    -- OR-E8 E8-B: queens alive, biters the queens spawned so far
+    "queens", "queen_spawned",
+    -- OR-E10: the director's continuous stream (on / off) and units streamed so far
+    "stream", "streamed",
+    -- OR-E11: the queens' level (extra biters per queen spawn, raised while you're calm)
+    "queen_level"}
   for _, name in ipairs(KILL_TYPES) do columns[#columns + 1] = "kills_" .. name end
   columns[#columns + 1] = "kills_other"
   for _, ammo in ipairs(AMMO) do columns[#columns + 1] = ammo[1] end
@@ -134,6 +142,14 @@ function telemetry.sample(record, surface, targets)
       row[#row + 1] = choke and "on" or "off"
       row[#row + 1] = choke and string.format("%.0f", math.deg(choke.dir)) or "-"
       row[#row + 1] = blocked
+      row[#row + 1] = brain_fight.anchors_alive(record)
+      row[#row + 1] = string.format("%.2f", brain_fight.take(record))
+      row[#row + 1] = brain_fight.links_alive(record)
+      row[#row + 1] = brain_fight.queens_alive(record)
+      row[#row + 1] = stats.queen_spawned or 0
+      row[#row + 1] = d.stream and "on" or "off"
+      row[#row + 1] = stats.streamed or 0
+      row[#row + 1] = record.queen_level or 0
       if target.player then
         t.characters = t.characters or {}
         t.characters[target.player.index] = character.unit_number

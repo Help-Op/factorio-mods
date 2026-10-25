@@ -1,0 +1,24 @@
+== 1. map gen
+ring 0 brain at (-87.5, -195.5), 214 from spawn: inner nests 5, anchors 0 at  (), nests 25–29 / 36–45: 0
+ring 0 brain at (-255.5, 98.5), 274 from spawn: inner nests 6, anchors 0 at  (), nests 25–29 / 36–45: 0
+ring 0 brain at (128.5, -285.5), 313 from spawn: inner nests 6, anchors 0 at  (), nests 25–29 / 36–45: 0
+ring 0 brain at (296.5, 188.5), 351 from spawn: inner nests 5, anchors 0 at  (), nests 25–29 / 36–45: 0
+ring 1 brain at (-129.5, -426.5), 446 from spawn: inner nests 4, anchors 4 at 31.9 31.9 31.9 31.9 (biter-spawner 4), nests 25–29 / 36–45: 0
+ring 1 brain at (477.5, 87.5), 485 from spawn: inner nests 6, anchors 3 at 31.4 31.4 31.4 (biter-spawner 3), nests 25–29 / 36–45: 0 | water within 36: 0 tiles, cliffs within 36: 0 | slot (506,75) hit 1 tile red-desert-0: biter-spawner | slot (489,116) hit 1 tile red-desert-0: biter-spawner | slot (448,99) hit 1 tile red-desert-0: tree-08 tree-08 tree-08 tree-08 dead-grey-trunk tree-08 | slot (465,58) hit 1 tile dirt-6: tree-08 biter-spawner
+ring 1 brain at (484.5, -186.5), 519 from spawn: inner nests 6, anchors 4 at 32.5 32.5 32.5 32.5 (biter-spawner 4), nests 25–29 / 36–45: 0
+ring 1 brain at (-496.5, -288.5), 574 from spawn: inner nests 6, anchors 4 at 32.2 32.2 32.2 32.2 (biter-spawner 4), nests 25–29 / 36–45: 0
+ring 1 brain at (239.5, 574.5), 622 from spawn: inner nests 6, anchors 3 at 31.6 31.6 31.6 (biter-spawner 3), nests 25–29 / 36–45: 0 | water within 36: 218 tiles, cliffs within 36: 0 | slot (209,584) hit 1 tile water:  | slot (229,544) hit 1 tile red-desert-0: biter-spawner | slot (269,564) hit 1 tile grass-2: biter-spawner | slot (249,604) hit 1 tile red-desert-0: biter-spawner
+ring 1 brain at (-223.5, 636.5), 675 from spawn: inner nests 7, anchors 4 at 32.3 32.3 32.3 32.3 (biter-spawner 4), nests 25–29 / 36–45: 0
+ring 1 brain at (-520.5, -493.5), 717 from spawn: inner nests 7, anchors 4 at 32.0 32.0 32.0 32.0 (biter-spawner 4), nests 25–29 / 36–45: 0
+ring 1: 7 bases | 3 anchors: 2, 4 anchors: 5 | inner nests 4: 1, 6: 4, 7: 2
+ring 0: 4 bases | 0 anchors: 4 | inner nests 5: 2, 6: 2
+== 2. oil
+spot (-180, -454), 57.5 tiles from its brain; 6 wells; nearest nest to a well > 20 tiles (want > 6)
+== 3. regrow
+destroyed biter-spawner at (-150.5, -450.5); after 3 regrow rounds (5 pieces on the map): back, biter-spawner; anchors now 4
+== 4. fight (ring-1 brain at (-129.5, -426.5), debug record, siege)
+start: phase siege, shield open, anchors 4 / 4, take 0.50, a 200 hit cost 100.0 HP
+2 anchors killed: phase siege, shield open, anchors 2 / 4, take 0.75, a 200 hit cost 150.0 HP
+all anchors killed: phase siege, shield open, anchors 0 / 4, take 1.00, a 200 hit cost 200.0 HP
+an inner nest killed: phase wake, shield open, anchors 0 / 4, take 1.00, a 200 hit cost 200.0 HP
+, ring 1, phase wake, brain 100%, alive 0, next group in 2s, brain open (takes 100%), bearers 0, anchors 0/4, rocks 0, director off: 0.0 / 8.3 HP/s (0.0 from units), slots 6, biting 0 (+0 not ours), touching 0, ring 0, held 0 []

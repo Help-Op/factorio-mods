@@ -17,7 +17,8 @@ local TINT = {0.75, 0.45, 0.7, 1}
 -- OR-D4 (oil-ring-challenge-plan.md): one brain per challenge ring. Ring 1 (the oil ring): the small brain with more
 -- health, no regen, no fissures. Own tint to tell it apart. OR-D19 (PT2): 2250 → 5000, it died before the swarm did
 -- anything (SMG + research level 2: ~187 HP/s on the brain).
-local RING1_HEALTH = 5000
+-- BP-4 (oil-ring-challenge-plan.md OR-D103, PT20: 318 s, target ~150 s): 5000 → 4000; OR-D110 (PT22: shorter still): 3000
+local RING1_HEALTH = 3000
 local RING1_TINT = {0.5, 0.4, 0.85, 1}
 
 -- Retints every sprite layer (the wyrm's are already tinted earth-brown).
@@ -46,6 +47,35 @@ for _, size in pairs({"small", "medium", "big"}) do
   retint(brain, {}, TINT)
   for _, icon in pairs(brain.icons or {}) do icon.tint = TINT end
   data:extend({brain})
+end
+
+-- OR-D106 (oil-ring-challenge-plan.md, PT18: at 11 HP you died to it going for the bait; not telegraphed): the head
+-- crush (the demolisher's 500 impact in an area round the head, in update_effects) does no damage. Every brain size;
+-- the wyrms keep it. An entry left with no target effects goes (an empty list doesn't load).
+local function no_crush(t, seen)
+  if type(t) ~= "table" or seen[t] then return false end
+  seen[t] = true
+  local emptied = false
+  if type(t.target_effects) == "table" then
+    for i = #t.target_effects, 1, -1 do
+      local effect = t.target_effects[i]
+      if effect.type == "damage" and effect.damage and effect.damage.type == "impact" then
+        table.remove(t.target_effects, i)
+        emptied = #t.target_effects == 0
+      end
+    end
+  end
+  for _, value in pairs(t) do emptied = no_crush(value, seen) or emptied end
+  return emptied
+end
+for _, size in pairs({"small", "medium", "big"}) do
+  local brain = data.raw["segmented-unit"]["hf-brain-" .. size]
+  for _, key in pairs({"update_effects", "update_effects_while_enraged"}) do
+    local list = brain[key]
+    for i = #(list or {}), 1, -1 do
+      if no_crush(list[i], {}) then table.remove(list, i) end
+    end
+  end
 end
 
 local ring1 = table.deepcopy(data.raw["segmented-unit"]["hf-brain-small"])

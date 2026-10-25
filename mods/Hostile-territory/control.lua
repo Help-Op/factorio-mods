@@ -93,6 +93,7 @@ end, damage_filters)
 script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
 script.on_event(defines.events.on_entity_died, function(event)
   if event.entity.type == "unit-spawner" then
+    brain_fight.on_nest_died(event) -- OR-E8 E8-A2: an anchor releases its bearer
     challenge.on_nest_died(event)
   else
     telemetry.on_entity_died(event)
@@ -137,6 +138,47 @@ local function rock_list(record)
   for i, wall in pairs(record.fight and record.fight.walls or {}) do
     for _, rock in pairs(wall.rocks) do
       if rock.valid then list[#list + 1] = {x = rock.position.x, y = rock.position.y, wall = i, arena = wall.arena or false} end
+    end
+  end
+  return list
+end
+
+local function bearer_list(record)
+  local list = {}
+  for _, unit in pairs(record.bearers or {}) do
+    local spot = record.bearer_spots and record.bearer_spots[unit.unit_number]
+    if unit.valid then list[#list + 1] = {x = unit.position.x, y = unit.position.y, spot = spot,
+      command = unit.commandable.command and unit.commandable.command.type} end
+  end
+  return list
+end
+
+local command_names = {}
+for name, value in pairs(defines.command) do command_names[value] = name end
+
+local function queen_list(record)
+  local list = {}
+  for _, queen in pairs(record.queens or {}) do
+    if queen.entity.valid then
+      list[#list + 1] = {x = queen.entity.position.x, y = queen.entity.position.y, state = queen.state, spot = queen.spot,
+        picked_at = queen.picked_at, number = queen.entity.unit_number,
+        command = queen.entity.commandable.command and command_names[queen.entity.commandable.command.type],
+        distraction = queen.entity.commandable.command and queen.entity.commandable.command.distraction,
+        dest = queen.entity.commandable.command and queen.entity.commandable.command.destination,
+        speed = queen.entity.speed,
+        group = queen.entity.commandable.parent_group ~= nil}
+    end
+  end
+  return list
+end
+
+local function escort_list(record)
+  local list = {}
+  for _, escort in pairs(record.escorts or {}) do
+    if escort.entity.valid then
+      local command = escort.entity.commandable.command
+      list[#list + 1] = {x = escort.entity.position.x, y = escort.entity.position.y, queen = escort.queen,
+        command = command and command_names[command.type], speed = escort.entity.speed}
     end
   end
   return list
@@ -225,7 +267,9 @@ remote.add_interface("hostile-territory-debug", {
       squads = director.squad_counts(fake, target.unit_number), closing = fake.closing and {radius = fake.closing.radius,
         state = fake.closing.state, n = table_size(fake.closing.members), centre = fake.closing.centre},
       slot_error = director.slot_error(fake, target), rocks = rock_list(fake),
-      bearers = brain_fight.bearers_alive(fake), regroup = fake.regroup and table_size(fake.regroup.units) or nil,
+      bearers = brain_fight.bearers_alive(fake), anchors = brain_fight.anchors_alive(fake),
+      anchors_start = fake.fight and fake.fight.anchors_start, links = brain_fight.links_alive(fake),
+      bearer_list = bearer_list(fake), queens = queen_list(fake), escorts = escort_list(fake), queen_level = fake.queen_level or 0, take = brain_fight.take(fake), regroup = fake.regroup and table_size(fake.regroup.units) or nil,
       choke = director.choke(fake, target.unit_number), blocked = select(2, director.choke(fake, target.unit_number))}
   end,
   -- reroute one territory now (runs again even if done); returns its stats

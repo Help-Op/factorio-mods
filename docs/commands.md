@@ -153,20 +153,22 @@ Yellow magazines left (ammo slot + inventory; the magazine in the gun counts as 
 /c local c=game.player.character local n=c.get_inventory(defines.inventory.character_ammo).get_item_count("firearm-magazine")+c.get_main_inventory().get_item_count("firearm-magazine") game.player.print(n.." magazines left")
 ```
 
-## Oil ring: ring-1 test (oil-ring-challenge-plan.md OR-E1, OR-E2, OR-E6, OR-E7)
+## Oil ring: ring-1 test (oil-ring-challenge-plan.md OR-E1, OR-E2, OR-E6, OR-E7, OR-E8)
 
 Ring 1 = the 12 territories behind ring 0, where oil starts. Every ring-1 territory has the **oil ring brain** (`hf-brain-ring1`: 5000 HP, no regen, no fissures, blue-violet tint). Same phases as ring 0, from the nests: siege 8–14 every 10 s, wake 22–34 every 8 s (max 140 alive), then **three surges** (OR-D28, 750 in total): at 80 % the swarm from the nests (350), at 55 % they **encircle** you (250 walk to a full ring around you, then attack), at 30 % **frenzy** (150, the last stand doubles and the shockwave pulses twice as often). Between and after the surges a last-stand group of 10 every 2 s (max 240 alive) that never runs dry: out of the brain once the nests are dead (OR-D30). Wake / siege groups shrink with the share of nests still alive. Small biters only (OR-D6), 20 % slower than normal ones (every challenge unit in ring 0 and 1, OR-D22). The shotgun does ×2 damage (one pellet still kills a small biter), vanilla reload (40 ticks).
 
-**Pressure director** (OR-E2, ring 1 only): during the swarm and last stand, the damage you take is kept around **8.3 HP/s** (your max health / 30, measured over 3 s: ~30 s of non-stop attack before you die). Slots for biters within 6 tiles grow while you take little damage (you're killing them) and shrink when you take more than the budget. Base defenders (not from the challenge) aren't held. The brain's shockwave shows only its expanding edge, half as dense, and the idle brain gives off no ash cloud (OR-D26, OR-D31). In the ring-0 / ring-1 brain's ash cloud you and its biters are both slowed ×0.45 (you 0.1125, biters 0.081: the same 72 % as outside, OR-D27).
+**Pressure director** (OR-E2, ring 1 only): from the **wake** on (OR-E10; the wake keeps its group size and comes out of the brain once the nests are dead), the damage you take is kept around **8.3 HP/s** (your max health / 30, measured over 3 s: ~30 s of non-stop attack before you die). Slots for biters within 6 tiles grow while you take little damage (you're killing them) and shrink when you take more than the budget. Base defenders (not from the challenge) aren't held. The brain's shockwave shows only its expanding edge, half as dense, and the idle brain gives off no ash cloud (OR-D26, OR-D31). In the ring-0 / ring-1 brain's ash cloud you and its biters are both slowed ×0.45 (you 0.1125, biters 0.081: the same 72 % as outside, OR-D27).
 
 **A brain that thinks** (OR-E6, OR-E7, ring 1 only):
 
 - **Squads:** biters that aren't on you join one of six squads around you: pin (between you and the brain), flank left / right, back, cut-off (where you're heading), reserve (by the brain). Squads follow you, gather, **stand still ~1.5 s (a red circle on the ground)**, then charge together, usually from 2–3 sides. 20 come at once when nothing is near you.
-- **Shield bearers** (OR-E7): surges 1 and 2 each bring **3 shield bearers** (cyan big biters, 6–10 tiles from the brain, a dashed line to it). While one lives the brain is shielded (blue ring: it takes 10 % damage). Kill all 3 and it stays open (red ring) until the next surge. In the frenzy (30 %) it stays open.
+- **Shield links** (OR-E8 E8-A2, replaces OR-E7's bearers per surge): ring-1+ brain bases have **4 anchor nests 32 tiles out** (biter spawners, outside the inner ring at 18), each with a **blue dashed line** to the brain. From the start of the fight the brain is **shielded** (blue ring: it takes 10 % damage) while any link lives. Kill an anchor and a **shield bearer** (cyan big biter) comes out of it and walks in to 6–10 tiles from the brain on that side; the line moves to it. Kill all 4 anchors and their 4 bearers and the brain is **open for good** (red ring, "The links are broken: the brain is exposed!"). The frenzy (30 %) opens it too. Surges no longer bring bearers. Hitting an anchor starts the siege, killing one **doesn't** wake the brain; anchors don't send waves. They regrow like the rest of the base.
+- **Stream** (OR-E10, off since OR-E11: the queens are the stream now): while you take little damage (units dealt you < 30 % of the budget, 2.5 HP/s, over the last 5 s), the squads didn't gather and tell but sent their nearest biters at you non-stop.
+- **Queens** (OR-E8 E8-B): once **any nest** of the base dies (siege too), the nest nearest to you releases a **queen** (big purple biter, 500 HP, slow) with an **escort of 8** small biters; up to **4** at a time, a new one every 20 s while fewer live. She walks with her escort to a spot **50–70 tiles** from you and holds there; the 4 queens spread **all around you** (~90° apart, OR-E12). She spawns **3 small biters every 4 s**, **while walking too**, which run **straight at you** (on top of the surges; paused while 500+ challenge units live). **While you take little damage** (< 2.5 HP/s over 5 s) the hive turns the queens up: every 5 s calm adds 1 biter per spawn, up to **12 per 4 s** per queen; take more than the budget and they drop back to 3 (OR-E11). She only picks a new spot when hers ends up closer than 40 or further than 80 tiles from you. Come within **25 tiles** of her and she **retreats** away from you (to her side's spot, 50–70 tiles), while her escort stays and attacks you (it doesn't rejoin her); move 20 tiles away and she picks a new spot. **No nests left → no new queens.** ("A queen crawls out of a nest!")
 - **Reactions:** shoot the brain and the reserve charges you (from surge 1). Stand still for 2 s and every squad charges (from surge 2).
 - **Closing ring** (surge 2, 55 %): 250 biters form a ring 16 tiles around where you stood, then step in 2 tiles every 3 s and charge at 6. Get out of the ring and it breaks up into squads.
 - **Rock arena** (surge 2): a ring of huge rocks rises 28 tiles around you (brown circles first) with 4+ gaps of 4 tiles or more. The rocks **stay**, also after the fight. (Rock walls on your path from surge 1 are switched off for now, OR-D54.)
-- **Regroup** (OR-E7; never in the frenzy): run from the swarm (faster than 3 tiles/s, 20+ biters within 25 tiles but none catching you, for 5 s) and the **whole hive pulls back** into ~8 packs about 30 tiles around you that follow you (the way to the brain and the way you're heading stay open; only the shield bearers stay put), leaving the brain open as a lure: at least 10 s of free shots. After that, come within 15 tiles of the brain (or wait until 25 s are up; the frenzy springs it too) and every pack charges you at once from its side.
+- **Regroup** (OR-E7; never in the frenzy): run from the swarm (faster than 3 tiles/s, 20+ biters within 25 tiles but none catching you, for 5 s) and the **whole hive pulls back** into 12 packs on a ring around you that follows you; only the way to the brain stays open (OR-E13). The packs spread along the ring, it **tightens from 30 to 20 tiles** over the 10 s hold, and new biters (queens) join the **emptiest** pack, so your far side fills up (only the shield bearers stay put), leaving the brain open as a lure: at least 10 s of free shots. After that, come within 15 tiles of the brain (or wait until 25 s are up; the frenzy springs it too) and every pack charges you at once from its side.
 - **Chokepoint** (OR-E9): hold a choke (a cliff / water gap) and keep killing what comes through, without moving or getting hurt, and the brain notices ("The hive won't walk into your guns."): it stops sending biters through the gap, they wait out of range (22 tiles) and try to come round your other sides ("The hive comes around!"). Move 10 tiles away and it ends.
 - **Early wake** (OR-D55): destroying the first nest of the base in the siege wakes the brain (wake phase, shockwave on).
 
@@ -180,7 +182,7 @@ Squads follow you or stay where they were first placed, for comparing (default o
 /ht-antikite on
 ```
 
-**Telemetry:** every challenge writes `%APPDATA%\Factorio\script-output\ht-telemetry\<start tick>-t<territory>.csv` (a row per second: phase, brain %, HP, HP/s taken, budget, director state, biters touching / in the ring / waiting in squads, surge, nests, shield, units per squad state, closing ring, running totals of charges / charged units / guard rushes / stand-still punishes / rocks / openings, bearers alive, regroup state and count, arena rocks, the biggest hit this second and what dealt it, choke (on / off, direction) and squads with no way round, kills by damage type, ammo left). Written every 30 s, when you die (with the 5 biggest hits of the last 3 s and what dealt them), and when the challenge ends; the last line is a summary (outcome, seconds per phase, peak HP/s, longest time over budget, deaths).
+**Telemetry:** every challenge writes `%APPDATA%\Factorio\script-output\ht-telemetry\<start tick>-t<territory>.csv` (a row per second: phase, brain %, HP, HP/s taken, budget, director state, biters touching / in the ring / waiting in squads, surge, nests, shield, units per squad state, closing ring, running totals of charges / charged units / guard rushes / stand-still punishes / rocks / openings, bearers alive, regroup state and count, arena rocks, the biggest hit this second and what dealt it (your own damage, e.g. grenades, as `own explosion`), choke (on / off, direction) and squads with no way round, anchors alive, `brain_take` (share of a hit the brain keeps now), `links` (anchors + bearers alive), `queens` (alive), `queen_spawned` (biters the queens spawned so far), `stream` (on / off) and `streamed` (units sent by the stream so far), `queen_level` (0–9: extra biters per queen spawn), kills by damage type, ammo left). Written every 30 s, when you die (with the 5 biggest hits of the last 3 s and what dealt them), and when the challenge ends; the last line is a summary (outcome, seconds per phase, peak HP/s, longest time over budget, deaths).
 
 Start a fresh map, then:
 
@@ -202,10 +204,28 @@ Cliffs and water within 50 tiles of the nearest oil ring brain (PT10: a cliff ne
 /c local s=game.player.surface local p=game.player.position local b for _,u in pairs(s.get_segmented_units()) do local h=u.segments[1] if h and u.prototype.name=="hf-brain-ring1" and (not b or (h.position.x-p.x)^2+(h.position.y-p.y)^2<(b.x-p.x)^2+(b.y-p.y)^2) then b=h.position end end game.print(b and ("Brain [gps="..math.floor(b.x)..","..math.floor(b.y).."]: cliffs within 50: "..s.count_entities_filtered{position=b,radius=50,type="cliff"}..", water tiles: "..s.count_tiles_filtered{position=b,radius=50,collision_mask="water_tile"}) or "No oil ring brain loaded.")
 ```
 
+Anchors around the nearest oil ring brain (count + GPS; want 4):
+
+```
+/c local s=game.player.surface local p=game.player.position local b for _,u in pairs(s.get_segmented_units()) do local h=u.segments[1] if h and u.prototype.name=="hf-brain-ring1" and (not b or (h.position.x-p.x)^2+(h.position.y-p.y)^2<(b.x-p.x)^2+(b.y-p.y)^2) then b=h.position end end if not b then game.print("No oil ring brain loaded.") return end local n=0 for _,e in pairs(s.find_entities_filtered{position=b,radius=36,type="unit-spawner",force="enemy"}) do if (e.position.x-b.x)^2+(e.position.y-b.y)^2>=29^2 then n=n+1 game.print("Anchor [gps="..math.floor(e.position.x)..","..math.floor(e.position.y).."]") end end game.print("Brain [gps="..math.floor(b.x)..","..math.floor(b.y).."]: "..n.." anchors")
+```
+
+Build the anchor ring on a save from before OR-E8 (regrow rounds: each builds one missing piece per hostile base, anchors come after the inner base; run it again until the count above says 4):
+
+```
+/c game.print(remote.call("hostile-territory-debug","regrow",4).." pieces built")
+```
+
 Ammo left per type (ammo slots + inventory):
 
 ```
 /c local c=game.player.character local t={} for _,n in pairs({"piercing-rounds-magazine","shotgun-shell","grenade"}) do t[#t+1]=n.." "..(c.get_inventory(defines.inventory.character_ammo).get_item_count(n)+c.get_main_inventory().get_item_count(n)) end game.player.print(table.concat(t,", "))
+```
+
+Telemetry summary of a fight (terminal, not in game; balance pass): per phase / surge length, HP/s, alive, touching, queen biters per second, queens, level; pull-backs; damage spikes (> 4 HP in a second). File names without a folder are read from `ht-telemetry`:
+
+```bash
+python tools/ht-telemetry-summary.py 1943-t8.csv
 ```
 
 ## Enemies: spawn and test

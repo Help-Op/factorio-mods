@@ -4,7 +4,8 @@
 --   siege (E9): the challenge started because the player attacked the base, not the brain yet. Small groups every
 --   P.siege_interval, shrinking with the share of nests alive. Ends when the brain is engaged (waves.wake).
 --   wake: from the start, a group every P.interval, split over the living nests. The group shrinks with the
---   share of nests still alive (all nests dead = no more groups).
+--   share of nests still alive (all nests dead = no more groups); with P.wake_from_brain (ring 1, OR-E10) it keeps
+--   its size and comes out of the brain once the nests are dead.
 --   swarm (was "climax" until E8): once the brain is below P.swarm_at of its health, P.swarm_total units,
 --   P.swarm_per_check per challenge check. No nest left → they come out at the brain. Only P.unit:
 --   no evolution upgrade, no slow.
@@ -77,9 +78,13 @@ local PHASES = {
     surges = {
       {at = 0.8, total = 350, mode = "surround", message = "The hive swarms!"},
       {at = 0.55, total = 250, mode = "encircle", message = "The hive encircles you!"},
-      {at = 0.3, total = 150, mode = "surround", frenzy = true, message = "The brain goes into a frenzy!"},
+      -- BP-3 (OR-D102, PT20: the frenzy dealt 11 HP in 75 s): 150 → 250
+      {at = 0.3, total = 250, mode = "surround", frenzy = true, message = "The brain goes into a frenzy!"},
     },
-    frenzy_last_stand = 2,
+    -- BP-3 (OR-D102): ×2 → ×3; OR-D108: in the frenzy the last stand stops at frenzy_max_alive, not last_stand_max_alive
+    -- (PT20: ~580 alive in the frenzy, mostly queen biters, so the 240 cap stopped the last stand completely)
+    -- OR-D109 (PT22: 740–800 alive held the brain at 20 % for 50 s, no way through): 800 → 400
+    frenzy_last_stand = 3, frenzy_max_alive = 400,
     last_stand_group = 10, last_stand_max_alive = 240,
     last_stand_from_brain = true, -- OR-D30: no nest share; with the nests dead they come out of the brain
     director = true, -- OR-E2 pressure director (director.lua); ring 0 open (Q6)
@@ -89,6 +94,10 @@ local PHASES = {
     shield = 0.9, -- share of each hit refunded while the brain is shielded
     rock_walls = false, -- OR-D54 (PT7): one parameter too many for now; the arena (surge 2) stays
     wake_on_nest = true, -- OR-D55 (PT7): the first nest destroyed in the siege wakes the brain (its shockwave starts)
+    queens = true, -- OR-E8 E8-B (OR-D78): nests release queens once one of them dies (brain-fight.lua)
+    wake_from_brain = true, -- OR-E10 (OR-D84): wake groups keep their size; with the nests dead, out of the brain
+    director_wake = true, -- OR-E10 (OR-D84): the director runs from the wake on (director.lua)
+    stream = false, -- OR-E10 (OR-D85): a squad stream while you're calm (director.lua); off since OR-E11: queens are the stream
   }),
 }
 waves.PHASES = PHASES
@@ -100,6 +109,10 @@ end
 
 local ENCIRCLE_MIN, ENCIRCLE_MAX = 16, 20
 local FRENZY_PULSE = 20 * 60 -- the brain's own shockwave: every 20 s (update_effects_while_enraged)
+-- OR-D107 (PT19: you shot the lured brain past 55 %, so the encircle surge came out round you with the sprung trap:
+-- 102 touching, dead in 7 s): a surge whose threshold falls during a pull-back (record.regroup, director.lua) waits
+-- until SURGE_AFTER_TRAP after the spring
+local SURGE_AFTER_TRAP = 5 * 60
 local PULSE_STAGES, PULSE_STEP = 30, 10 -- hf-earth-wyrm-small-expanding-ash-cloud-1..30, one every 10 ticks
 
 -- One tier up, with chance = evolution factor.
@@ -306,6 +319,8 @@ local function spawn_from_nests(record, surface, nests, count, target, mode)
   return spawned
 end
 
+waves.spawn_from = spawn_from_nests -- OR-E8 E8-B: queens and their escorts (brain-fight.lua)
+
 -- Siege -> wake: the brain is engaged now.
 function waves.wake(record)
   if record.phase ~= "siege" then return end
@@ -323,7 +338,8 @@ local function update_phased(record, surface, targets, alive)
   local list = surges(P)
   if record.phase == "swarm" and not record.surge then record.surge = 1 end -- swarm from before OR-E5
   local next_surge = list[(record.surge or 0) + 1]
-  if next_surge and brain_health(record) < next_surge.at then
+  local trap = record.regroup or game.tick < (record.trap_sprung_tick or -SURGE_AFTER_TRAP) + SURGE_AFTER_TRAP
+  if next_surge and brain_health(record) < next_surge.at and not trap then
     record.phase = "swarm"
     record.surge = (record.surge or 0) + 1
     record.surge_mode = next_surge.mode
@@ -351,7 +367,8 @@ local function update_phased(record, surface, targets, alive)
       local nests = living_nests(record, surface)
       local share = P.last_stand_from_brain and 1 or #nests / math.max(record.nests_start or #nests, 1)
       local size = P.last_stand_group * (record.frenzy and P.frenzy_last_stand or 1)
-      local group = math.min(math.floor(size * share + 0.5), P.last_stand_max_alive - alive)
+      local cap = record.frenzy and P.frenzy_max_alive or P.last_stand_max_alive
+      local group = math.min(math.floor(size * share + 0.5), cap - alive)
       if group > 0 then spawn_from_nests(record, surface, nests, group, target, "surround") end
     end
     return
@@ -361,6 +378,8 @@ local function update_phased(record, surface, targets, alive)
   record.next_wave_tick = game.tick + (siege and P.siege_interval or P.interval)
   local nests = living_nests(record, surface)
   local share = #nests / math.max(record.nests_start or #nests, 1)
+  -- OR-E10 (OR-D84, PT13.2: the wake starved once the nests were dead): full size, out of the brain with no nest left
+  if not siege and P.wake_from_brain then share = 1 end
   local size = siege and math.random(P.siege_min, P.siege_max) or math.random(P.wave_min, P.wave_max)
   local cap = siege and P.siege_max_alive or P.max_alive
   local count = math.min(math.floor(size * share + 0.5), cap - alive)
