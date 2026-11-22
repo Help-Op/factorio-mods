@@ -1,12 +1,14 @@
 -- Guaranteed oil in ring 1 (ring-layout-plan.md R1-3, RL-D3). Map gen keeps crude oil out of ring 0 and the safe zone
 -- (nauvis-territory.lua), so one patch is placed by script in the ring-1 territory whose point (brain) is closest to
--- the map origin: WELLS wells around a spot SPOT_DISTANCE tiles from that point, in the same territory. The spot is
+-- the map origin: WELLS wells around a spot SPOT_DISTANCE tiles from that territory's brain (its point, or the land
+-- spot its base moves to when the point is on water: brain.home, ring2-challenge-plan.md R2-E1 4b), in the same territory. The spot is
 -- picked from the noise once (works before the chunks exist): in the same territory and on land (elevation, as in
 -- patrol.lua; water is elevation < 0), else the next direction or the next ring-1 territory. The wells are created
 -- when the spot's chunk is generated (or right away if it already is).
 -- storage.oil = {spot = {x, y} or nil, done = bool}
 
 local territories = require("scripts.territories")
+local brain = require("scripts.brain")
 
 local oil = {}
 
@@ -36,14 +38,16 @@ local function ring1_points(surface)
   return points
 end
 
--- A spot SPOT_DISTANCE from the point whose nearest territory point is still that point, with land under the spot
--- and the patch's 4 corners (8 directions, outward first). nil if none fits.
+-- A spot SPOT_DISTANCE from the point's brain (brain.home) whose nearest territory point is still that point, with
+-- land under the spot and the patch's 4 corners (8 directions, outward first). nil if none fits or there's no brain.
 local function pick_spot(surface, point)
-  local outward = math.atan2(point.y, point.x)
+  local home = brain.home(surface, point)
+  if not home then return nil end
+  local outward = math.atan2(home.y, home.x)
   local candidates = {}
   for k = 0, 7 do
     local a = outward + (k % 2 == 0 and 1 or -1) * math.ceil(k / 2) * math.pi / 4
-    candidates[#candidates + 1] = {point.x + math.cos(a) * SPOT_DISTANCE, point.y + math.sin(a) * SPOT_DISTANCE}
+    candidates[#candidates + 1] = {home.x + math.cos(a) * SPOT_DISTANCE, home.y + math.sin(a) * SPOT_DISTANCE}
   end
   local p = surface.calculate_tile_properties({"hostile_point_nearest_x", "hostile_point_nearest_y"}, candidates)
   for k, c in ipairs(candidates) do

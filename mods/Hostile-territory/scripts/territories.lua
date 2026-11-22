@@ -11,6 +11,32 @@ local territories = {}
 
 territories.surface_name = "nauvis"
 
+-- The chunks within reach of centre that belong to point's territory (by their centre, from the noise), generated or
+-- not (scripts/brain.lua, scripts/districts.lua).
+function territories.own_chunks(surface, centre, point, reach)
+  local positions, chunks = {}, {}
+  for cx = math.floor((centre.x - reach) / 32), math.floor((centre.x + reach) / 32) do
+    for cy = math.floor((centre.y - reach) / 32), math.floor((centre.y + reach) / 32) do
+      positions[#positions + 1] = {cx * 32 + 16, cy * 32 + 16}
+      chunks[#chunks + 1] = {cx, cy}
+    end
+  end
+  local p = surface.calculate_tile_properties({"hostile_point_nearest_x", "hostile_point_nearest_y"}, positions)
+  local own = {}
+  for k, c in ipairs(chunks) do
+    if p.hostile_point_nearest_x[k] == point.x and p.hostile_point_nearest_y[k] == point.y then own[#own + 1] = c end
+  end
+  return own
+end
+
+-- Requests the own_chunks not generated yet: never another territory's, so the request creates no territory (whose
+-- brain would request more: a chain over the whole map, ring2-challenge-plan.md 4b).
+function territories.request_own(surface, centre, point, reach)
+  for _, c in pairs(territories.own_chunks(surface, centre, point, reach)) do
+    if not surface.is_chunk_generated(c) then surface.request_to_generate_chunks({c[1] * 32 + 16, c[2] * 32 + 16}, 0) end
+  end
+end
+
 -- hostile/claimed are set automatically from guardian count; the others come from later phases.
 territories.states = {
   hostile = true,

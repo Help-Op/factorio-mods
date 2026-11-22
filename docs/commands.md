@@ -115,6 +115,7 @@ Move its whole body 30 tiles east (`set_body_nodes`, a jump):
 | `/cheat-kit` | Demolisher kit: mech armor, railgun, rockets, tesla, spidertron |
 | `/cheat-kit <name>` | Tier kit, no armor: `pistol`, `smg-yellow`, `ring0` (SMG + 100 yellow magazines = 1 stack, challenge-feel CF-D3), `smg-red`, `smg-uranium`, `shotgun`, `flamethrower`, `rockets` |
 | `/cheat-kit ring1` | Oil-ring kit (OR-D8/D9/D12): heavy armor, SMG + 200 red magazines (2 stacks), shotgun + 100 shells, 20 grenades; researches physical damage, shooting speed and stronger explosives 1–2 for your force (stays after `/cheat-clear`) |
+| `/cheat-kit ring2` | Ring-2 kit (ring2-challenge R2-D33, blue era, no tank): modular armor (2 energy shields, 2 batteries, solar panels), SMG + 600 red magazines, flamethrower + 100 fuel, rocket launcher + 200 rockets, 100 explosive rockets, 10 gun turrets, 10 poison + 10 slowdown capsules; researches physical damage and shooting speed 1–4, stronger explosives and refined flammables 1–2 (stays after `/cheat-clear`) |
 | `/cheat-clear` | Bare character: no armor, guns, ammo, items or health bonus |
 
 Map setting **Give the demolisher kit on spawn** (Settings → Mod settings → Map), default off.
@@ -192,7 +193,7 @@ Kit (heavy armor, SMG + red ammo, shotgun + shells, 20 grenades, research level 
 /cheat-kit ring1
 ```
 
-Teleport next to the nearest oil ring brain (45 tiles from it on the spawn side, inside its territory; generates chunks first, a few seconds). `/ht-goto-ring 0` for ring 0:
+Teleport next to the nearest oil ring brain (45 tiles from it on the spawn side, inside its territory; generates only the chunks around that brain first). `/ht-goto-ring 0` for ring 0:
 
 ```
 /ht-goto-ring
@@ -316,10 +317,40 @@ Check territories and brain bases within 1500 tiles of you (generated chunks onl
 /ht-map-check
 ```
 
-How many brains were moved onto their base, how many territories started claimed (water), how many bases regrow:
+How many brains were moved onto their base (and how many of those moved onto land because their point is on water, ring2-challenge R2-E1 4b), how many territories started claimed (no land at all), how many bases regrow, districts, and GPS links to the guaranteed uranium patches (ring2-challenge R2-E1 4d; "waiting" until the district's chunks are generated):
 
 ```
 /ht-brains
+```
+
+Teleport 120 tiles in front of the nearest standing district heart (spawn side; ring2-challenge 4e1 / 4e1b war): its garrison is on the map, you're just outside its 80-tile zone of control. Run `/ht-goto-ring 2` first so the districts are built:
+
+```
+/c local p=game.player.position local best,bd for id,st in pairs(remote.call("hostile-territory-debug","districts_state")) do for _,d in pairs(st.list) do if d.built and not d.fallen then local q=(d.x-p.x)^2+(d.y-p.y)^2 if not bd or q<bd then best,bd=d,q end end end end if not best then game.print("No built district yet: /ht-goto-ring 2 first.") return end local l=math.max(math.sqrt(best.x^2+best.y^2),1) local w={best.x-best.x/l*120,best.y-best.y/l*120} game.player.teleport(game.player.surface.find_non_colliding_position("character",w,10,1) or w) game.print(string.format("District %d [gps=%d,%d]",best.slot,best.x,best.y))
+```
+
+Wars (ring2-challenge 4e1 / 4e1b): per territory at war its age, running district fights and fallen districts (GPS), then the garrisons on the map with their unit count; the same line is part of `/ht-brains`:
+
+```
+/c game.print(remote.call("hostile-territory-debug","brains"):match("Wars:.*"))
+```
+
+Fill the garrison of the nearest live district (within 300 tiles) to full now (ring2-challenge 4e1b; 80 units, ~40 % brutes):
+
+```
+/ht-garrison-fill
+```
+
+Districts of the nearest ring-2+ base (ring2-challenge R2-E1 4c): GPS link per district heart, built or waiting for its chunks:
+
+```
+/c local p=game.player.position local best,bd for id,st in pairs(remote.call("hostile-territory-debug","districts_state")) do for _,d in pairs(st.list) do local q=(d.x-p.x)^2+(d.y-p.y)^2 if not bd or q<bd then best,bd=st,q end end end if not best then game.print("No districts planned yet.") return end for _,d in pairs(best.list) do game.print(string.format("District %d [gps=%d,%d] %s",d.slot,d.x,d.y,d.built and "built" or "waiting for chunks")) end
+```
+
+Bases moved onto land (point on water → land spot), with GPS links to the point and the spot:
+
+```
+/c for k,m in pairs(remote.call("hostile-territory-debug","brain_state").moved) do game.print(string.format("cell %s: point [gps=%d,%d] -> base [gps=%d,%d] %s",k,m.point.x,m.point.y,m.spot.x,m.spot.y,m.done and "built" or "waiting for chunks")) end
 ```
 
 Generate and chart 2560 × 2560 tiles around spawn, to see all bases on the map (takes a while):

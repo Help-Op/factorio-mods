@@ -1,9 +1,10 @@
 -- Brain bases (territory-brain-plan.md B2, tested as L3/L4 in hive-layout-plan.md): one base per territory,
 -- built by map gen around the territory's point (hostile_point_*, nauvis-territory.lua). The brain itself is the
 -- territory's segmented unit; scripts/brain.lua moves it onto the centre (B3), so the centre tile stays free.
--- Layout (B-D4): worm core (1-4 worms by distance on 4 slots at CORE_R around the brain), ring of 6-10 nests at RING_R,
--- biter and spitter spawners alternating, worm tier by distance, random rotation per base. Ring 1+ bases also get
--- ANCHOR_N anchor nests (biter spawners) at ANCHOR_R (oil-ring-challenge-plan.md OR-E8, OR-D66).
+-- Layout (B-D4): ring of 6-10 nests at RING_R, biter and spitter spawners alternating, random rotation per base.
+-- No worms (OR-D105 for rings 0-1, ring2-challenge-plan.md R2-D8 / D14 for ring 2+): the hostile_base_core_* slots
+-- below are no longer placed (tools/ht-map-check still reads them). Ring 1 bases also get ANCHOR_N anchor nests
+-- (biter spawners) at ANCHOR_R (oil-ring-challenge-plan.md OR-E8, OR-D66); ring 2+ gets districts instead (R2-D22).
 -- Every enemy autoplace is turned off first (B-D2): only this layout places nests and worms on Nauvis.
 -- Loaded from data-final-fixes.lua, so nests added by other mods are turned off too.
 -- Noise gotcha: always put comparisons in parentheses (`a * b < c` is `(a * b) < c`).
@@ -52,7 +53,7 @@ local expressions =
       * (hostile_base_dy == floor(%d * sin(hostile_base_core_a) + 0.5))\
       * (((hostile_base_core_slot + 100) %% 4) < (1 + hostile_base_core_m)) * hostile_base_exists",
     CORE_R, CORE_R),
-  -- anchor ring (oil-ring-challenge-plan.md OR-D66): ring 1+ bases, ANCHOR_N nests at ANCHOR_R, ANCHOR_TURN off the
+  -- anchor ring (oil-ring-challenge-plan.md OR-D66): ring 1 bases only (ring 2+: districts, R2-D22), ANCHOR_N nests at ANCHOR_R, ANCHOR_TURN off the
   -- base rotation. They shield the brain in its fight (scripts/brain-fight.lua)
   hostile_base_anchor_slot = string.format("floor((hostile_base_angle - %g) * %d / %g + 0.5)", ANCHOR_TURN, ANCHOR_N, TWO_PI),
   hostile_base_anchor_a = string.format("hostile_base_anchor_slot * %g / %d + hostile_base_rotation + %g",
@@ -60,7 +61,7 @@ local expressions =
   hostile_base_anchor_hit = string.format(
     "(hostile_base_dx == floor(%d * cos(hostile_base_anchor_a) + 0.5))\
       * (hostile_base_dy == floor(%d * sin(hostile_base_anchor_a) + 0.5))\
-      * (hostile_point_ring >= 1) * hostile_base_exists",
+      * (hostile_point_ring == 1) * hostile_base_exists",
     ANCHOR_R, ANCHOR_R),
 }
 
@@ -78,21 +79,7 @@ local function autoplace(order, probability)
   return {control = "enemy-base", force = "enemy", order = order, probability_expression = probability}
 end
 
--- worm tier by base distance
-local worms =
-{
-  {"small-worm-turret", "hostile_base_distance < 700"},
-  {"medium-worm-turret", "(hostile_base_distance >= 700) * (hostile_base_distance < 1400)"},
-  {"big-worm-turret", "(hostile_base_distance >= 1400) * (hostile_base_distance < 2400)"},
-  {"behemoth-worm-turret", "hostile_base_distance >= 2400"},
-}
--- OR-D105 (oil-ring-challenge-plan.md, PT18: worms took 164 HP in 15 s, nothing else touching you): no worm core in
--- the challenge rings 0 and 1
-for i, w in pairs(worms) do
-  data.raw.turret[w[1]].autoplace = autoplace("!a" .. i,
-    "hostile_base_core_hit * (hostile_point_ring >= 2) * (" .. w[2] .. ")")
-end
-
+-- no worms anywhere (OR-D105, PT18: worms took 164 HP in 15 s; R2-D8: they stop you moving): their autoplace stays off
 data.raw["unit-spawner"]["biter-spawner"].autoplace = autoplace("!b1",
   "hostile_base_ring_hit * (1 - hostile_base_ring_odd) + hostile_base_anchor_hit")
 data.raw["unit-spawner"]["spitter-spawner"].autoplace = autoplace("!b2", "hostile_base_ring_hit * hostile_base_ring_odd")

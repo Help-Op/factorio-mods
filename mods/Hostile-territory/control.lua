@@ -12,11 +12,14 @@ local oil = require("scripts.oil")
 local director = require("scripts.director")
 local telemetry = require("scripts.telemetry")
 local brain_fight = require("scripts.brain-fight")
+local districts = require("scripts.districts")
+local war = require("scripts.war")
 
 script.on_init(function()
   territories.scan()
   crusade.init()
   regrow.init()
+  districts.init()
   brain.init()
   brain.scan()
   oil.init()
@@ -26,6 +29,7 @@ script.on_configuration_changed(function()
   territories.scan()
   crusade.init()
   regrow.init()
+  districts.init()
   brain.init()
   brain.scan()
   oil.init()
@@ -34,13 +38,20 @@ end)
 script.on_event(defines.events.on_territory_created, territories.on_territory_created)
 script.on_event(defines.events.on_territory_destroyed, territories.on_territory_destroyed)
 script.on_event(defines.events.on_object_destroyed, territories.on_object_destroyed)
-script.on_event(defines.events.on_segmented_unit_created, territories.on_segmented_unit_created)
+script.on_event(defines.events.on_segmented_unit_created, function(event)
+  territories.on_segmented_unit_created(event)
+  brain.on_segmented_unit_created(event)
+end)
 script.on_event(defines.events.on_segmented_unit_died, function(event)
   local claimed = territories.on_segmented_unit_died(event)
-  if claimed then challenge.on_won(claimed.id) end
+  if claimed then
+    challenge.on_won(claimed.id)
+    war.on_won(claimed.id)
+  end
 end)
 script.on_event(defines.events.on_chunk_generated, function(event)
   brain.on_chunk_generated(event)
+  districts.on_chunk_generated(event)
   oil.on_chunk_generated(event)
 end)
 script.on_event(defines.events.on_chunk_charted, function(event)
@@ -63,10 +74,12 @@ local function every(interval, handler)
 end
 
 every(challenge.CHECK_INTERVAL, challenge.on_tick)
+every(war.CHECK_INTERVAL, war.on_tick) -- ring-2+ wars (ring2-challenge-plan.md 4e1)
 every(crusade.CHECK_INTERVAL, crusade.on_tick)
 every(crusade.MIGRATION_INTERVAL, crusade.on_migration_tick)
 every(patrol.INTERVAL, patrol.on_tick)
 every(regrow.INTERVAL, regrow.on_tick)
+every(brain.SWEEP_INTERVAL, brain.sweep) -- brains made with the map: out of sight (ring2-challenge-plan.md R2-E1 4b)
 every(patrol.LIVE_INTERVAL, patrol.on_live_tick)
 every(waves.PULSE_STEP, waves.on_pulse_tick) -- frenzy shockwave stages (oil-ring-challenge-plan.md OR-D28)
 script.on_event(defines.events.on_ai_command_completed, function(event)
@@ -83,6 +96,7 @@ for _, name in pairs(rally.NAMES) do damage_filters[#damage_filters + 1] = {filt
 script.on_event(defines.events.on_entity_damaged, function(event)
   local type = event.entity.type
   if type == "unit-spawner" or type == "turret" then
+    war.on_base_damaged(event, challenge.player_of(event.cause)) -- district fights (4e1)
     challenge.on_base_damaged(event)
   elseif type == "character" then
     director.on_character_damaged(event)
@@ -95,41 +109,65 @@ script.on_event(defines.events.on_entity_died, function(event)
   if event.entity.type == "unit-spawner" then
     brain_fight.on_nest_died(event) -- OR-E8 E8-A2: an anchor releases its bearer
     challenge.on_nest_died(event)
+    war.on_nest_died(event) -- a district heart falls (4e1)
   else
     telemetry.on_entity_died(event)
     director.on_unit_died(event) -- OR-E9 kill zone
   end
 end, {{filter = "type", type = "unit"}, {filter = "type", type = "unit-spawner"}})
-script.on_event(defines.events.on_player_died, telemetry.on_player_died)
+script.on_event(defines.events.on_player_died, function(event)
+  telemetry.on_player_died(event)
+  war.on_player_died(event)
+end)
 -- brain shield + guard rush trigger (oil-ring-challenge-plan.md OR-E6)
 script.on_event(defines.events.on_segmented_unit_damaged, brain_fight.on_damaged)
 
 -- Test helper (oil-ring-challenge-plan.md PT2: the /c teleport 60 tiles east could land in a ring-0 territory).
--- Picks brains by the ring of their position (waves.ring_at), and returns a spot GOTO_DISTANCES tiles from the brain
--- towards spawn: outside its base (radius 25), inside its territory (the first distance that still is).
--- Generates chunks out to 12 × (ring + 1) chunks first. Returns spot, brain position, or nil and a reason.
+-- Picks the territory points of that ring (grid layer of the cell, from the noise: no chunks needed), nearest to
+-- `from` first, and returns a spot GOTO_DISTANCES tiles from the first one's brain towards spawn: outside its base
+-- (radius 25), inside its territory (the first distance that still is). Generates only GOTO_CHUNKS chunks around
+-- each point it tries (base + districts, ring2-challenge 4c), not the whole map out to that ring (was ~5300 chunks
+-- for ring 2, a second of lag). Returns spot, brain position, or nil and a reason.
 local GOTO_DISTANCES = {45, 38, 32}
+local GOTO_CHUNKS = 6 -- 192 tiles: districts sit 115 tiles out, built once their chunks within ~40 tiles exist
+local GOTO_TRIES = 4 -- points tried (one may be claimed: no land)
+local G = 384 -- grid cell (nauvis-territory.lua)
+local function layer(i) return i >= 0 and i or -i - 1 end
 local function goto_spot(surface, from, ring)
-  surface.request_to_generate_chunks({0, 0}, 12 * (ring + 1))
-  surface.force_generate_chunk_requests()
-  local best, best_distance, territory
-  for _, unit in pairs(surface.get_segmented_units()) do
-    local head = unit.valid and unit.segments[1]
-    if head and waves.ring_at(surface, head.position) == ring then
-      local d = (head.position.x - from.x) ^ 2 + (head.position.y - from.y) ^ 2
-      if not best_distance or d < best_distance then best, best_distance, territory = head.position, d, unit.territory end
+  local positions = {}
+  for i = -ring - 1, ring do
+    for j = -ring - 1, ring do
+      if math.max(layer(i), layer(j)) == ring then positions[#positions + 1] = {(i + 0.5) * G, (j + 0.5) * G} end
     end
   end
-  if not best then return nil, string.format("No ring-%d brain found.", ring) end
-  local length = math.max(math.sqrt(best.x ^ 2 + best.y ^ 2), 1)
-  for _, distance in ipairs(GOTO_DISTANCES) do
-    local wanted = {x = best.x - best.x / length * distance, y = best.y - best.y / length * distance}
-    local found = surface.find_non_colliding_position("character", wanted, 10, 1)
-    if found and surface.get_territory_for_chunk({x = math.floor(found.x / 32), y = math.floor(found.y / 32)}) == territory then
-      return found, best
+  local p = surface.calculate_tile_properties({"hostile_point_own_x", "hostile_point_own_y"}, positions)
+  local points = {}
+  for k = 1, #positions do points[k] = {x = p.hostile_point_own_x[k], y = p.hostile_point_own_y[k]} end
+  table.sort(points, function(a, b)
+    return (a.x - from.x) ^ 2 + (a.y - from.y) ^ 2 < (b.x - from.x) ^ 2 + (b.y - from.y) ^ 2
+  end)
+  local reason = string.format("No ring-%d brain found.", ring)
+  for k = 1, math.min(#points, GOTO_TRIES) do
+    surface.request_to_generate_chunks(points[k], GOTO_CHUNKS)
+    surface.force_generate_chunk_requests()
+    surface.force_generate_chunk_requests() -- the ones brain.lua requested for a base moved onto land
+    local territory = surface.get_territory_for_chunk({x = math.floor(points[k].x / 32), y = math.floor(points[k].y / 32)})
+    local unit = territory and territory.get_segmented_units()[1]
+    local head = unit and unit.valid and unit.segments[1]
+    if head then
+      local best = head.position
+      local length = math.max(math.sqrt(best.x ^ 2 + best.y ^ 2), 1)
+      for _, distance in ipairs(GOTO_DISTANCES) do
+        local wanted = {x = best.x - best.x / length * distance, y = best.y - best.y / length * distance}
+        local found = surface.find_non_colliding_position("character", wanted, 10, 1)
+        if found and surface.get_territory_for_chunk({x = math.floor(found.x / 32), y = math.floor(found.y / 32)}) == territory then
+          return found, best
+        end
+      end
+      reason = "No free spot next to that brain." -- try the next one
     end
   end
-  return nil, "No free spot next to that brain."
+  return nil, reason
 end
 
 -- OR-E6 / OR-E7 rocks of a (debug) challenge: {{x, y, wall, arena}, ...}
@@ -191,8 +229,18 @@ remote.add_interface("hostile-territory-debug", {
     if record and territories.states[state] then territories.set_state(record, state) end
   end,
   crusade = function() return crusade.describe() end,
-  brains = function() return brain.describe() .. " " .. regrow.describe() end,
+  brains = function() return brain.describe() .. " " .. regrow.describe() .. " " .. districts.describe() .. " " .. war.describe() end,
+  -- ring-2+ districts (R2-E1 4c): {[territory id] = {point, list = {{slot, x, y, rotation, built}}}}
+  districts_state = function() return storage.districts end,
+  -- points of the ring-2 territories that get guaranteed uranium (R2-E1 4d)
+  uranium_points = function() return storage.uranium_points end,
+  -- ring-2+ wars (4e1): {[territory id] = {started_tick, log, fights = {[slot] = fight}}}
+  wars = function() return storage.wars end,
+  -- 4e1b: the garrison of the district nearest x, y (within 300) to full now; returns territory id, slot
+  garrison_fill = function(x, y) return war.fill(game.surfaces[territories.surface_name], {x = x, y = y}) end,
   oil = function() return storage.oil end,
+  -- brain placement (R2-E1 4b): {placed, dead, moved = {[cell] = {point, spot, id, done}}}
+  brain_state = function() return storage.brain end,
   -- n regrowth rounds now; returns the number of pieces built
   regrow = function(n) return regrow.run(n or 1) end,
   -- staging choice for a target territory id (may generate a neighbour's base): {id, x, y} or nil
@@ -345,7 +393,14 @@ end)
 
 commands.add_command("ht-brains", "Show how many brains were placed on their base and how many territories started claimed (water).", function(command)
   local player = game.get_player(command.player_index)
-  if player then player.print(brain.describe() .. " " .. regrow.describe() .. " " .. oil.describe()) end
+  if player then player.print(brain.describe() .. " " .. regrow.describe() .. " " .. districts.describe() .. " " .. war.describe() .. " " .. oil.describe()) end
+end)
+
+commands.add_command("ht-garrison-fill", "Fill the garrison of the nearest ring-2 district (within 300 tiles) to full now.", function(command)
+  local player = game.get_player(command.player_index)
+  if not player then return end
+  local id, slot = war.fill(player.surface, player.position)
+  player.print(id and string.format("Garrison of territory %d, district %d filled.", id, slot) or "No live district within 300 tiles.")
 end)
 
 -- A/B (oil-ring-challenge-plan.md OR-E4, OR-E6): off = squad slots stay where they were first placed (stale points).

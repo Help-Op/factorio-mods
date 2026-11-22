@@ -10,6 +10,7 @@
 
 local territories = require("scripts.territories")
 local tags = require("scripts.tags")
+local brain = require("scripts.brain")
 
 local staging = {}
 
@@ -51,8 +52,8 @@ local function nearest_nest(record, surface, point)
 end
 
 -- Generates the chunks around the territory's point (its base: ring radius 18 + nest size fits in 3x3 chunks)
--- if they aren't yet. Returns true if the base can exist (point outside the starting area and not on water).
-local WATER_RADIUS = 3 -- same as brain.lua FIT_RADIUS
+-- if they aren't yet, and around its land spot when the point is on water (brain.lua moves the base there,
+-- R2-E1 4b). Returns true if the base can exist (the territory still has its brain).
 local function ensure_base(record, surface)
   local chunk = record.territory.get_chunks()[1]
   if not chunk then return false end
@@ -66,11 +67,24 @@ local function ensure_base(record, surface)
       if not surface.is_chunk_generated({cx + dx, cy + dy}) then missing = true end
     end
   end
+  local home = brain.home(surface, {x = point.x - 0.5, y = point.y - 0.5})
+  if home and (home.x ~= point.x - 0.5 or home.y ~= point.y - 0.5) then
+    local hx, hy = math.floor(home.x / 32), math.floor(home.y / 32)
+    for dx = -2, 2 do
+      for dy = -2, 2 do
+        if not surface.is_chunk_generated({hx + dx, hy + dy}) then missing = true end
+      end
+    end
+    if missing then surface.request_to_generate_chunks({home.x + 0.5, home.y + 0.5}, 2) end
+  end
   if missing then
     surface.request_to_generate_chunks(point, 1)
     surface.force_generate_chunk_requests()
   end
-  return surface.count_tiles_filtered{position = point, radius = WATER_RADIUS, collision_mask = "water_tile"} == 0
+  for _, unit in pairs(record.territory.get_segmented_units()) do
+    if unit.valid then return true end
+  end
+  return false
 end
 
 -- Returns staging record, nest entity; or nil if there is no valid staging territory.

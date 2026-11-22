@@ -2,6 +2,7 @@
 -- tested as L4 in hive-layout-plan.md).
 -- One point per grid cell of G tiles, moved inside the cell by per-cell random values. The offset is capped at
 -- ±J * G / 2, so every point keeps (1 - J) * G / 2 tiles (38 for G = 384, J = 0.8) from its cell edge.
+-- Ring 2+ cells use J_FAR (ring2-challenge-plan.md R2-D16): points near the cell centre leave room for a 150-tile base.
 -- Safe zone (challenge-feel-plan.md P6/E2): only SAFE tiles around spawn (the starting resources) have no territory.
 -- A point closer than PUSH is pushed out to PUSH along its direction from spawn, so territories start right at the
 -- safe edge in every direction and every cell keeps its brain. Only the 4 cells touching spawn can have such a point;
@@ -12,6 +13,7 @@
 
 local G = 384             -- grid cell, tiles
 local J = 0.8             -- point offset: up to ±J * G / 2 inside the cell
+local J_FAR = 0.2         -- the same for cells in ring 2 and beyond (154 tiles from the cell edge)
 local SAFE = 150          -- safe zone radius: the starting patches end at ~100 tiles (P6, measured 2026-10-18)
 local PUSH = 200          -- points closer than this are pushed out to it (SAFE + base radius 25 + margin)
 local FAR_START = 420     -- distance where bases start to grow (brain-bases.lua; was the start-area join radius)
@@ -36,8 +38,11 @@ local function point(di, dj)
   local j = string.format("(floor(y / %d) + %d)", G, dj)
   local ccx = string.format("((%s + 0.5) * %d)", i, G)
   local ccy = string.format("((%s + 0.5) * %d)", j, G)
-  local px = string.format("floor(%s + (%s - 0.5) * %g * %d)", ccx, cell_random(ccx, ccy, 102), J, G)
-  local py = string.format("floor(%s + (%s - 0.5) * %g * %d)", ccy, cell_random(ccx, ccy, 103), J, G)
+  -- the cell's ring (grid layer, as hostile_point_ring below): J_FAR from ring 2 on
+  local ring = string.format("max(if(%s >= 0, %s, -%s - 1), if(%s >= 0, %s, -%s - 1))", i, i, i, j, j, j)
+  local offset = string.format("if(%s >= 2, %g, %g) * %d", ring, J_FAR, J, G)
+  local px = string.format("floor(%s + (%s - 0.5) * %s)", ccx, cell_random(ccx, ccy, 102), offset)
+  local py = string.format("floor(%s + (%s - 0.5) * %s)", ccy, cell_random(ccx, ccy, 103), offset)
   local id = string.format("((%s + 500) * 1000 + (%s + 500))", i, j)
   return px, py, id
 end
@@ -129,3 +134,10 @@ data:extend({{type = "noise-expression", name = "hostile_crude_oil_probability",
 local settings = data.raw.planet.nauvis.map_gen_settings
 settings.property_expression_names = settings.property_expression_names or {}
 settings.property_expression_names["entity:crude-oil:probability"] = "hostile_crude_oil_probability"
+
+-- R2-D18 (ring2-challenge-plan.md): uranium only in ring-2-and-beyond territories, the same way.
+local uranium_probability = data.raw.resource["uranium-ore"].autoplace.probability_expression
+assert(type(uranium_probability) == "string", "uranium-ore probability_expression is not a string")
+data:extend({{type = "noise-expression", name = "hostile_uranium_ore_probability",
+  expression = "(" .. uranium_probability .. ") * (hostile_point_ring >= 2)"}})
+settings.property_expression_names["entity:uranium-ore:probability"] = "hostile_uranium_ore_probability"

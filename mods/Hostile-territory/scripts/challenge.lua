@@ -174,6 +174,8 @@ local function player_of(cause)
   return nil
 end
 
+challenge.player_of = player_of -- war.lua
+
 -- on_entity_damaged for enemy nests and worms: starts a siege (E9), or adds the player to a running challenge.
 function challenge.on_base_damaged(event)
   init_storage()

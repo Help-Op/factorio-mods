@@ -1,9 +1,10 @@
 -- ring2-challenge-plan.md step 3: room for a 150-tile base per ring-2 (and ring-3) territory, for the point offset J
 -- of today (0.8) and smaller ones, and where uranium spawns today. Changes no data.
--- Points: read at J = 0.8 from the noise (hostile_point_own_*), the per-cell random offset backed out, then rebuilt
--- for each J in Lua. Territory border = nearest point by Manhattan distance among the 3x3 cells (nauvis-territory.lua).
+-- Points: read from the noise (hostile_point_own_*; J 0.8 in rings 0-1, 0.2 from ring 2 since R2-D16), the per-cell
+-- random offset backed out, then rebuilt for each J in Lua. Territory border = nearest point by Manhattan distance among the 3x3 cells (nauvis-territory.lua).
 -- Headless on tick 10 after generating 40 chunks around the origin. Result: script-output/ring2-check-result.txt
-local G, J_NOW, R = 384, 0.8, 150
+local G, R = 384, 150
+local function j_now(ring) return ring >= 2 and 0.2 or 0.8 end -- nauvis-territory.lua J / J_FAR
 local JS = {0.8, 0.4, 0.2, 0}
 local NEST = 3 -- nest half-size: a slot needs this much room past its centre
 
@@ -14,7 +15,7 @@ local function median(t) local s = sorted(t) return s[math.floor((#s + 1) / 2)] 
 local function fmt(n) return string.format("%.0f", n) end
 
 local function analyse(s, out)
-  -- per-cell offsets in [-0.5, 0.5], from the J = 0.8 points
+  -- per-cell offsets in [-0.5, 0.5], from the noise points
   local u, positions, keys = {}, {}, {}
   for i = -7, 6 do
     for j = -7, 6 do
@@ -25,23 +26,24 @@ local function analyse(s, out)
   local p = s.calculate_tile_properties({"hostile_point_own_x", "hostile_point_own_y"}, positions)
   for k, c in pairs(keys) do
     local i, j = c[1], c[2]
+    local jn = j_now(ring_of_cell(i, j))
     u[i .. "," .. j] = {
-      x = (p.hostile_point_own_x[k] - (i + 0.5) * G) / (J_NOW * G),
-      y = (p.hostile_point_own_y[k] - (j + 0.5) * G) / (J_NOW * G),
+      x = (p.hostile_point_own_x[k] - (i + 0.5) * G) / (jn * G),
+      y = (p.hostile_point_own_y[k] - (j + 0.5) * G) / (jn * G),
       nx = p.hostile_point_own_x[k], ny = p.hostile_point_own_y[k]}
   end
 
-  -- rebuilt points must match the noise at J = 0.8 (outside the 4 pushed ring-0 cells)
+  -- rebuilt points must match the noise (outside the 4 pushed ring-0 cells)
   local bad = 0
   for key, o in pairs(u) do
     local i, j = key:match("(-?%d+),(-?%d+)")
     i, j = tonumber(i), tonumber(j)
     if ring_of_cell(i, j) >= 1 then
-      local x = math.floor((i + 0.5) * G + o.x * J_NOW * G + 0.5)
+      local x = math.floor((i + 0.5) * G + o.x * j_now(ring_of_cell(i, j)) * G + 0.5)
       if math.abs(x - o.nx) > 1 then bad = bad + 1 end
     end
   end
-  out[#out + 1] = "rebuild check (J 0.8, ring 1+ cells, off by > 1 tile): " .. bad
+  out[#out + 1] = "rebuild check (ring 1+ cells, off by > 1 tile): " .. bad
 
   for _, ring in pairs({2, 3}) do
     out[#out + 1] = ""
@@ -151,6 +153,33 @@ local function analyse(s, out)
     end
   end
   out[#out + 1] = "per territory %: " .. table.concat(sorted(lands), " ")
+
+  -- base contents per ring (R2-E1 4a): worms anywhere near a point, nests on the core ring (18) and the anchor ring (32)
+  out[#out + 1] = ""
+  out[#out + 1] = "== base contents per ring (bases with generated chunks; points from the noise)"
+  local per_ring = {}
+  for key, o in pairs(u) do
+    local i, j = key:match("(-?%d+),(-?%d+)")
+    local ring = ring_of_cell(tonumber(i), tonumber(j))
+    local c = {o.nx + 0.5, o.ny + 0.5}
+    if s.is_chunk_generated({math.floor(c[1] / 32), math.floor(c[2] / 32)}) then
+      local t = per_ring[ring] or {bases = 0, worms = 0, core = 0, anchors = 0}
+      per_ring[ring] = t
+      t.bases = t.bases + 1
+      t.worms = t.worms + s.count_entities_filtered{position = c, radius = 45, type = "turret", force = "enemy"}
+      for _, n in pairs(s.find_entities_filtered{position = c, radius = 40, type = "unit-spawner", force = "enemy"}) do
+        local d = math.sqrt((n.position.x - c[1]) ^ 2 + (n.position.y - c[2]) ^ 2)
+        if d < 25 then t.core = t.core + 1 elseif d >= 28 and d <= 37 then t.anchors = t.anchors + 1 end
+      end
+    end
+  end
+  for ring = 0, 6 do
+    local t = per_ring[ring]
+    if t then
+      out[#out + 1] = string.format("  ring %d: %d bases, worms %d, core nests %.1f per base, anchors %.1f per base",
+        ring, t.bases, t.worms, t.core / t.bases, t.anchors / t.bases)
+    end
+  end
 
   -- uranium today
   out[#out + 1] = ""

@@ -69,10 +69,10 @@ local function quality()
   return prototypes.quality[QUALITY] and QUALITY or "normal"
 end
 
-local function fill_grid(grid, list)
+local function fill_grid(grid, list, q) -- q: quality (default: QUALITY)
   for _, entry in ipairs(list) do
-    for _ = 1, entry[2] do
-      if not grid.put{name = entry[1], quality = quality()} then break end
+    for _ = 1, prototypes.equipment[entry[1]] and entry[2] or 0 do -- unknown names are skipped (put would throw)
+      if not grid.put{name = entry[1], quality = q or quality()} then break end
     end
   end
   -- start with full shields and batteries instead of waiting for them to charge
@@ -126,6 +126,16 @@ local tier_kits =
     items = {{"grenade", 20}},
     research = {"physical-projectile-damage-1", "physical-projectile-damage-2", "weapon-shooting-speed-1",
       "weapon-shooting-speed-2", "stronger-explosives-1", "stronger-explosives-2"}},
+  -- ring2-challenge-plan.md R2-D33: blue era, no tank (flamethrower, rockets, modular armor + shields, turrets)
+  {name = "ring2",        gun = "submachine-gun",  ammo = {{"piercing-rounds-magazine", 600}},
+    extra_guns = {{"flamethrower", "flamethrower-ammo", 100}, {"rocket-launcher", "rocket", 200}},
+    armor = "modular-armor",
+    equipment = {{"energy-shield-equipment", 2}, {"battery-equipment", 2}, {"solar-panel-equipment", 13}},
+    items = {{"explosive-rocket", 100}, {"gun-turret", 10}, {"poison-capsule", 10}, {"slowdown-capsule", 10}},
+    research = {"physical-projectile-damage-1", "physical-projectile-damage-2", "physical-projectile-damage-3",
+      "physical-projectile-damage-4", "weapon-shooting-speed-1", "weapon-shooting-speed-2", "weapon-shooting-speed-3",
+      "weapon-shooting-speed-4", "stronger-explosives-1", "stronger-explosives-2", "refined-flammables-1",
+      "refined-flammables-2"}},
   {name = "smg-red",      gun = "submachine-gun",  ammo = {{"piercing-rounds-magazine", 400}}},
   {name = "smg-uranium",  gun = "submachine-gun",  ammo = {{"uranium-rounds-magazine", 200}}},
   {name = "shotgun",      gun = "shotgun",         ammo = {{"shotgun-shell", 200}}},
@@ -171,7 +181,14 @@ local function give_tier_kit(player, kit)
     character.get_inventory(defines.inventory.character_guns)[i + 1].set_stack{name = extra[1]}
     character.get_inventory(defines.inventory.character_ammo)[i + 1].set_stack{name = extra[2], count = extra[3]}
   end
-  if kit.armor then character.get_inventory(defines.inventory.character_armor).insert{name = kit.armor} end
+  if kit.armor then
+    local armor_inventory = character.get_inventory(defines.inventory.character_armor)
+    armor_inventory.insert{name = kit.armor}
+    if kit.equipment then
+      local armor = armor_inventory[1]
+      fill_grid(armor.grid or armor.create_grid(), kit.equipment, "normal")
+    end
+  end
   -- items from other mods are skipped when that mod isn't loaded
   for _, item in ipairs(kit.items or {}) do
     if prototypes.item[item[1]] then main.insert{name = item[1], count = item[2]} end

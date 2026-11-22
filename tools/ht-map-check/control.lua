@@ -102,10 +102,16 @@ local function check(surface, x1, y1, x2, y2)
   local sum = 0 for _, v in pairs(sizes) do sum = sum + v end
   local enemies = surface.find_entities_filtered{area = {{x1, y1}, {x2, y2}}, type = {"turret", "unit-spawner"}, force = "enemy"}
   local stray, in_start = 0, 0
+  -- bases moved onto land (R2-E1 4b) stand on their spot, not their point
+  local spots = {}
+  for _, m in pairs(remote.call("hostile-territory-debug", "brain_state").moved) do spots[#spots + 1] = m.spot end
   for _, e in pairs(enemies) do
     local near = false
     for _, pt in pairs(points) do
       if pt.base and (e.position.x - pt.x) ^ 2 + (e.position.y - pt.y) ^ 2 < 36 ^ 2 then near = true break end -- 36: anchor ring (OR-E8)
+    end
+    for _, pt in pairs(spots) do
+      if (e.position.x - pt.x) ^ 2 + (e.position.y - pt.y) ^ 2 < 36 ^ 2 then near = true break end
     end
     if not near then stray = stray + 1 end
     if (e.position.x ^ 2 + e.position.y ^ 2) < 150 ^ 2 then in_start = in_start + 1 end
@@ -150,7 +156,7 @@ commands.add_command("ht-map-nearest", "GPS link to the nearest brain base", fun
     if b.base and (not bd or d < bd) then best, bd = b, d end
   end
   if best then
-    player.print(string.format("Nearest base: [gps=%d,%d] %.0f tiles away, %d nests, %d worms", best.x, best.y, math.sqrt(bd), best.n, 1 + best.m))
+    player.print(string.format("Nearest base: [gps=%d,%d] %.0f tiles away, %d nests", best.x, best.y, math.sqrt(bd), best.n)) -- no worms since R2-E1 4a
   else
     player.print("No base within 1200 tiles")
   end
