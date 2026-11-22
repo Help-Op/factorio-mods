@@ -1,6 +1,6 @@
 # Ring 2 Challenge
 
-> **Status:** Brainstorm done (R2-D1–D18), interview done 2026-10-24 (R2-D19–D26: shrink-to-fit water bases in every ring, uranium in a district of the 3 closest territories, districts as shield links, 4 tanky-spawner districts at 115, 20 min fallen, creep blotches). **R2-E1 spec approved** 2026-10-24 · **Parent:** [ring-layout-plan.md](ring-layout-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md), [challenge-feel-plan.md](challenge-feel-plan.md) · **Next:** 4a ✅, 4b ✅ (incl. B-I10 fix, in game 2026-10-25). **4c districts ✅** (headless + in game 2026-10-25). **4d uranium ✅** (headless + in game 2026-10-25). Ring feel done ([ring-feel-plan.md](ring-feel-plan.md): ring 2 is a **war**, R2-D27). **4e split: 4e1** war state + district fight ✅ built, **PT1 done** (2026-10-25: works, but too easy and taking a district means nothing yet → R2-D29: retake army + way harder). Q40 / Q41 answered by ring feel (RF-D44–D53 → R2-D30–D32): **4e1b PT2 done 2026-10-26**: works, far too easy (23–53 s per district, 0 HP lost), brutes don't read; crash on the last heart fixed; next: **4e1c big biters in the garrison** (R2-D34, spec drafted, waiting for go-ahead), then PT3, then 4e2 retake army, 4f core fight · [Roadmap](roadmap.md)
+> **Status:** R2-E1 approved; 4a–4d done; 4e1 war state + district fight built; PT2 (2026-10-26) far too easy; 4e1c built + headless (2026-11-22) · **Parent:** [ring-layout-plan.md](ring-layout-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md), [challenge-feel-plan.md](challenge-feel-plan.md) · **Next:** PT3 (4e1c, big biters in the garrison) · [Roadmap](roadmap.md)
 
 Started 2026-10-24 (game 2.1.21). Ring 2 in the code = the 20 territories behind the oil ring (RL-D4), cells 768–1150 tiles out.
 
@@ -365,13 +365,37 @@ Numbers are first guesses to playtest. Choices made in the interview: R2-D19–D
 
   - **Bug (PT2):** the last district falling crashed (`LuaSegmentedUnit doesn't contain key position`): with no live district left, the garrison walks to the brain, and `relocate` read `.position` on the segmented unit instead of its head segment. **Fixed** (`brain.segments[1].position`); the headless test now kills every heart with all garrisons on the map (the last 296 units walk to the brain), ✅ 3 seeds. Also fixed: the participant column was empty (a player named ""), and the fight CSV gets a **`shield`** column (armor shield left) so the next PT shows whether units reach you at all.
   - **Reading:** the mechanics work (zone, hold, lead, rebuild, fall); the **threat** is missing. Melee small + medium biters, slowed 20 %, can't reach a player with a flamethrower and rockets, so a garrison is a pile of kills, not a cost. More of the same raises the time but probably not the cost (Lanchester with area damage favours the player). Q50–Q52.
-- [ ] 4e1c. **Big biters in the garrison** (R2-D34). Headless + **PT3**. **Spec drafted 2026-10-26, waiting for the go-ahead.**
+- [ ] 4e1c. **Big biters in the garrison** (R2-D34). Headless + **PT3**. Spec drafted 2026-10-26, go-ahead 2026-11-22 (user).
   - **Mix** of the 80: **50 % small, 30 % medium, 20 % big** (16 big biters: 375 HP, vanilla resistances, speed 0.16 in Hostile-fauna, × 0.8 slow). Rebuild keeps the shares.
   - **Lead:** big + medium attack first, small biters 1.5 s later (as today).
   - Everything else as 4e1b (80, 0.7 / s rebuild, zone 80, hold 40, leash 120).
   - **Risk:** big biters are the slowest unit (~0.13 tiles / tick with the slow), so even with the lead they may arrive last and not read as a front. PT3 tells; a fix would be "small biters wait until the brutes are within ~15 tiles of you".
   - **Headless:** mix on the map (40 / 24 / 16), rebuild keeps the shares, lead counts per kind.
   - **PT3** questions (draft): does a district now cost HP / shield (new `shield` column), how long, do big biters read as the front?
+  - **Built** ([scripts/war.lua](../mods/Hostile-territory/scripts/war.lua), 2026-11-22, game 2.1.21): `BRUTE` 0.4 → `MIX` table (small 0.5 / medium 0.3 / big 0.2); a new unit (show, rebuild, fill) is the kind furthest below its share. Brutes = big + medium: they attack at once, small biters `BRUTE_LEAD` 1.5 s later. Fight start and hold release send the share of **each kind** (rounded up). Everything else as 4e1b. Test: `tools/ht-war-test/` counts per kind and logs the mean distance per kind 2 s after the lead.
+  - **Headless ✅** (`tools/ht-war-test/`, 2026-11-22, game 2.1.21, seeds 12345 / 987654 / 555; same on all three, no errors):
+
+    | Check | Result |
+    |---|---|
+    | Mix on the map | 40 small / 24 medium / 16 big ✅ |
+    | Lead at 0.5 s | 20 brutes (8 big + 12 medium) attacking, 0 small ✅; at 2 s 20 / 20 ✅ |
+    | Front 2 s after the lead (mean distance to you) | big 49–53, medium 43–48, small 56–67 tiles: brutes ahead, **medium in front of big** |
+    | Rebuild after 30 kills | 50 → 56 in 10 s, shares kept (28 / 17 / 11) ✅ |
+    | Fallen district joins B | 80 → 136 (68 / 41 / 27) ✅ |
+    | Tank, leash, hold, brain → war ends | as 4e1b ✅ |
+
+    Reading: the risk (big biters arriving last) doesn't show at the start: they keep ~5–15 tiles ahead of the small biters for the first 2 s. Whether the gap holds over 70 tiles, and whether they read as a front, only PT3 shows (the test character stands still and never shoots).
+  - **PT3 (4e1c)** hand-over:
+    - **Changed since the last PT (PT2):**
+      - Garrison mix: 60 % small / 40 % medium → **50 % small / 30 % medium / 20 % big** (16 of 80 are big biters, R2-D34).
+      - Lead: medium biters first → **big + medium first**, small 1.5 s later (R2-D34).
+      - Fight CSV: new **`shield`** column (armor shield left; added after PT2).
+    - **Checked automatically:** the table above. **Only the PT shows:** what a district costs now, how long it takes, whether the big biters read as the front over the whole approach.
+    - **Try in this PT** (all three belong to the one change): `/cheat-kit ring2`, `/ht-goto-ring 2`, then the "120 tiles in front of the nearest district heart" command from `docs/commands.md`; walk in and take the district.
+      1. Does a district now cost you HP or shield (see `hp` and `shield` in the CSV)?
+      2. How long does it take, and does that feel right?
+      3. Do the big biters read as the front, or do they arrive last?
+    - **Send back:** the fight CSV (`script-output/ht-telemetry/<tick>-t<id>-d<slot>.csv`) and the war log (`…-war.csv`), plus feel notes.
 - [ ] 4e2. **Retake army** (RF-D15, D16, D19, D21, D30; built on a new shared hive-AI module with a hidden per-chunk influence map, RF-D34–D38: a crusade inside the territory, leash, ignores decoys, retreats at half strength): simple + tell. Once you've left a fallen district, an army masses visibly at the core, marches there, destroys every player building in the district (any building holds it), wakes the quiet nests and brings an **elder queen** that settles into the heart (RF-D50). All districts back and nothing of yours holding ground → the war ends (hive win). Headless + its own **PT**. Spec after 4e1's PT. Later (ring-feel RF-D39–D43, after 4e2's PT): win prediction before committing, digestion pools. Open: ring-feel Q33 (when a district counts as left), Q34 (army size, massing time), Q35 (after the hive wins).
 - [ ] 4f. Core fight: ring-2 phases, districts as shield links, `hf-brain-ring2`; the **brain makes no units** (RF-D52): units come from nests, queens and hearts. Headless + **PT**. Moved right after 4e2 (R2-D33).
 - [ ] 4e3. **Founders for regrowth** (RF-D49, D50; ring 2 only): a lost nest comes back because a queen walks out from a living piece and settles; a heart because an elder queen does. Kill her on the way and it doesn't come back. Replaces pop-in regrow in ring 2. Headless + PT.
@@ -444,3 +468,9 @@ Numbers are first guesses to playtest. Choices made in the interview: R2-D19–D
 - ~~**Q51. Brute look:** big biter as the brute now (readable at once), or a scaled + tinted Hostile-fauna unit of its own?~~
 - ~~**Q52. Kit check:** is `/cheat-kit ring2` what you'd really have at ring 2 (flamethrower + rockets + shields at once), or too strong a baseline?~~
 - **Q24. Spec defaults still to playtest** (no decision needed before building): shield 0.9 split over the live hearts, counter-attack every 3 min at the player building nearest the brain, `hf-brain-ring2` 5000 HP, uranium patch ~1.5 M under the spawn-facing district, creep 10 HP/s standing still, ~30 pods per base.
+
+## Old header line (moved here 2026-11-22)
+
+The header now holds the current state only (planning skill); this is the header as it stood before, kept for its history.
+
+**Status:** Brainstorm done (R2-D1–D18), interview done 2026-10-24 (R2-D19–D26: shrink-to-fit water bases in every ring, uranium in a district of the 3 closest territories, districts as shield links, 4 tanky-spawner districts at 115, 20 min fallen, creep blotches). **R2-E1 spec approved** 2026-10-24 · **Parent:** [ring-layout-plan.md](ring-layout-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md), [challenge-feel-plan.md](challenge-feel-plan.md) · **Next:** 4a ✅, 4b ✅ (incl. B-I10 fix, in game 2026-10-25). **4c districts ✅** (headless + in game 2026-10-25). **4d uranium ✅** (headless + in game 2026-10-25). Ring feel done ([ring-feel-plan.md](ring-feel-plan.md): ring 2 is a **war**, R2-D27). **4e split: 4e1** war state + district fight ✅ built, **PT1 done** (2026-10-25: works, but too easy and taking a district means nothing yet → R2-D29: retake army + way harder). Q40 / Q41 answered by ring feel (RF-D44–D53 → R2-D30–D32): **4e1b PT2 done 2026-10-26**: works, far too easy (23–53 s per district, 0 HP lost), brutes don't read; crash on the last heart fixed; next: **4e1c big biters in the garrison** (R2-D34, spec drafted, awaiting go-ahead), then PT3, then 4e2 retake army, 4f core fight · [Roadmap](roadmap.md)

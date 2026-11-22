@@ -1,4 +1,4 @@
--- ring2-challenge-plan.md 4e1 + 4e1b: ring-2 war (scripts/war.lua) with garrisons and zones of control. Headless, no
+-- ring2-challenge-plan.md 4e1 + 4e1b + 4e1c (garrison mix 50 % small / 30 % medium / 20 % big; big + medium lead): ring-2 war (scripts/war.lua) with garrisons and zones of control. Headless, no
 -- players: a player-less, healed-every-tick character of force "player" stands in for the player (never shoots).
 -- 1. Generates 40 chunks, picks the ring-2 territory with the most built districts (A = first, B = its nearest).
 --    Garrisons on the map before anyone comes near.
@@ -58,14 +58,15 @@ local function garrison_line(slot)
   local g = d.garrison
   if not g then return "no garrison record" end
   if not g.units then return string.format("off the map, count %d", g.count or -1) end
-  local n, brutes = 0, 0
+  local n, per = 0, {}
   for _, u in pairs(g.units) do
     if u.valid then
       n = n + 1
-      if u.name == "medium-biter" then brutes = brutes + 1 end
+      per[u.name] = (per[u.name] or 0) + 1
     end
   end
-  return string.format("on the map, %d units (%d brutes)", n, brutes)
+  return string.format("on the map, %d units (small %d / medium %d / big %d)", n, per["small-biter"] or 0,
+    per["medium-biter"] or 0, per["big-biter"] or 0)
 end
 local function committed(f)
   local n, brutes_attacking, swarm_attacking = 0, 0, 0
@@ -74,7 +75,7 @@ local function committed(f)
       n = n + 1
       local cmd = u.commandable.command
       if cmd and cmd.type == defines.command.attack then
-        if u.name == "medium-biter" then brutes_attacking = brutes_attacking + 1 else swarm_attacking = swarm_attacking + 1 end
+        if u.name == "medium-biter" or u.name == "big-biter" then brutes_attacking = brutes_attacking + 1 else swarm_attacking = swarm_attacking + 1 end
       end
     end
   end
@@ -137,6 +138,16 @@ script.on_event(defines.events.on_tick, function(e)
   if t == T0 + 270 then
     local n, ba, sa = committed(fight_of(st.A.slot))
     p("   2 s later: sent %d; attacking: brutes %d, small %d", n, ba, sa)
+    local sum, cnt = {}, {}
+    for _, u in pairs(fight_of(st.A.slot).spawned) do
+      if u.valid then
+        local q = math.sqrt((u.position.x - st.c.position.x) ^ 2 + (u.position.y - st.c.position.y) ^ 2)
+        sum[u.name], cnt[u.name] = (sum[u.name] or 0) + q, (cnt[u.name] or 0) + 1
+      end
+    end
+    local function avg(name) return cnt[name] and sum[name] / cnt[name] or -1 end
+    p("   mean distance to the character: big %.0f, medium %.0f, small %.0f (does the front read?)", avg("big-biter"),
+      avg("medium-biter"), avg("small-biter"))
     st.c.teleport(out_from(s, st.A, 30))
   end
 

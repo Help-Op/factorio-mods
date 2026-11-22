@@ -3,8 +3,8 @@
 -- A war is a state of one territory, kept apart from its record's state (challenge, overlay and crusade code don't
 -- see it; nothing about it goes on the map). It starts with the first district fight and ends when the brain dies
 -- (claimed). Leaving doesn't end it. (The hive-win end comes with the retake army, 4e2.)
---   Garrison (4e1b): every live district has a standing army of GARRISON units (BRUTE of them brutes = medium
---   biters, the rest small biters, all SLOW % slower) that wanders POST tiles around its heart. It is only on the
+--   Garrison (4e1b, 4e1c): every live district has a standing army of GARRISON units in the MIX shares (brutes =
+--   big + medium biters, the swarm = small biters, all SLOW % slower) that wanders POST tiles around its heart. It is only on the
 --   map while a player character is within WAKE of the heart or the heart's chunk is visible to a player force
 --   (radar); after DESPAWN_AFTER without either it is kept as a number. The living nests and the heart refill it,
 --   one unit per nest per REBUILD ticks, in and out of a fight; no heart, no rebuild.
@@ -36,8 +36,9 @@ war.CHECK_INTERVAL = 30
 local RANGE = 100
 local LOSE_GRACE = 5 * 60
 local GARRISON = 80
-local BRUTE = 0.4
-local BRUTE_NAME, SWARM_NAME = "medium-biter", "small-biter"
+-- Shares of the garrison (R2-D34, 4e1c). Big and medium biters are the brutes: they attack first.
+local MIX = {{name = "big-biter", share = 0.2}, {name = "medium-biter", share = 0.3}, {name = "small-biter", share = 0.5}}
+local BRUTES = {["big-biter"] = true, ["medium-biter"] = true}
 local POST_MIN, POST_MAX = 20, 30
 local WAKE = 200
 local DESPAWN_AFTER = 60 * 60
@@ -142,28 +143,32 @@ local function garrison(d)
   return d.garrison
 end
 
--- Units alive, brutes among them (dead ones dropped).
+-- Units alive, and alive per unit name (dead ones dropped).
 local function garrison_alive(g)
-  local n, brutes = 0, 0
+  local n, per = 0, {}
   for k, unit in pairs(g.units or {}) do
     if unit.valid then
       n = n + 1
-      if unit.name == BRUTE_NAME then brutes = brutes + 1 end
+      per[unit.name] = (per[unit.name] or 0) + 1
     else
       g.units[k] = nil
     end
   end
-  return n, brutes
+  return n, per
 end
 
 local function post(unit)
   unit.commandable.set_command{type = defines.command.wander, radius = 8, distraction = defines.distraction.by_enemy}
 end
 
--- One unit near position (a post on the ring or a nest), brute or not to keep the BRUTE share.
+-- One unit near position (a post on the ring or a nest): the kind furthest below its MIX share.
 local function spawn_unit(surface, g, position)
-  local n, brutes = garrison_alive(g)
-  local name = brutes < BRUTE * (n + 1) and BRUTE_NAME or SWARM_NAME
+  local n, per = garrison_alive(g)
+  local name, gap = MIX[#MIX].name, nil
+  for _, m in ipairs(MIX) do
+    local short = m.share * (n + 1) - (per[m.name] or 0)
+    if not gap or short > gap then name, gap = m.name, short end
+  end
   local spot = surface.find_non_colliding_position(name, position, 8, 0.5)
   if not spot then return nil end
   local unit = surface.create_entity{name = name, position = spot, force = "enemy"}
@@ -221,7 +226,7 @@ local function commit(f, units, players)
   for _, unit in pairs(units) do
     f.spawned[unit.unit_number] = unit
     f.sent = f.sent + 1
-    if unit.name == BRUTE_NAME then attack(unit, players) else later[#later + 1] = unit end
+    if BRUTES[unit.name] then attack(unit, players) else later[#later + 1] = unit end
   end
   if #later > 0 then
     f.lead = f.lead or {}
@@ -229,17 +234,19 @@ local function commit(f, units, players)
   end
 end
 
--- Half of each kind (rounded up) on fight start; everything left once the hold is released.
+-- Share of each kind (rounded up) on fight start; everything left once the hold is released.
 local function commit_share(f, g, players, share)
-  local brutes, swarm = {}, {}
+  local kinds = {}
   for _, unit in pairs(g.units or {}) do
     if unit.valid and not f.spawned[unit.unit_number] then
-      if unit.name == BRUTE_NAME then brutes[#brutes + 1] = unit else swarm[#swarm + 1] = unit end
+      kinds[unit.name] = kinds[unit.name] or {}
+      table.insert(kinds[unit.name], unit)
     end
   end
   local units = {}
-  for k = 1, math.ceil(#brutes * share) do units[#units + 1] = brutes[k] end
-  for k = 1, math.ceil(#swarm * share) do units[#units + 1] = swarm[k] end
+  for _, list in pairs(kinds) do
+    for k = 1, math.ceil(#list * share) do units[#units + 1] = list[k] end
+  end
   commit(f, units, players)
 end
 

@@ -1,0 +1,12 @@
+#!/bin/sh
+# Refuses a commit when the shared plan check (~/.claude/hooks/plan-headers.sh,
+# planning skill) fails: a staged plan's title or header line is off, or a plan
+# or the roadmap names a merged claude/… branch. Enabled per clone with
+#   git config core.hooksPath .githooks
+PLAN_CHECK="$HOME/.claude/hooks/plan-headers.sh"
+if [ -f "$PLAN_CHECK" ]; then
+	sh "$PLAN_CHECK" || exit 1
+else
+	echo "pre-commit: $PLAN_CHECK not found; plan headers not checked. Skipped."
+fi
+exit 0

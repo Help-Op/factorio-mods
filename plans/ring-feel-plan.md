@@ -1,6 +1,6 @@
 # Ring Feel
 
-> **Status:** **Interview done** 2026-10-25 (RF-D1–D53): ring 2 = **power fantasy + war** (a war state instead of a challenge, an RTS hive, retake armies, forward outposts, nothing on the map); war AI on one shared hive-AI module with an influence map and combat prediction (RF-D34–D38). Effect on R2-E1 / 4e listed below · **Parent:** [ring2-challenge-plan.md](ring2-challenge-plan.md) (4e on hold), [challenge-feel-plan.md](challenge-feel-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md) · **Next:** ring-2 session revisits the 4e spec with the effect list (step 5); open Q29–Q35 · [Roadmap](roadmap.md)
+> **Status:** Interview done 2026-10-25 (RF-D1–D53): ring 2 is a power fantasy + war · **Parent:** [ring2-challenge-plan.md](ring2-challenge-plan.md), [challenge-feel-plan.md](challenge-feel-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md) · **Next:** ring-2 session revisits the 4e spec with the effect list (step 5); open Q29–Q35 · [Roadmap](roadmap.md)
 
 Started 2026-10-25 (game 2.1.21), side session. Ring 2's detail work (step 4e: district fight, fallen timer, counter-attacks; Q26–Q29) is on hold because the detail questions came before the big picture.
 
@@ -293,3 +293,9 @@ For the ring-2 session. Nothing here is edited in [ring2-challenge-plan.md](ring
 
 - ~~**Q17.**~~ → RF-D29.
 - **Q9. Order of the other RTS parts** after retakes: economy, weak-point raids, front + reinforcements. Later.
+
+## Old header line (moved here 2026-11-22)
+
+The header now holds the current state only (planning skill); this is the header as it stood before, kept for its history.
+
+**Status:** **Interview done** 2026-10-25 (RF-D1–D53): ring 2 = **power fantasy + war** (a war state instead of a challenge, an RTS hive, retake armies, forward outposts, nothing on the map); war AI on one shared hive-AI module with an influence map and combat prediction (RF-D34–D38). Effect on R2-E1 / 4e listed below · **Parent:** [ring2-challenge-plan.md](ring2-challenge-plan.md) (4e on hold), [challenge-feel-plan.md](challenge-feel-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md) · **Next:** ring-2 session revisits the 4e spec with the effect list (step 5); open Q29–Q35 · [Roadmap](roadmap.md)

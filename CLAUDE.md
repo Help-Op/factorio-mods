@@ -4,20 +4,11 @@ Monorepo for my Factorio mods (`E:\dev\factorio`). Main mod: **Hostile Territory
 
 ## How we work
 
-1. **Plan first, in a markdown file.** Before writing code for a new feature or test, write or extend a plan file in `plans/`.
-2. **Interview before building.** Go through the plan with me: ask questions, raise open decisions, suggest options. Wait for my go-ahead before you implement.
-3. **Keep the plan file current.** Update it as we go: decisions, test results (with date and game version), checked-off steps, and new open questions. Anyone should be able to pick up in a new session from the plan alone.
-4. **Never commit.** I do all commits myself. You may stage changes (`git add`).
-5. **One step at a time.** Do steps in order and verify each one before moving on. I often test in game myself and report back. Write my results into the plan.
-6. **Hand over every playtest (PT) in the same shape**, in chat and as the PT's test-plan step in the plan:
-   - **Changed since the last PT:** one line per change, with its decision ID and old → new value.
-   - **Headless:** what the headless run confirmed, and what only the PT can show.
-   - **Test in this PT:** one question per change, plus the setup commands. If changes are bundled, say which question belongs to which.
-   - **Send:** the telemetry CSV name and feel notes.
+The global "How we work" list applies (plan first, interview before building, keep the plan current, one step at a time; I commit). Here, results carry the date and game version, and every playtest (PT) is handed over in the dispatch skill's **Play hand-over** shape (`~/.claude/skills/dispatch/SKILL.md`), in chat and as the PT's step in the plan; *Send back* is the telemetry CSV name and feel notes.
 
 ## Side sessions
 
-Offer a separate session (with a full brief, starting from the plan file) for work that stands on its own (tried 2026-10-23, the ring-1 brainstorm):
+Offer a separate session (with a full brief, starting from the plan file) for work that stands on its own (tried 2026-10-23, the ring-1 brainstorm). For a whole thread run from one session, use `/dispatch` (user skill), which follows the rules below and the Dispatch section:
 
 - **Brainstorm / design** when a question goes open-ended.
 - **Playtest analysis**: read the telemetry, write the PT step into the plan.
@@ -35,19 +26,23 @@ Rules:
 ## Writing style
 
 - Clear structure, short and to the point. Use headings, bullets and tables. No filler.
-- Plans use: header line → Goal → Decisions / Confirmed facts → Issues → Step-by-step checklist (`- [ ]`) → Open questions.
 - Give in-game test commands as one-line `/c ...` console commands that I can paste.
 - **Keep useful commands in [docs/commands.md](docs/commands.md)**: one command per fenced code block (plain lines get merged by markdown). Add every new debug command or test snippet that will be reused.
 
-## Roadmap, inbox and plan files
+## Plans, roadmap and dispatch
 
-CLAUDE.md says **how** we work. **What** we work on lives in `plans/`. Details: [planning-structure-plan.md](plans/planning-structure-plan.md).
+- **Plans** follow the user skill `planning` (`~/.claude/skills/planning/`): read it before editing anything in `plans/`. Start a session with [roadmap.md](plans/roadmap.md) to find where we are; new ideas go to [inbox.md](plans/inbox.md). This workspace's history of those rules: [planning-structure-plan.md](plans/planning-structure-plan.md).
+- The pre-commit hook (`.githooks/`, enabled with `git config core.hooksPath .githooks`) runs the shared plan-header check.
 
-- **[roadmap.md](plans/roadmap.md)** is the big picture: every plan with status and next step, open threads in order, a Mermaid map of how the plans connect, and issues across plans. Read it at the start of a session to find where we are.
-- The roadmap also holds **Not yet specified** (fog: things coming but not yet a clear question) and **Out of scope** (decided not to do). Move fog into a plan's open questions once it can be phrased; check Out of scope before proposing something new.
-- **[inbox.md](plans/inbox.md)** collects my random thoughts: one dated line each. Don't put them straight into plans. Triage together when a step is done or the list gets long: move to a plan (with a link), park, or drop.
-- **Every plan starts with a header line:** `> **Status:** … · **Parent:** … · **Next:** … · [Roadmap](roadmap.md)`.
-- **Plans stay the source of truth.** The roadmap only summarises them. When a plan's status or next step changes, update its header line **and** its roadmap row (and the map, if needed) in the same edit. A new plan file gets a header line and a roadmap row.
+## Dispatch
+
+What the dispatch skill leaves to the project:
+
+- **Checks:** the headless harness (Factorio gotchas below; scripts in `tools/`, see `tools/README.md`); after prototype changes, `--dump-data` + `python tools/check-paths.py`. Sprites, overlays and feel only show in game.
+- **Architecture doc:** the mod sections below (Hostile Territory, Other mods).
+- **Existing things** to reuse: `mods/*/prototypes/`, `mods/Hostile-territory/scripts/`, `docs/commands.md`; numbers come from the Lua prototypes and scripts.
+- **Polish rule:** balance changes quote the last telemetry CSV first (which phase is slow, what a cap counts).
+- **Play setup:** one-line `/c` commands from `docs/commands.md`, the `cheating-mod` kit; the play writes a telemetry CSV to `script-output/ht-telemetry/`. Branch runs: not yet (planning-structure PS7).
 
 ## Workspace layout
 

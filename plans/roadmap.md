@@ -1,7 +1,11 @@
 # Roadmap
 
 > The big picture on one page. A summary of the plan files, which stay the source of truth. Last updated: 2026-10-24 (game 2.1.21).
-> New ideas go to [inbox.md](inbox.md). How this works: [planning-structure-plan.md](planning-structure-plan.md).
+> New ideas go to [inbox.md](inbox.md). How this works: the `planning` user skill; history in [planning-structure-plan.md](planning-structure-plan.md).
+
+## Working towards
+
+Not chosen yet (planning-structure PS-Q1): the user picks one milestone and the question it answers at the next thread boundary; each open thread then names the milestone it serves.
 
 ## Where we are
 
@@ -93,7 +97,7 @@ Green: done · Yellow: current focus · Blue: decided, up next · Grey: later or
 | [ring-layout-plan.md](ring-layout-plan.md) | Rings as bands around the safe zone; oil only from ring 1 on | R1 built + headless ✅ (2026-10-18, 5 seeds): ring = grid layer (4 / 12 / 20 territories), no oil in ring 0 or the safe zone, 6 guaranteed wells in the closest ring-1 territory | **In-game check on a new map** |
 | [ring2-challenge-plan.md](ring2-challenge-plan.md) | Ring 2: which tech it gates, a much bigger base with distance to fight through to the brain | Brainstorm done 2026-10-24 (R2-D1–D18): uranium gate, districts linked to the brain, siege campaign, radius 150 (ring 2 = hive belt), no worms, creep + egg pods, tank allowed, J 0.2, guaranteed uranium. Interview done (R2-D19–D26): water territories in **every ring** get their base on the biggest land spot (no land → claimed), uranium in the spawn-facing district of the 3 closest ring-2 territories, 4 districts (tanky-spawner hearts) at 115 tiles as the brain's shield links, fallen 20 min, creep blotches by map gen. **R2-E1 spec approved** 2026-10-24 (build steps 4a–4i). **4a ✅** (2026-10-25, in game): J 0.2 in ring 2+, uranium only from ring 2, no worms in any ring, anchors only in ring 1. **4b built + headless ✅**: water territories in every ring get their base on a land spot (0 claimed at map gen on 3 seeds, was 5–12); oil follows the moved brain. In game ✅; then **B-I10 fixed** (brains jump to their base at once, in game ✅). **4c ✅** (headless + in game 2026-10-25), **4d ✅** (in game 2026-10-25): a 1.5 M uranium patch under the spawn-facing district of the 3 closest ring-2 territories: 4 districts per ring-2+ base (violet tanky-spawner heart + 6 nests, 115 tiles out, on land), regrow with the base | Q40 / Q41 answered (R2-D30–D32 from RF-D44–D53). **4e1b PT2 done 2026-10-26**: works, far too easy (23–53 s per district, 0 HP lost), brutes don't read; next: **4e1c big biters in the garrison** (R2-D34), then PT3, then 4e2 retake army, 4f core fight, 4e3 founders, 4e4 roles |
 | [test-base-plan.md](test-base-plan.md) | `/cheat-base <tier>` in `cheating-mod`: stamp a stored blueprint base on any new map, so crusade work needs no hand-built base or old saves | Interview (2026-10-23), nothing built. Decided: keep it simple, real supply chain, normal crusade trigger (TS-D4–D6); stamp by hand in the next crusade target, blueprint = defence + ammo + power from pre-filled chests, miners by hand (TS-D7–D8); crusade-test launch config with power armor, bots and research per ring (TS-D9) | Open questions TS-Q3, Q5–Q8, Q12–Q14 (tiers, terrain, evolution, headless, launch config) |
-| [planning-structure-plan.md](planning-structure-plan.md) | This roadmap, the inbox, plan headers | Built 2026-10-17 | User review |
+| [planning-structure-plan.md](planning-structure-plan.md) | This roadmap, the inbox, plan headers | Shared with CampCore as user skills (2026-11-22) | Pick a milestone (PS-Q1) |
 | [archive/](archive/) | Old map-gen approach, old overlay bugs | Archived 2026-10-17, don't use | |
 | [docs/commands.md](../docs/commands.md) | In-game test commands | Living reference | |
 
