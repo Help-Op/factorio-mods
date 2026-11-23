@@ -335,10 +335,56 @@ Wars (ring2-challenge 4e1 / 4e1b): per territory at war its age, running distric
 /c game.print(remote.call("hostile-territory-debug","brains"):match("Wars:.*"))
 ```
 
-Fill the garrison of the nearest live district (within 300 tiles) to full now (ring2-challenge 4e1b; 80 units, ~40 % brutes):
+Fill the garrison of the nearest live district (within 300 tiles) to full now (ring2-challenge 4e1b, 4e1c; 80 units: 50 % small, 30 % medium, 20 % big biters):
 
 ```
 /ht-garrison-fill
+```
+
+Wars (with each core garrison: free units, the three funds, incoming, queens by state; units the brain's nests made, the district it expects you next at, its last decision), garrisons on the map, raids and retake armies (kind, state, target, units alive, elder queen HP) and the influence map totals (ring2-challenge 4e2, 4e2b, 4e2c):
+
+```
+/ht-war
+```
+
+Draw the hive's influence map for you, on / off (4e2; redrawn every 5 s around each territory at war): fill = control (violet hive, blue you, orange contested), red frame = threat, text `T` threat / `V` your buildings:
+
+```
+/ht-influence
+```
+
+Start the next retake army of every war now (4e2, 4e2b, 4e2c): every fallen district counts as left, no wait for the retake fund or the retry, 5 s massing instead of 20; a queen is made at the brain if the reserve is empty:
+
+```
+/ht-retake-now
+```
+
+The brain of every war sends its next raid now, with whatever its raid fund holds: at you in a fallen district, else at your best building cluster (4e2c, was `/ht-wave-now`):
+
+```
+/ht-raid-now
+```
+
+Every live district heart at war makes its next elder queen now, while the reserve has fewer than 3 (4e2b):
+
+```
+/ht-queen-now
+```
+
+Hold every brain (no decisions: no pre-positioning, raids or retakes) for testing, on / off (4e2b, 4e2c; the PT doesn't need it):
+
+```
+/c remote.call("hostile-territory-debug","hive_hold",true)
+```
+
+```
+/c remote.call("hostile-territory-debug","hive_hold",false)
+```
+
+Kill the nearest district heart within 150 tiles (4e2 setup: the district falls at once, starts the war if none runs):
+
+```
+/c local p=game.player.position local best,bd for _,e in pairs(game.player.surface.find_entities_filtered{position=p,radius=150,name="ht-district-heart"}) do local q=(e.position.x-p.x)^2+(e.position.y-p.y)^2 if not bd or q<bd then best,bd=e,q end end if best then best.die("player",game.player.character) game.print(string.format("Heart killed [gps=%d,%d]",best.position.x,best.position.y)) else game.print("No district heart within 150 tiles.") end
 ```
 
 Districts of the nearest ring-2+ base (ring2-challenge R2-E1 4c): GPS link per district heart, built or waiting for its chunks:

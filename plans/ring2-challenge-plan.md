@@ -1,6 +1,6 @@
 # Ring 2 Challenge
 
-> **Status:** R2-E1 approved; 4a–4d done; 4e1 war state + district fight built; PT2 (2026-10-26) far too easy; 4e1c built + headless (2026-11-22) · **Parent:** [ring-layout-plan.md](ring-layout-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md), [challenge-feel-plan.md](challenge-feel-plan.md) · **Next:** PT3 (4e1c, big biters in the garrison) · [Roadmap](roadmap.md)
+> **Status:** 4a–4d done; 4e1 war + district fight built, still easy after PT3 (2026-11-22); 4e2d PT7 reinforcements too slow · **Parent:** [ring-layout-plan.md](ring-layout-plan.md), [oil-ring-challenge-plan.md](oil-ring-challenge-plan.md), [challenge-feel-plan.md](challenge-feel-plan.md) · **Next:** spec + interview 4e2e (forward core + neighbour support, R2-D43) · [Roadmap](roadmap.md)
 
 Started 2026-10-24 (game 2.1.21). Ring 2 in the code = the 20 territories behind the oil ring (RL-D4), cells 768–1150 tiles out.
 
@@ -46,6 +46,15 @@ Started 2026-10-24 (game 2.1.21). Ring 2 in the code = the 20 territories behind
 | R2-D31 | Districts in the way (Q41 → ring-feel Q45) | RF-D48: **zone of control**, no new layout. Each live district senses you within **~80 tiles** and sends its garrison after you; at 115 tiles out the zones touch, so slipping between two districts means fighting both. No wall (R2-D8): you can run through, it costs. R2-D24 layout (4 at 115) kept |
 | R2-D32 | Functional hive + build order (ring-feel Q46–Q50) | RF-D47, D49–D53: every building comes from a unit you can kill. Nests make combat units and **queens** (settle into a nest); the heart makes queens, **elder queens** (settle into a heart) and **brain seeds** (crusades); the **brain makes no units** in ring 2 (4f). Ring-2 regrowth by **founders** (a queen walks out and settles), rings 0–1 keep pop-in. Order: **4e1b garrison + zone of control** → PT → **4e2** retake army with an elder queen → PT → **4f** core fight (moved up, R2-D33) → **4e3** founders → **4e4** new roles, one per PT; prediction + digestion pools after the 4e2 PT |
 | R2-D33 | 4e1b details (Q42–Q49) | **Garrison exists** while a player character is near (~200 tiles) **or the heart's chunk is visible** to the player force (radar: `LuaForce.is_chunk_visible`), else it's kept as a count. **Heart killed stops the rebuild** (the heart is the goal: dive it or grind the garrison). **A share comes** when you enter the zone (half), the rest holds the heart and joins when you're within ~40 tiles. **Timer waves dropped.** On the heart's fall the rest of the garrison **walks to the nearest live district** (else the core). **Two zones → both** send their share. Balance against a **new `/cheat-kit ring2`** (blue era, no tank). **4f moves right after 4e2** (user, 2026-10-26) |
+| R2-D43 | After PT7 (Q80) | **A + B:** forward core (the core garrison stands at the district the brain expects you at next and moves with you; during a fight every new unit streams into it; the retake queen masses at the brain) **and** neighbour support (live districts next to a fought one send part of their garrisons the whole fight; a fallen district's survivors join the next live one). C (harder hearts) not now. Spec + interview next session (user, 2026-11-23) |
+| R2-D42 | After PT6 (Q79) | **A: more units.** Fix both bugs (brain nests found around the brain's base, not the territory point; core losses come off each fund by its share), district rate at war ×2.5 (one unit per nest per 8 s, ≈0.9/s per district), the core starts the war with a stock of 150. Judge B (stronger units) after the next PT (user, 2026-11-23) |
+| R2-D41 | 4e2c interview (Q73–Q78) | All picks: brain ring nests one unit per nest per 20 s, districts 0.35/s each (Q73); funds reserve 40 % / raid 35 % / retake 25 %, caps 80 / 150 / 120 (Q74); pre-position 30 reserve units into the district with the most participant threat nearby (Q75); raids at your buildings anywhere in the territory, turret clusters first, sent once big enough for their threat (Q76); one raid and one retake out at once (Q77); raids retreat at 25 %, retakes unchanged (Q78) (user, 2026-11-23) |
+| R2-D40 | Proactive brain (Q72) | **C, strategic layer.** Brain income: the **nests around the brain** produce for the core too; the brain itself doesn't. Those nests make **normal units only, no queens** (queens come only from district hearts) (user, 2026-11-22) |
+| R2-D39 | 4e2b interview (Q67–Q71) | Picks for **Q67** (0.35 units/s per live district, garrisons keep 40, the rest to a core garrison of up to 200; district fights get a bit easier), **Q68** (a wave at 60 units or every 60 s; targets: your buildings in fallen districts and you in a fallen district; the core sends half its units to help a district you attack, once per fight), **Q70** (flee from a participant within 40 tiles to the lowest-threat spot within 80 of the brain, 10 escorts each, back after 30 s with nobody within 60). **Q69:** no queen kept at the heart; a heart makes one every 3 min for the brain's reserve (up to 3); **a heart that dies releases a queen** (the heart contains a queen; art later). **Q71: B**, everything in one step and one PT (user, 2026-11-22) |
+| R2-D38 | After PT4 (Q65, Q66) | **Pressure = approach 2, a hive budget**: production below your kill rate, but never idle; spent on waves with less time in between. **Queens:** a heart that dies releases a queen, who retreats to the brain with what's left of the garrison and forms a garrison there; a district heart makes new queens; the brain keeps a few queens in reserve and protects them: under attack it sends them somewhere safer or sends units to stay near them. Fix the massing drift first (user, 2026-11-22) |
+| R2-D37 | 4e2 left range + influence map (Q63, Q64) | **Left = no participant within 60 tiles** of the fallen heart spot for 30 s, so it counts as left as soon as you push on. **Influence map scope B**: per-chunk threat / value / control + a debug view in game, and the hive **picks which fallen district to retake** by it (lowest threat per value); routing around threat after the PT (user, 2026-11-22) |
+| R2-D36 | 4e2 interview (Q56–Q62) | (**Army source, size, massing time and the full-garrison wait replaced by R2-D39 in 4e2b**: armies come from the core garrison, 20 s massing.) Spec draft approved with the picks: army = **a third of each live garrison** (Q56), ~80 massing 60 s next to the brain (Q57, to test), **elder queen** = `ht-queen` scaled + tinted, her death makes the army retreat (Q58), retry after 2 min **and only once the drawn garrisons have rebuilt** (Q59), hive win as specced (Q60; the brain will likely get healing states earlier, but this stays the war's end: every position retaken, the player cleared out), **visible only** (Q62). **Q61: start experimenting with the influence map in 4e2** (RF-D36), scope in Q64. Q55 (left range) open: 100 tiles "feels far" → Q63 (user, 2026-11-22) |
+| R2-D35 | After PT3 (Q53, Q54) | **Districts may stay easy for now; the war's weight comes from the hive constantly trying to retake** them: 4e2 retake army next, no more garrison tuning first. Q53: the PT3 deaths in the core fight were the medium brain's **lava fissures** (demolisher revenge attack, kept for medium and big brains, `Hostile-fauna/prototypes/brain.lua`); the ring-2 brain is unbeatable as is and must get a lot easier, a tweak for 4f (user, 2026-11-22) |
 | R2-D34 | After PT2 (Q50, Q52) | **Tougher garrison by adding big biters** to the small + medium mix (one change for PT3). **`/cheat-kit ring2` is a fair baseline**, keep it (user, 2026-10-26). Q51 (brute look) answered with it: the big biter is the readable brute for now |
 | R2-D26 | Creep (Q25) | **Map gen, noisy blotches** over ~50 % of the band 40–150 tiles, outside the district disks (2026-10-24) |
 
@@ -396,7 +405,235 @@ Numbers are first guesses to playtest. Choices made in the interview: R2-D19–D
       2. How long does it take, and does that feel right?
       3. Do the big biters read as the front, or do they arrive last?
     - **Send back:** the fight CSV (`script-output/ht-telemetry/<tick>-t<id>-d<slot>.csv`) and the war log (`…-war.csv`), plus feel notes.
+  - **Played PT3** (2026-11-22, game 2.1.21, `3000-t19-d2.csv`, `3000-t19-war.csv`; territory 19, district 2, trigger zone):
+
+    | Question | User | Telemetry |
+    |---|---|---|
+    | 1. Costs HP / shield? | **Not really** | HP 250 the whole fight, shield 100 except one dip to 91 (s 9); 0 deaths |
+    | 2. How long? | **Pretty easy** | won in **44 s** (PT2: 23–53 s); 88 sent, 26 rebuilt |
+    | 3. Big biters the front? | **No**: slower, so they come last, but "at least a bit harder and a thing that needed concentration" | big 49–53 vs small 56–67 tiles out 2 s in (headless) |
+
+    - **Reading:** no change from PT2. Garrison 80 → 26 in 22 s while at most 40 are alive at once; at s 23 the hold is released and the last 26 die in ~10 s; the heart then goes 100 → 11 % in 9 s with 1–2 units left. Units die on the way in: nothing reaches the player. More HP per unit (big biters) didn't change that.
+    - Also in the folder: two core-fight CSVs for the same territory (`1380-t19.csv`, `7170-t19.csv`, phase `ring2`): the player **died at s 5 and s 6** with no hit recorded (250 → 240 → dead; 250 → 139 → dead). Not part of PT3's questions; the brain's **lava fissures** killed you (Q53 → R2-D35).
 - [ ] 4e2. **Retake army** (RF-D15, D16, D19, D21, D30; built on a new shared hive-AI module with a hidden per-chunk influence map, RF-D34–D38: a crusade inside the territory, leash, ignores decoys, retreats at half strength): simple + tell. Once you've left a fallen district, an army masses visibly at the core, marches there, destroys every player building in the district (any building holds it), wakes the quiet nests and brings an **elder queen** that settles into the heart (RF-D50). All districts back and nothing of yours holding ground → the war ends (hive win). Headless + its own **PT**. Spec after 4e1's PT. Later (ring-feel RF-D39–D43, after 4e2's PT): win prediction before committing, digestion pools. Open: ring-feel Q33 (when a district counts as left), Q34 (army size, massing time), Q35 (after the hive wins).
+  - **Spec** (2026-11-22, after PT3, R2-D35; approved R2-D36, R2-D37). **Building 2026-11-22.** Goal: taking a district is easy, **keeping it** costs: the hive keeps sending armies until your buildings there are gone or the brain dies.
+    - **Left** (ring-feel Q33 → Q55): no participant within `LEFT_RANGE` 60 tiles (R2-D37) of a fallen district's heart spot for `LEFT_AFTER` 30 s → the hive plans a retake of it. One army per territory at a time; the fallen district nearest the core goes first.
+    - **Army** (Q56, Q57): drawn from the **live districts' garrisons** (a third of each, rounded up; kinds in their shares), so a retake thins the other districts. They walk to a **massing spot** 30 tiles from the brain on the side facing the target and wait `MASS` 60 s: visible to eyes and radar, nothing on the map (RF-D22). The nearest live heart adds an **elder queen** (Q58). No live district → no army (the brain makes no units, RF-D52).
+    - **March:** the army walks to the fallen heart spot as one group (`unit_group`), the elder queen at the back. Leash (RF-D38): units chase a player at most `CHASE` 30 tiles off the route, then go back to the job; they ignore decoys (no retarget to walls or turrets outside the district on the way).
+    - **Retake:** at the district the army destroys every **player-force building** within `HOLD_RADIUS` 40 tiles of the heart spot (RF-D19: any building holds it; one target at a time, nearest first). Nothing left → the elder queen settles: the heart is rebuilt, the quiet nests wake, the district is live again and the survivors are its garrison (RF-D50). The district's zone of control works again at once.
+    - **Retreat** (RF-D38): army below half its start size, or the elder queen dead → survivors walk back to their districts and rejoin. The next army comes `RETRY` 2 min later if the district is still left **and the garrisons it draws from are full again** (R2-D36).
+    - **Hive wins** (RF-D21, ring-feel Q35 → Q60): every district live again and no player building within `HOLD_RADIUS` of any heart → the war ends, the territory is hostile and at peace, the brain heals to full. Player buildings outside the districts stay.
+    - **Code** (Q61): a new `scripts/hive.lua` with the army (mass, march, retake, retreat) as the first piece of the shared hive AI (RF-D35); `war.lua` decides when, `hive.lua` runs the army. **Influence map in this step** (R2-D36, D37): `scripts/influence.lua`, per chunk around a territory at war: **threat** (player turrets weighted by kind, participants, recent hive unit deaths halving each minute), **value** (player buildings), **control** (hive / player / contested / none); updated every 5 s; `/ht-influence` draws it for you. The hive picks the left fallen district with the lowest (threat + 1) / (value + 1) around its heart.
+    - **Telemetry** (Q62): war-log events `retake_plan`, `army_mass`, `army_march`, `army_arrive`, `building_killed`, `queen_settled`, `army_retreat`, `hive_win`; an army CSV per army, one row per second: alive, start size, distance to target, buildings left, queen HP.
+    - **Debug:** `/ht-war` lists wars, armies and their state; a remote call to start a retake at once (skips `LEFT_AFTER` and `MASS`).
+    - **Headless:** take a district (kill its heart), place a pole, a turret and a wall in it, move the character away → after 30 s an army masses, garrisons drop by a third, the army marches, kills the buildings, the queen settles, the district is live; a second run kills the queen → retreat, units back; a run with every district retaken → hive win, brain healed.
+    - **PT4** questions (draft): does the army read (massing, march) before it hits? Does defending a district feel like a war, and how often does it come? Does the elder queen read as the thing to kill?
+  - **Built** (2026-11-22, game 2.1.21): [scripts/hive.lua](../mods/Hostile-territory/scripts/hive.lua) (army: mass, march, retake, settle, retreat), [scripts/influence.lua](../mods/Hostile-territory/scripts/influence.lua) (per-chunk threat / value / control, debug view), [scripts/war.lua](../mods/Hostile-territory/scripts/war.lua) (left, pick, draw from the garrisons, retaken, hive win), `ht-elder-queen` in [challenge-units.lua](../mods/Hostile-territory/prototypes/entity/challenge-units.lua) (`ht-queen` × 1.3, 2000 HP, speed 0.12, violet + gold). Knobs: `LEFT_RANGE` 60, `LEFT_AFTER` 30 s, `ARMY_SHARE` 1/3, `MASS` 60 s, `MASS_DIST` 30, `RETRY` 2 min, `hive.HOLD_RADIUS` 40, `CHASE` 30, `SCORE_RADIUS` 48; influence: turret threat ammo 2 / laser 3 / flamer 4, participant 3, a hive death 0.5 halving per minute, update every 5 s within 200 tiles of the brain. Commands: `/ht-war`, `/ht-influence`, `/ht-retake-now` (remote `retake_now`, `armies`, `influence`, `attacks`). Differences from the spec and engine findings:
+    - The hive only sends an army while its **sources are full** (every live, not fighting garrison at 80); after a retreat it also waits `RETRY` (R2-D36). After a successful retake the next one can go as soon as the garrisons are full again (~35 s in the test).
+    - **Engine removes biters silently**: base biters have `destroy_when_commands_fail` and `allow_try_return_to_spawner`. Found three ways it bit: (1) the rebuilt heart was placed on survivors standing at the spot (stuck → removed) → units within 7 tiles are moved out; (2) the elder queen's walk to the spot failed again and again (re-issued every check) → her prototype has both off, the army checks "walking to *our* target" instead of "has a command", and she settles once she stops getting closer within 30 tiles; she retreats the army if she makes no progress for 30 s further out; (3) attack orders were re-issued every check → kept per unit.
+    - `attacks.lua` now spares units of an army or a garrison if the engine gathers them into its own attack or expansion group (never seen in the test, a guard).
+  - **Headless ✅** (`tools/ht-retake-test/`, 2026-11-22, game 2.1.21, seeds 12345 / 987654 / 555; same flow on all three, no errors; `ht-war-test` regression ✅ 3 seeds; `--dump-data` + `check-paths.py`: 2596 paths, 0 missing):
+
+    | Check | Result |
+    |---|---|
+    | Character 40 tiles from fallen A for 35 s | A not left ✅; fallen C (nobody near) left → the first army goes to C ✅ |
+    | Army | 56 units (a third of two full garrisons, 80 → 55) + elder queen; masses 60 s next to the brain ✅ |
+    | March → retake | 6–8 s march, buildings gone 2–16 s after arrival ✅ |
+    | Settle | heart rebuilt, 0 nests disabled, 55–56 survivors as its garrison ✅ |
+    | Second army (character home) | 35 s later, 84 units from three garrisons; A retaken ✅ |
+    | Hive win | war over, brain at full HP ✅ (the medium brain regenerates that fast anyway, so "healed" proves little) |
+    | Pick by influence (A turrets, C walls, both left) | C picked (lower threat per value) ✅ |
+    | Elder queen killed on the march | retreat, 56 of 56 back in their garrisons, retry in 119 s ✅ |
+    | Units removed without a death | 1–7 per retake, all next to the test's walls while attacking them (R2-I below) |
+    | Radar / eyes on the massing army, the debug view | **not testable headless**: PT |
+  - **PT4 (4e2)** hand-over:
+    - **Changed since the last PT (PT3):**
+      - Fallen district: stays fallen until you leave it → **a retake army comes** once nobody is within 60 tiles for 30 s (R2-D36, D37).
+      - Army: none → **a third of each live garrison + an elder queen**, massing 60 s next to the brain, marching, destroying every building of yours within 40 tiles of the heart spot; the queen rebuilds the heart (R2-D36).
+      - Kill the elder queen or half the army → it retreats; the next army comes 2 min later once the garrisons are full again (R2-D36).
+      - Hive retakes every district → **war over**, brain healed (R2-D36).
+      - Which district first: **the influence map** (lowest threat per value, R2-D37); `/ht-influence` shows it.
+    - **Checked automatically:** the table above. **Only the PT shows:** whether you notice the army massing and marching, whether holding a district feels like a war, how often armies come, whether the elder queen reads as the target, and whether the influence map matches what you built.
+    - **Try in this PT:** `/cheat-kit ring2`, `/ht-goto-ring 2`, the "120 tiles in front of the nearest district heart" command, take the district (or the "kill the nearest district heart" command), then:
+      1. Build something in it (a few turrets with ammo, a pole), leave beyond 60 tiles and watch with `/ht-war`: do you see the army mass and march? (army)
+      2. Come back and fight it: does holding the district feel like a war, and does the elder queen read as the thing to kill? (army, retreat)
+      3. Take a second district with fewer defences, leave both: does the hive go for the one `/ht-influence` says it should, and does that look like a choice? (influence)
+      4. Let it win once: does the war end the way you'd expect? (hive win)
+    - **Send back:** the war log (`script-output/ht-telemetry/<tick>-t<id>-war.csv`), the army CSVs (`…-army.csv`), the fight CSVs, and feel notes.
+  - **Played PT4** (2026-11-22, game 2.1.21; wars `1770-t19`, `12360-t25`): **the retake works, but it's far too weak and slow to feel like a war.** A couple of turrets stop a whole army, then it stays quiet and you can stand in place. Telemetry:
+    - **You kill faster than the hive makes units:** fights 46–65 s, 77–102 units sent, **0 deaths, HP never below 250** (only the shield). Burst kill rate 2–3.5 units/s (40 → 20 in 6 s); a district makes 0.6–0.7 units/s while fighting (6–7 nests, one per 10 s), and only until its garrison is at 80.
+    - **Long quiet:** army 1 of t25 planned at s 104, arrived s 184 (60 s massing, the fallen district had nothing of yours: value 0). 2 armies in 305 s (t25), 1 in 299 s (t19).
+    - **Army drifts apart while massing** (bug): the army's distance to its target falls to ~93 (the spot), then climbs back to 140–171 in the 60 s wait: the units walk off (most likely back to their spawners once their go_to is done), and the elder queen stays alone at the spot. Both retreats started there: t19 queen 2000 → 750 HP during massing, army then lost 14 units in 2 s to turrets on arrival → below half; t25 queen killed in 4 s during massing (s 38–41) with her army ~170 tiles away.
+    - A retaken district only has the nests that survived (t25 d1: 2 of 7), so it makes 0.2 units/s.
+    - No units removed by the engine showed up in the army CSVs (all losses were during fights).
+    - New: Q65 (where B's elder queen comes from), Q66 (production vs your kill rate).
+  - **Drift diagnosed** (2026-11-22, game 2.1.21, `ht-retake-test` seed 12345, now with enemy expansion on every 10 s and a massing probe): no army unit joined an engine group (expansion ruled out). Once a unit reaches the massing spot, the engine gives it `compound` (command 3: walk back to a spawner and enter it; base biters have `allow_try_return_to_spawner`): 20–28 of 56 units within 10 s, 12–18 walk off over 30 tiles. Units that reach a nest **enter it and are gone** (no death event): that's also the "biters removed by the engine" issue (those were next to a nest, not the walls) and the 6–8 units lost while massing in PT4. In game the units start from garrisons further off, so they walk further.
+    - **Built** (2026-11-22, game 2.1.21): `war.tame(unit)` in [war.lua](../mods/Hostile-territory/scripts/war.lua) sets per-unit `ai_settings` `allow_try_return_to_spawner`, `allow_destroy_when_commands_fail` and `join_attacks` to false; called for every unit the war makes (`spawn_unit`: garrisons, so armies and retaken garrisons too), for the elder queen, and for units drawn into an army (older saves). [hive.lua](../mods/Hostile-territory/scripts/hive.lua): while massing, a unit more than `MASS_STRAY` 25 tiles from the spot that isn't walking there is sent back. After its go_to ends, a tamed unit gets the engine's `wander` and stays.
+    - **Headless ✅** (`ht-retake-test`, seeds 12345 / 987654 / 555, expansion on every 10 s): while massing, **no `compound` commands**, all units within 30 tiles of the spot after 20–40 s (0–2 stragglers still walking there), **0 units lost** while massing or retaking (before: 1–7 per retake); same flow as before (retake, second army, hive win, influence pick, retreat on queen death). `ht-war-test` regression ✅ 3 seeds. No prototype change, so no `--dump-data`.
+- [ ] 4e2b. **Hive budget + queens** (R2-D38, D39). Spec agreed 2026-11-22, one step and one PT (PT5):
+    - ~~**Fix the drift**~~ (built + headless 2026-11-22, above).
+    - **Budget:** every live district's nests keep making units, never idle. A garrison keeps `FLOOR` units at its heart; every unit over that walks to the brain and joins the **core garrison** (visible next to the brain, shown and hidden like the others). Income is set **below your kill rate**: PT4 burst 2–3.5 units/s → about 1.2–1.5 units/s for a territory with 4 live districts (today 0.6–0.7 per district, but only until 80).
+    - **Waves** from the core garrison, no queen: whenever it has `WAVE` units, or every `WAVE_EVERY`, it attacks what you hold: your buildings in a fallen district, and you yourself when you stand in a fallen district (so standing still doesn't keep it quiet). Survivors come back to the core.
+    - **Retake** (4e2's army) needs a queen from the reserve; it takes the units from the core garrison instead of a third of each district.
+    - **Help:** when you attack a district, the core sends half its units there, once per fight.
+    - **Queens:** each live heart makes an elder queen every `QUEEN_EVERY` 3 min while the reserve at the brain has fewer than `RESERVE` 3; she walks to the brain. None stays at the heart. **A dying heart releases its queen** (even over 3): she retreats to the brain with the survivors of the garrison, and they join the core. No queen in the reserve = no retake, only waves (killing queens is how you stop retakes). A retreating army's queen goes back to the reserve.
+    - **Protecting the reserve:** a participant within `DANGER` of a reserve queen (or high threat on the influence map at her chunk) → the brain sends her to the lowest-threat chunk near the core and `ESCORT` units of the core garrison stay near her.
+  - **Built** (2026-11-22, game 2.1.21): new [scripts/core.lua](../mods/Hostile-territory/scripts/core.lua) (core garrison: on / off the map like a district garrison, incoming walkers, queen reserve, protection); [war.lua](../mods/Hostile-territory/scripts/war.lua) (war-mode rebuild and surplus, `to_core`, fallen garrison + released queen to the core, help in `start_fight`, `plan_hive` instead of `plan_retake`, `make_queens`, core CSV, hive win caps garrisons at 80 and hands the core back to the districts); [hive.lua](../mods/Hostile-territory/scripts/hive.lua) (army kinds `retake` and `wave`; a wave attacks buildings within 40 and participants within `HUNT` 60 of the heart spot, then goes home; a retreating queen goes back to the reserve). Knobs: `FLOOR` 40, `REBUILD_WAR` 20 s per nest (≈0.35 units/s per district), `TRANSFER` 5 per check, `core.MAX` 200 (stops production only; survivors and armies coming home can push it over), `WAVE` 60 / `WAVE_MIN` 20 / `WAVE_EVERY` 60 s, `HELP_SHARE` 0.5, `QUEEN_EVERY` 3 min, `core.RESERVE` 3 (released queens can push it over), `RETAKE_MASS` 20 s (was 60: the core already stands next to the brain), retake `RETRY` 2 min after a retreat; protection `DANGER` 40, `SAFE` 80, `ESCORT` 10, back after 30 s with nobody within 60. Order the core sends in: a wave at a fallen district you stand in (within 60 of its heart) → a retake to a left one (needs a queen at home) → a wave at a fallen one with your buildings. **Every army takes all free core units.** Commands: `/ht-wave-now`, `/ht-queen-now`, `/ht-retake-now` (makes a queen if none), remote `cores`, `wave_now`, `queen_now`, `hive_hold` (tests). Telemetry: `<tick>-t<id>-core.csv` every 5 s (free, incoming, escorts, queens by state, arrived, army, live districts), `…-wave.csv` per wave.
+  - **Headless ✅** (`tools/ht-core-test/`, 2026-11-22, game 2.1.21, seeds 12345 / 987654 / 555, expansion on every 10 s; same flow on all three, no errors; `ht-war-test` regression ✅ 3 seeds; `ht-retake-test` superseded (its armies of thirds and queen-only armies are gone); no prototype change):
+
+    | Check | Result |
+    |---|---|
+    | A falls, character 40 tiles out | queen released ✅ (on 2 seeds she fled from the character on her way), A's 80 units to the core, a **wave of 75–85** starts within 1 s, reaches the character in 10–13 s ✅ |
+    | Income (nothing dies) | **0.95–1.05 units/s** with 3 live districts ✅; garrisons at 40, the rest to the core |
+    | Character goes home | the wave finds nothing and goes home ✅ |
+    | A left 30 s | **retake with 257–263 units** + the released queen, 20 s massing, retaken → hive win, garrisons capped at 80 ✅ |
+    | Reserve (`queen_now`) | fills to 3 within 45 s ✅ |
+    | Character 30 tiles from a reserve queen | she flees 21–74 tiles from the brain with 10 escorts; **only 1–3 within 10 tiles after 15 s on 2 seeds** (she's faster); back home 60 s later, escorts back in the core ✅ |
+    | Character in B's zone | fight + **help: 114–119 sent** (half of B + half of the core's ~190) ✅ |
+    | B, C, D fall, walls at C, all left | retake still comes with every district fallen, picks **C** (influence) with 329–331 units ✅ |
+    | Units lost to the engine | none seen; 0–9 units pulled out of engine groups |
+    | Feel, readability of waves / escorts, the radar view | **not testable headless**: PT |
+  - **PT5 (4e2b)** hand-over:
+    - **Changed since the last PT (PT4):**
+      - **Drift fixed:** massing armies stay together, no units vanish into nests.
+      - **Hive budget:** at war each district makes ~0.35 units/s and **never idles**; garrisons keep 40, the rest walks to a **core garrison next to the brain** (up to 200).
+      - **Waves** (no queen): stand in a fallen district (within 60 tiles of its heart) or leave buildings in one, and the core sends **all its free units** once it has 60 (or 20 after a minute).
+      - **Help:** attack a district at war and half the core comes too.
+      - **Queens:** a dying heart releases an elder queen who walks to the brain; live hearts make one every 3 min (reserve up to 3). A retake needs one; massing is 20 s now.
+      - **Protection:** come within 40 tiles of a reserve queen and she runs with 10 escorts.
+      - Everything you take and leave is retaken within ~1–2 min with **200+ units**.
+    - **Checked automatically:** the table above. **Only the PT shows:** whether it now feels like a war, whether waves and retakes are readable or just a flood, whether 200+ unit armies are too much, whether you can tell the queens and escorts apart, and whether the brain area reads as dangerous.
+    - **Try in this PT:** `/cheat-kit ring2`, `/ht-goto-ring 2`, the "120 tiles in front of the nearest district heart" command, then:
+      1. Take a district and **stay in it**: a wave comes. Can you hold it, with or without turrets? (waves)
+      2. **Leave it**: a retake comes. Watch with `/ht-war`; kill its elder queen if you can. (retake, queens)
+      3. **Attack a second district**: does the core's help read as "the hive answers"? (help)
+      4. **Go towards the brain**: do the reserve queens run, and can you catch one through the escorts? (protection)
+      5. Take every district: do the retakes keep coming while queens are left? (Q65 B)
+    - **Send back:** the war log (`script-output/ht-telemetry/<tick>-t<id>-war.csv`), the core CSV (`…-core.csv`), the wave and army CSVs (`…-wave.csv`, `…-army.csv`), the fight CSVs, and feel notes.
+  - **Played PT5** (2026-11-22, game 2.1.21; `2070-t24-war.csv`, `-core.csv`, three `-wave.csv`, fights `d1`–`d4`):
+    - **User:** queens released on a heart's death feel good; a bit more pressure than PT4, but it should be higher. The brain answers a heart's death with a charge or a defence for the queen, which is fine, but it should **feel smarter and have resources ready** for it. It feels **reactive, not proactive**: a heart dies, a small attack comes, then you go on to the next district and clear it easily. With **turrets in one place** you could clear every heart around it and **no heart regenerated** in that time; that should take more effort.
+    - **Telemetry:**
+
+      | What | Numbers |
+      |---|---|
+      | Districts | all 4 fell at 102, 188, 240, 282 s: three in 3 min after the first; fights 33–77 s, 53–88 units sent each |
+      | Core | 158 free before the first wave, **never above 48 after it**; income fell with each district (4 → 0 live), 304 arrived in 300 s |
+      | Waves | 150 (retreat at half after 17 s at the turrets, 71 back), 40 (retreat after 10 s), 21 (nothing to attack) |
+      | Help | **21, 23, 15, 7, 15** units: half of a core the waves had just emptied |
+      | Retakes | **none**: a retake waits for 60 free (never reached again) and a queen at home (8 flees, often none home) |
+      | Queens made | none in t24 (every heart was fought or fallen); 3 released |
+    - **Diagnosis:** everything the hive does starts from an event (a fall, you in a zone) and spends what the core has right then. The first wave spends it all, retreats at half, and the core can't refill because income dies with the districts. Help is a share of an empty core, and the retake's 60-unit gate never opens again. So the hive goes quiet exactly when you're winning. Approach → Q72.
+- [ ] 4e2c. **Strategic layer** (R2-D40). Spec agreed 2026-11-23 (R2-D41), one step and one PT (PT6). Goal: the hive acts before you do and never runs dry, so a turret camp and a district-by-district sweep both cost real effort.
+  - **Income:** the brain's ring of nests (6–10 at 18 tiles) makes normal units for the core at `REBUILD_WAR` per nest (≈0.3–0.5 units/s), for as long as the war runs. No queens from them; the brain itself makes nothing (R2-D40). Districts keep producing as in 4e2b. → Q73
+  - **Funds:** the core's free units are split into three funds by share of income: **reserve** (defence and escorts), **raid**, **retake**. Each fund has a cap; income over a full fund goes to the next one. Help, waves, raids and retakes only spend their own fund, so one answer can't empty the core. → Q74
+  - **The brain decides every 20 s** (`DECIDE`), reading the influence map (threat, value) and where participants are. Each option gets a score; the best one that its fund can pay for goes out. Up to **one raid and one retake** out at the same time. → Q77
+    - **Defend (pre-position):** the brain predicts the district you'll hit next: the live district with the most participant threat within 150 tiles, weighted by distance. Up to `PRE` (30) reserve units walk into its garrison before you arrive (cap `GARRISON` 80). When you attack a district, **the whole reserve** comes to help, not half. → Q75
+    - **Raid** (replaces the wave): goes for your **buildings anywhere within the territory**, turret clusters first: the target is the chunk group with the most value, and the raid only goes once its fund holds at least the cluster's threat × `RAID_PER_THREAT` (so turrets draw bigger raids, and a raid that can't win waits and grows). You standing in a fallen district counts as a target too. A heart's death still triggers a raid at you from the raid fund. → Q76
+    - **Retake:** a fallen district you left, from the retake fund at `RETAKE_MIN` 40 (was 60 free), with a queen at home. A fleeing queen is called back for a retake when nobody is within `DANGER` of home.
+  - **Retreat:** raids at 25 % alive (was 50 %); retakes at 50 % or when the queen dies, as now. → Q78
+  - **Telemetry:** the core CSV gets the three funds; the war log gets `decide` lines (option, score, fund, size), `preposition`, `raid_*`. `/ht-war` shows funds, the predicted district and the last decision.
+  - **Headless plan** (new `tools/ht-brain-test/`, 3 seeds): brain income > 0 with every district fallen; reserve never below its share after a raid; pre-position moves units into the district nearest the character before it attacks; turrets in a fallen district draw a raid sized by their threat; a retake goes out within 2 min of leaving, also after a raid; raid + retake out together.
+  - **Built** (2026-11-23, game 2.1.21): [core.lua](../mods/Hostile-territory/scripts/core.lua) (funds as numbers over the free units: `core.sync` credits new units by share, a full fund's share goes to the others, lost units come off the biggest fund; `core.take(…, fund)`; escorts out of the reserve; `core.MAX` 200 → 350 = the caps' sum; `take_queen` also calls back a fleeing or walking queen while nobody is within 40 of the brain); [war.lua](../mods/Hostile-territory/scripts/war.lua) (`decide` instead of `plan_hive`, every `DECIDE` 20 s and right after a heart falls; `predict` + `preposition` with `floor_of(d)` = 40 + the units moved in, reset when the prediction moves or the fight starts; help = the whole reserve; `raid_cluster` from the influence map, need = threat × `RAID_PER_THREAT` 4, at least `RAID_MIN` 20, at most the raid cap; retake at `RETAKE_MIN` 40; `brain_income` from the brain's ring of nests within `BRAIN_R` 30 of the territory point, not in a district, one unit per nest per 20 s; a `decide` line per decision in the war log); [hive.lua](../mods/Hostile-territory/scripts/hive.lua) (armies keyed `<id>/<kind>`, one raid + one retake at once; the wave is now a raid, target any position; raids retreat below 25 %); [influence.lua](../mods/Hostile-territory/scripts/influence.lua) (`influence.cells(id)`). Core CSV: + `brain_made`, the three funds, raid and retake state + units, `predicted`. Raid CSV `…-raid.csv` (was `-wave.csv`). Commands: `/ht-raid-now` replaces `/ht-wave-now`; `/ht-war` shows funds, brain income, predicted district, last decision. No prototype change.
+  - **Headless ✅** (`tools/ht-brain-test/`, 2026-11-23, game 2.1.21, seeds 12345 / 987654 / 555, same flow on all three, no errors; `ht-war-test` regression ✅ 3 seeds; `ht-core-test` superseded):
+
+    | Check | Result |
+    |---|---|
+    | A falls, character 40 tiles out | raid at the character within 1 s, **30 units, raid fund only** (reserve 24–34 and retake 21 kept) ✅; done after 20 s, all back |
+    | Brain income | 7–8 units in the first 20 s ✅; with every district fallen **0.35 units/s** while the core has room (seed 12345 first run), 0.13–0.18/s when the core is over its cap (see below) |
+    | Character 120 tiles from B | **30 reserve units moved into B** (garrison 40 → 70) within 20 s ✅ |
+    | Character 55 tiles from B | fight + **the whole reserve as help** (74–78), sent 110–114 ✅; reserve 2–4 after |
+    | 6 gun turrets 60 tiles out from fallen A | threat 52 × 4 → need capped at 150; the raid **waits** (102 / 138 of 150), goes at 150 after 60 s, **kills all 6 turrets** with no losses (no ammo) ✅ |
+    | Raid + retake out together | ✅ (raid 150 to the turrets, retake 47–48 to C) |
+    | Retakes | A left → retake 72–73 units within 1 s of the fund allowing it; every district fallen → retake within 1 s, then one every 40–60 s (103–120 units) ✅ |
+    | Feel, raids vs real turrets with ammo, whether it reads as "smart" | **not testable headless**: PT |
+  - **Seen headless, for the PT:**
+    - **Help empties the reserve:** after a fight starts the reserve is 2–4 for ~40 s, so the next district gets no units ahead of you for a while.
+    - **The raid on a turret camp always waits for the full 150:** 6 gun turrets already give threat 52 (× 4 = 208). Smaller camps get smaller raids, but every real camp will mean a ~60–100 s wait for one big raid.
+    - **The first retake is small:** the retake fund fills slowest (25 %), so the first retake after you leave is ~45–75 units, later ones 100–120.
+    - **The core can go over 350** when fallen garrisons walk in (425 headless). Units over the funds' caps sit idle and the brain's nests stop until the core is below 350.
+  - **PT6 (4e2c)** hand-over:
+    - **Changed since the last PT (PT5):**
+      - **The brain decides every 20 s** (and right after a heart falls): defend, raid, retake. The war log has a `decide` line for each.
+      - **Funds:** the core's units are split into reserve (40 %), raid (35 %) and retake (25 %); one answer can't empty the core any more.
+      - **Ahead of you:** the district you're closest to (within 150 tiles) gets 30 extra units before you arrive; a fight gets the **whole reserve** as help.
+      - **Raids** replace waves: they go for your buildings **anywhere in the territory**, turret camps first, and wait until they're big enough for the camp's threat (up to 150 units). They fight on down to 25 %.
+      - **Retakes** only need 40 units in their fund and can go **at the same time** as a raid; a fleeing queen is called back for one.
+      - **The brain's own ring of nests** keeps making units (~0.35/s) after every district has fallen.
+    - **Checked automatically:** the table above. **Only the PT shows:** whether the brain now feels proactive, whether a turret camp holds against a 150-unit raid, whether the pre-positioned units make the next district noticeably harder, and whether the overall pressure is now high enough.
+    - **Try in this PT:** `/cheat-kit ring2`, `/ht-goto-ring 2`, the "120 tiles in front of the nearest district heart" command, then:
+      1. Walk **towards a district and wait ~20 s** at 100–150 tiles before attacking: do more units show up there? (pre-positioning)
+      2. Take it: the help should be bigger than PT5's 7–23 units. (help)
+      3. Build a **turret camp** (4–6 turrets) near the next district and fight from it: a big raid should come for the camp. Does it hold? (raids)
+      4. Clear districts one after the other: does a heart you took come back while you're at the next one? (retake + raid together)
+      5. Take every district: do the retakes keep coming from the brain's nests? (brain income)
+      - `/ht-war` any time: funds, the district the brain expects you at, its last decision.
+    - **Send back:** the war log (`script-output/ht-telemetry/<tick>-t<id>-war.csv`), the core CSV (`…-core.csv`), the raid and army CSVs (`…-raid.csv`, `…-army.csv`), the fight CSVs, and feel notes.
+  - **Played PT6** (2026-11-23, game 2.1.21; `9000-t23-war.csv`, `-core.csv`, two `-raid.csv`, fights `d1`–`d4`):
+    - **User:** the defence at the start feels slightly stronger; otherwise no noticeable difference to PT5.
+    - **Telemetry:**
+
+      | What | Numbers |
+      |---|---|
+      | Districts | all 4 fell at 58, 152, 206, 269 s; fights 31–58 s, 31–83 units sent each; two probes of d2 left after 14 s |
+      | **Brain income** | **0 the whole war** (`brain_made` 0): bug, see diagnosis |
+      | Core | 258 units arrived in 325 s (≈0.8/s, all from districts); peak 126 free at 35 s, **never above 62 after the first raid** |
+      | Pre-positioning | 30 into d2 at 40 s (worked); later only 9, 8, 5: the reserve was empty |
+      | Help | 23, 1, 5 units (PT5: 21, 23, 15, 7, 15) |
+      | Raids | 49 at you after d1 (21 s, 12 back), 25 after d4 (9 s, 3 back); no turret raid (no camp built) |
+      | Retakes | **none**: the retake fund reached 43 at 85 s, then dropped to 9 by 100 s when core units died (losses come off the biggest fund) |
+    - **Diagnosis:**
+      - **Bug, brain income:** the brain's nests are looked for within 30 tiles of the territory **point**, but a brain base can sit away from its point (moved onto land), so none were found. Headless only used territories whose base is on its point.
+      - **Bug, losses:** core units that die come off the **biggest** fund, which was the retake fund, so the slowest fund was the one that kept getting emptied.
+      - **The budget is too small to split:** ≈0.8 units/s against a player who killed ≈370 units in 5 min. Split three ways, every answer is small (help 1–23, raids 25–49), so the new behaviour exists but doesn't read. PT5 had the same total; the split only moved it around.
+    - Approach → Q79.
+- [ ] 4e2d. **Bugs + more units** (R2-D42), one step and one PT (PT7).
+  - **Built** (2026-11-23, game 2.1.21): [war.lua](../mods/Hostile-territory/scripts/war.lua): the brain's nests are looked for within 30 tiles of the brain's **base** (`storage.bases`, regrow.lua) and of the point, again every minute; `REBUILD_WAR` 20 → **8 s** per nest (≈0.9 units/s per district, also inside a fight); the brain's nests keep 20 s (`BRAIN_REBUILD`); the core starts every war with **`START_STOCK` 150**. [core.lua](../mods/Hostile-territory/scripts/core.lua): units lost at the core come off **each fund by its share** (the rest one each off the biggest). No prototype change, no new command.
+  - **Headless ✅** (`tools/ht-brain-test/`, 2026-11-23, game 2.1.21, seeds 12345 / 987654 / 555; the test now prefers a territory whose base was moved off its point: found on 12345 (123 tiles off) and 987654 (71), not on 555; `ht-war-test` regression ✅ 3 seeds):
+
+    | Check | Result (PT6 build → now) |
+    |---|---|
+    | Brain nests on a moved base | 0 (PT6) → **5 and 7 found**, making units from the start ✅ |
+    | Core at war start | 0 → **230** (150 stock + A's 80) |
+    | Raid at you when A falls | 30 → **89–92 units** ✅, raid fund only |
+    | Pre-positioning, help | 30 into B ✅; help = the whole reserve (80), reserve back to 80 within ~20 s (was 2–4 for ~40 s) |
+    | Turret camp (6, no ammo) | raid of 150 goes **20 s** after the camp is built (was 60 s), alongside a retake of 120 ✅ |
+    | Retakes | first one **117–120 units** (was 45–75); with every district fallen, one every ~40–60 s ✅ |
+    | Brain income with every district fallen | not measured: with the hive held the core was at 548–680 (cap 350), so the nests rightly stop. Brain income itself works (above) |
+  - **Seen headless, for the PT:** the core now often sits **over 350** (fallen garrisons walk in; ×2.5 income). Units over the funds' caps wait in the core and refill a fund as soon as it spends, so they're a buffer, not lost. The war test's first fight now gets 60 units of help from the start stock (garrison 80 → 140).
+  - **PT7 (4e2d)** hand-over:
+    - **Changed since the last PT (PT6):**
+      - **Brain income fixed:** the brain's own nests now make units (they found none in PT6).
+      - **2.5× the units:** districts at war make one unit per nest per 8 s (was 20), also while you fight them.
+      - **Army ready at the start:** the core starts every war with 150 units, so the first raid, help and retake are big.
+      - **Retake fund fixed:** losses at the core no longer empty the retake fund first.
+    - **Checked automatically:** the table above. **Only the PT shows:** whether the pressure is now high enough, whether raids of ~90–150 feel like a war or too much, whether you can still take a district, and the frame rate with this many units.
+    - **Try in this PT:** `/cheat-kit ring2`, `/ht-goto-ring 2`, the "120 tiles in front of the nearest district heart" command, then the same 5 as PT6:
+      1. Wait ~20 s at 100–150 tiles from a district before attacking: more units there?
+      2. Take it: how big is the help, and the raid at you after its heart dies?
+      3. Fight from a turret camp (4–6 turrets): does a 150 raid come, and does the camp hold?
+      4. Clear districts one after the other: do the ones you took come back?
+      5. Take every district: do the retakes keep coming?
+      - `/ht-war` any time: funds, brain income (`brain made`), next district, last decision.
+    - **Send back:** the war log (`script-output/ht-telemetry/<tick>-t<id>-war.csv`), the core CSV (`…-core.csv`), the raid and army CSVs (`…-raid.csv`, `…-army.csv`), the fight CSVs, feel notes, and whether the frame rate dropped.
+  - **Played PT7** (2026-11-23, game 2.1.21; `540-t19-war.csv`, `-core.csv`, five `-raid.csv`, one `-army.csv`, fights `d1`–`d4`):
+    - **User:** feels much like before, maybe slightly harder. **Reinforcements come too slowly**: you can go round clockwise, clear every heart, then the nests around the brain.
+    - **Telemetry:**
+
+      | What | Numbers |
+      |---|---|
+      | Districts | fell at 72, 142, 204, 258 s (clockwise d3 → d4 → d1 → d2); fights 35–72 s, **109–178 units sent each** (PT6: 31–83) |
+      | Income | **730 units reached the core in 300 s (≈2.4/s)** + 83 from the brain's nests; core up to 345 free at 60 s |
+      | Your kills | ≈790 units in ~4.5 min (≈3/s): you kill about as fast as the hive now makes them |
+      | Help | 60, 80, 28, 45, 32: the reserve is spent by the first fight and refills slower than you move on |
+      | Raids at you | 150 (after d3; 103 back, you'd left), then 70, 48, 20: each **below 25 % within 10–20 s** |
+      | Retake | one, 120 units to d3: **its queen died while massing** (30 tiles out from the brain towards d3, on your way to d1), 116 went home |
+      | End | every district down at 258 s, the core gone by 300 s, brain nests cleared: income 0 |
+    - **Diagnosis:** the hive now makes enough units, but they reach you in **slices**: one help at the start of a fight (from a reserve the last fight emptied), one raid after a heart dies, each ~14 s's walk from the brain. You kill each slice as it arrives and move on before the next one is ready. A district fight takes ~40 s; its garrison (40 + 30 ahead) + one help ≈ 110–180 units, about what you kill in that time. The massing spot puts the retake queen in your path.
+    - Approach → Q80.
+- [ ] 4e2e. **Forward core + neighbour support** (R2-D43). To spec and interview (next session), then build, headless, PT8.
+  - **Forward core (A):** the core garrison stands at the district the brain expects you at next (`predict`), not at the brain, and follows the prediction. In a fight, every unit that reaches the core (district and brain income) streams into the fight every check, not one help at the start. The retake queen and her army mass at the brain, out of your path (PT7: the queen died at the massing spot).
+  - **Neighbour support (B):** the live districts next to a fought one send part of their garrisons for the whole fight; a fallen district's survivors walk to the next live district, not to the brain.
+  - **Open for the spec:** what the core does when no district is predicted (back to the brain?); how far it may move from the brain; the queen reserve stays at the brain; share and cadence of neighbour support, and the floor a neighbour keeps; which neighbours count (the two around the ring, or within a range); how help, raids and pre-positioning change once the core is forward; telemetry (core position, units streamed, neighbour units).
 - [ ] 4f. Core fight: ring-2 phases, districts as shield links, `hf-brain-ring2`; the **brain makes no units** (RF-D52): units come from nests, queens and hearts. Headless + **PT**. Moved right after 4e2 (R2-D33).
 - [ ] 4e3. **Founders for regrowth** (RF-D49, D50; ring 2 only): a lost nest comes back because a queen walks out from a living piece and settles; a heart because an elder queen does. Kill her on the way and it doesn't come back. Replaces pop-in regrow in ring 2. Headless + PT.
 - [ ] 4e4. **New combat roles, one per PT** (RF-D46): spitter, hunter, sapper (and a real brute unit) in Hostile-fauna.
@@ -414,6 +651,8 @@ Numbers are first guesses to playtest. Choices made in the interview: R2-D19–D
 - **Performance**: many more nests per ring-2 base × 20 territories. Check entity count headless. 4e1b headless (2026-10-26): ~8–9 k vanilla idle units from spawners on a 40-chunk map after 90 s; garrisons only exist near players (R2-D33).
 - ~~**Ring 1 isn't finished.**~~ Done for now (OR-D112, 2026-10-24), so ring 2 can be built.
 - **Moving water brains in rings 0–1** (R2-D20) changes ring 0–1 maps that the oil-ring tuning was played on: more territories with a base near spawn, and the guaranteed oil follows a moved ring-1 brain.
+- **Biters removed by the engine** (4e2 headless, 2026-11-22; **fixed** 2026-11-22: idle units walked back into a nest and entered it; `war.tame`, see 4e2 "Drift diagnosed"; to confirm in the next PT): 1–7 army units per retake disappear without a death event while attacking the test's stone walls (always there, the same units on every run). Not explained yet; the base biters' `destroy_when_commands_fail` / `allow_try_return_to_spawner` are the suspects. Garrison units that idle long may vanish the same way (not measured). Watch the counts in PT4's army CSV.
+- **Ring-2 brain unbeatable** (PT3, 2026-11-22): the medium brain's lava fissures killed the player twice within 6 s of the core fight; it must get a lot easier. Belongs to 4f (R2-D35).
 - **A district can be taken without the brain**: the uranium gate is "take one district". ~~The regrow after 20 min and the counter-attacks~~ The retake army (4e2) and the shield links (4f) are what push you on to the core (R2-D27, D29).
 
 ## Steps
@@ -468,6 +707,36 @@ Numbers are first guesses to playtest. Choices made in the interview: R2-D19–D
 - ~~**Q51. Brute look:** big biter as the brute now (readable at once), or a scaled + tinted Hostile-fauna unit of its own?~~
 - ~~**Q52. Kit check:** is `/cheat-kit ring2` what you'd really have at ring 2 (flamethrower + rockets + shields at once), or too strong a baseline?~~
 - **Q24. Spec defaults still to playtest** (no decision needed before building): shield 0.9 split over the live hearts, counter-attack every 3 min at the player building nearest the brain, `hf-brain-ring2` 5000 HP, uranium patch ~1.5 M under the spawn-facing district, creep 10 HP/s standing still, ~30 pods per base.
+- ~~**Q53. Core-fight deaths in PT3** (`1380-t19.csv`, `7170-t19.csv`): the player died 5–6 s into the ring-2 core fight twice, with no hit logged. Did you walk up to the brain on purpose, and what killed you? A bug if it wasn't a real fight.~~ → R2-D35 (lava fissures).
+- ~~**Q54. After PT3, still no cost** (44 s, 0 HP): units die on the way in. Next lever: make the garrison reach you (all at once, from all sides, no 20 % slow), a ranged role that hurts from outside the flamer arc (spitters), or keep districts easy for now and give the war its weight through 4e2 (the retake army)?~~ → R2-D35 (4e2).
+- ~~**Q55. When is a district left** (ring-feel Q33): no participant within 100 tiles of its heart spot for 30 s (pick), or only once you leave the territory?~~ → R2-D36 (range → Q63)
+- ~~**Q56. Where the army comes from:** a third of each live garrison (pick: retakes thin the other districts, so a retake is a window to hit another one), units made fresh at the core (the brain makes no units, RF-D52), or a mix?~~ → R2-D36
+- ~~**Q57. Army size and massing:** a third of each live garrison (~80 with 3 live districts) massing 60 s next to the brain (pick), or a fixed size (ring-feel Q34: 10 + 5 × live districts)?~~ → R2-D36
+- ~~**Q58. Elder queen:** `ht-queen` scaled up and tinted, more HP, walks at the back (pick), or a new look? Killing her makes the army retreat (pick) or only stops the rebuild?~~ → R2-D36
+- ~~**Q59. Retry:** after a retreat the next army comes 2 min later while the district is still left (pick), or the hive waits until it can field a bigger one (that's the prediction, later)?~~ → R2-D36
+- ~~**Q60. Hive win** (ring-feel Q35): the brain heals to full and buildings outside the districts stay (pick)?~~ → R2-D36
+- ~~**Q61. Code:** a new `scripts/hive.lua` with the army only, no influence map until the prediction step after this PT (pick), or the influence map now as the base (RF-D36)?~~ → R2-D36
+- ~~**Q62. Tell:** visible only (massing units next to the brain, radar) as RF-D22 says (pick), or also a one-line chat message when an army sets off, for this PT only?~~ → R2-D36
+
+- ~~**Q63. Left range:** districts sit 115 tiles from the brain, 90° apart, so neighbours are ~130–165 tiles apart (headless) and their 80-tile zones touch. At 100 tiles you still "hold" a fallen district while fighting in its neighbour's zone; at **60** (pick: 40-tile hold radius + 20) it counts as left as soon as you push on, so the hive retakes behind you.~~ → R2-D37 (60).
+- ~~**Q65. All districts fallen, brain alive** (asked 2026-11-22): today nothing can be retaken then (no live garrison to draw from, the brain makes no units). (A) keep it; (B) **core garrison**: units that flee to the brain form a garrison that can send armies; (C) the brain makes an elder queen now and then (breaks RF-D52). For B: where does her queen come from? Today the elder queen is made out of nothing at the live heart nearest the target, and no queen is on the map while you clear districts. Pick: **each live heart keeps its elder queen next to it, on the map**; when the district falls she flees to the brain (kill her on the way and she's gone); the army takes one of those queens, so B works only while one is left.~~ → R2-D38 (core garrison, queens released by dying hearts and made by hearts, protected reserve).
+- ~~**Q66. Pressure** (PT4): production vs your kill rate, idle full garrisons, the massing drift. Approaches in the chat answer of 2026-11-22.~~ → R2-D38 (2, hive budget).
+- ~~**Q67. Budget numbers:** `FLOOR` 40 per garrison, income ~0.35 units/s per live district (~1.4/s for 4), core garrison up to 200 (pick)? Or keep today's 0.7/s per district and let the waves spend it?~~ → R2-D39
+- ~~**Q68. Waves:** `WAVE` 60 units or `WAVE_EVERY` 60 s, whichever comes first (pick); targets: your buildings in fallen districts and you in a fallen district (pick), or also your buildings anywhere in the territory?~~ → R2-D39
+- ~~**Q69. Queens:** a heart makes one every 3 min (pick), keeps one at the heart, reserve up to 3 at the brain; killing a heart's queen while you clear it: she's just gone (pick)?~~ → R2-D39
+- ~~**Q70. Protection:** flee when a participant is within 40 tiles of a reserve queen (pick) or by the influence map's threat; escort 10 units of the core per queen (pick)?~~ → R2-D39
+- ~~**Q71. Order:** (A) drift fix alone now, then budget + waves (PT5), then queens (PT6) (pick); (B) everything in one step and one PT.~~ → R2-D39
+- ~~**Q72. A proactive brain (PT5):** (A) **Anticipate:** keep a standing reserve the core never spends, pre-position units in the live district you're likely to hit next (influence map), the brain itself produces too. (B) **Pressure clock:** raids on your turrets and buildings on a timer wherever they are, retakes without the 60-unit gate, waves retreat at 25 %. (C) **Strategic layer:** every 15–30 s the brain picks from defend / raid / retake with the budget split into funds (reserve, raid, retake), using A's pre-positioning and B's raids. Pick: C.~~ → R2-D40
+- ~~**Q73. Brain income:** the brain's ring nests at the district rate, one unit per nest per 20 s (≈0.4/s) (pick), or faster since they're the last source (one per 10 s, ≈0.8/s)? And keep district income at 0.35/s each (pick)? Today you kill ~1.5–2 units/s.~~ → R2-D41
+- ~~**Q74. Fund split:** reserve 40 %, raid 35 %, retake 25 % of income (pick); caps reserve 80, raid 150, retake 120 (core 200 → 350 total).~~ → R2-D41
+- ~~**Q75. Pre-positioning:** 30 reserve units into the predicted district (pick), or the whole reserve; prediction by threat near districts (pick) or also by the direction you're moving?~~ → R2-D41
+- ~~**Q76. Raid targets:** your buildings anywhere in the territory (pick) or only in and around fallen districts (today); turret clusters first and the raid waits until it's big enough for their threat (pick), or the weakest target first (harass)?~~ → R2-D41
+- ~~**Q77. Parallel armies:** one raid and one retake at the same time (pick), or one army of any kind (today)?~~ → R2-D41
+- ~~**Q78. Retreat:** raids at 25 % (pick) or fight to the death; retakes unchanged?~~ → R2-D41
+- ~~**Q79. After PT6:** fix the two bugs (brain nests around the base, not the point; losses off each fund by its share) in any case, then: (A) **more units:** district rate ×2.5 (one unit per nest per 8 s, ≈0.9/s per district) and the core starts the war with a stock (e.g. 150) so the first answers are big; (B) **stronger units:** keep the count, shift ring-2 garrisons and raids to medium / big biters and spitters, so each unit costs you more time; (C) **fewer, bigger answers:** drop the three-way split back to one pool with a floor kept for defence, and the brain only acts once it can send something that matters (e.g. 80+). Pick: A, then judge B in the next PT.~~ → R2-D42
+- ~~**Q80. After PT7:** (A) **Forward core:** the core garrison stands at the district the brain expects you at next (it moves with you), and during a fight **all new units stream into it** every check instead of one help at the start; the retake queen masses at the brain, behind the core. (B) **Neighbour support:** the live districts next to a fought one send part of their garrisons the whole fight, and a fallen district's survivors join the next live one instead of walking to the brain. (C) **Harder hearts:** a heart can't be damaged (or heals) while enough of its nests or garrison stand, so a fight lasts long enough for reinforcements to arrive. Pick: A (it answers "too slow" directly; B and C can follow).~~ → R2-D43
+- ~~**Q64. Influence-map scope in 4e2:** (A) map + debug view only: per-chunk threat (player turrets in range, recent unit deaths, decaying), value (player buildings) and control, updated every few seconds, drawn on request in game; the army ignores it. (B) A + the hive **picks which fallen district to retake** by it (lowest threat per value). (C) B + the army **routes around threat** (waypoints through low-threat chunks). Pick **B**: cheap, the first decision that reads from the map, and the PT can check the map against what you built; C after the PT.~~ → R2-D37 (B).
+
 
 ## Old header line (moved here 2026-11-22)
 

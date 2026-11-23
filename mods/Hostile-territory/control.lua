@@ -14,6 +14,7 @@ local telemetry = require("scripts.telemetry")
 local brain_fight = require("scripts.brain-fight")
 local districts = require("scripts.districts")
 local war = require("scripts.war")
+local influence = require("scripts.influence")
 
 script.on_init(function()
   territories.scan()
@@ -105,6 +106,7 @@ script.on_event(defines.events.on_entity_damaged, function(event)
   end
 end, damage_filters)
 script.on_event(defines.events.on_unit_group_finished_gathering, attacks.on_unit_group_finished_gathering)
+script.on_event(defines.events.on_unit_added_to_group, attacks.on_unit_added_to_group) -- 4e2: army units stay ours
 script.on_event(defines.events.on_entity_died, function(event)
   if event.entity.type == "unit-spawner" then
     brain_fight.on_nest_died(event) -- OR-E8 E8-A2: an anchor releases its bearer
@@ -113,6 +115,7 @@ script.on_event(defines.events.on_entity_died, function(event)
   else
     telemetry.on_entity_died(event)
     director.on_unit_died(event) -- OR-E9 kill zone
+    war.on_unit_died(event) -- 4e2 influence map: hive deaths are threat
   end
 end, {{filter = "type", type = "unit"}, {filter = "type", type = "unit-spawner"}})
 script.on_event(defines.events.on_player_died, function(event)
@@ -229,6 +232,7 @@ remote.add_interface("hostile-territory-debug", {
     if record and territories.states[state] then territories.set_state(record, state) end
   end,
   crusade = function() return crusade.describe() end,
+  attacks = function() return attacks.describe() end,
   brains = function() return brain.describe() .. " " .. regrow.describe() .. " " .. districts.describe() .. " " .. war.describe() end,
   -- ring-2+ districts (R2-E1 4c): {[territory id] = {point, list = {{slot, x, y, rotation, built}}}}
   districts_state = function() return storage.districts end,
@@ -238,6 +242,16 @@ remote.add_interface("hostile-territory-debug", {
   wars = function() return storage.wars end,
   -- 4e1b: the garrison of the district nearest x, y (within 300) to full now; returns territory id, slot
   garrison_fill = function(x, y) return war.fill(game.surfaces[territories.surface_name], {x = x, y = y}) end,
+  -- 4e2: retake armies {[territory id] = army}, influence cells, and the next retake now (all wars, or territory id)
+  armies = function() return storage.armies end,
+  influence = function() return storage.influence end,
+  retake_now = function(id) return war.retake_now(id) end,
+  -- 4e2b/c: core garrisons, funds and queen reserves {[territory id] = core}, the next raid now, every live heart's queen now
+  cores = function() return storage.cores end,
+  raid_now = function(id) return war.raid_now(id) end,
+  queen_now = function() return war.queen_now() end,
+  -- tests: true keeps every brain from deciding (no pre-positioning, raids or retakes)
+  hive_hold = function(on) storage.hive_hold = on or nil end,
   oil = function() return storage.oil end,
   -- brain placement (R2-E1 4b): {placed, dead, moved = {[cell] = {point, spot, id, done}}}
   brain_state = function() return storage.brain end,
@@ -401,6 +415,31 @@ commands.add_command("ht-garrison-fill", "Fill the garrison of the nearest ring-
   if not player then return end
   local id, slot = war.fill(player.surface, player.position)
   player.print(id and string.format("Garrison of territory %d, district %d filled.", id, slot) or "No live district within 300 tiles.")
+end)
+
+commands.add_command("ht-war", "Show ring-2+ wars, garrisons on the map, retake armies and the influence map.", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(war.describe()) end
+end)
+
+commands.add_command("ht-retake-now", "Start the next retake army of every war now (fallen districts count as left, 5 s massing, a queen is made if the reserve is empty).", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(string.format("Retake forced in %d wars.", war.retake_now())) end
+end)
+
+commands.add_command("ht-raid-now", "The brain of every war sends its next raid now, with whatever its raid fund holds (at you in a fallen district, else your best building cluster).", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(string.format("Raid forced in %d wars.", war.raid_now())) end
+end)
+
+commands.add_command("ht-queen-now", "Every live district heart at war makes its next elder queen now (while the reserve has room).", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(string.format("%d hearts make a queen.", war.queen_now())) end
+end)
+
+commands.add_command("ht-influence", "Draw the hive's influence map for you (on / off): threat (red, T), your buildings (V), control colour.", function(command)
+  local player = game.get_player(command.player_index)
+  if player then player.print(influence.toggle(player) and "Influence map on (redrawn every 5 s)." or "Influence map off.") end
 end)
 
 -- A/B (oil-ring-challenge-plan.md OR-E4, OR-E6): off = squad slots stay where they were first placed (stale points).

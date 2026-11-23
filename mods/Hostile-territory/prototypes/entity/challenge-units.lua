@@ -62,3 +62,26 @@ queen.icons = {{icon = queen.icon or "__base__/graphics/icons/big-biter.png", ti
 queen.icon = nil
 
 data:extend({queen})
+
+-- 4e2 (ring2-challenge-plan.md R2-D36, ring-feel RF-D50): the elder queen. The retake army brings her to a fallen
+-- district; once your buildings there are gone she settles and the heart is rebuilt (scripts/hive.lua). Kill her and
+-- the army retreats. The queen at 1.3 x her size, 2000 HP, in the heart's violet with a gold glow.
+local elder_tint1 = {0.55, 0.1, 0.75, 1}
+local elder_tint2 = {1, 0.85, 0.3, 0.9}
+
+local elder = table.deepcopy(data.raw.unit["ht-queen"])
+elder.name = "ht-elder-queen"
+elder.order = "b-a-zzz"
+elder.max_health = 2000
+elder.distance_per_frame = elder.distance_per_frame * 0.12 / elder.movement_speed
+elder.movement_speed = 0.12
+elder.run_animation = biterrunanimation(behemoth_biter_scale * 1.3, elder_tint1, elder_tint2)
+elder.attack_parameters.animation = biterattackanimation(behemoth_biter_scale * 1.3, elder_tint1, elder_tint2)
+elder.icons = {{icon = "__base__/graphics/icons/big-biter.png", tint = elder_tint1}}
+-- the engine removes a biter whose commands keep failing; she is the army's key unit, so she stays (hive.lua
+-- settles her once she stops getting closer)
+elder.ai_settings = elder.ai_settings or {}
+elder.ai_settings.destroy_when_commands_fail = false
+elder.ai_settings.allow_try_return_to_spawner = false
+
+data:extend({elder})
